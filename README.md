@@ -20,4 +20,4 @@ Para armazenar os laboratórios e projetos da cadeira de computação gráfica.
 
 ### Materias extras:
 
-Exercícios: [Drive - Computação gráfica](https://drive.google.com/drive/folders/19gLiSj-BOJKYidbw830POZ51UEJ10qd3?usp=drive_link)
+[Drive - Computação gráfica](https://drive.google.com/drive/folders/19gLiSj-BOJKYidbw830POZ51UEJ10qd3?usp=drive_link)
