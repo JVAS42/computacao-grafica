@@ -2,8 +2,8 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import math
 
-# Importando algoritmos
 from dda import dda_line
 from bresenham import bresenham
 from circunferencia_ponto_medio import circunferencia_ponto_medio
@@ -17,19 +17,18 @@ class App(tk.Tk):
         self.title("Algoritmos de Computação Gráfica")
         self.geometry("900x700")
 
-        # --- Frame de controles
         control_frame = ttk.Frame(self, padding="10")
         control_frame.pack(side="left", fill="y", padx=10)
 
         self.labels = {}
         self.entries = {}
         coords = [("x0:", "x0"), ("y0:", "y0"), ("x1:", "x1"), ("y1:", "y1"), ("Raio:", "r")]
-        
+
         for i, (text, key) in enumerate(coords):
             label = ttk.Label(control_frame, text=text)
             label.grid(row=i, column=0, padx=5, pady=5, sticky="w")
             self.labels[key] = label
-            
+
             entry = ttk.Entry(control_frame, width=10)
             entry.grid(row=i, column=1, padx=5, pady=5)
             self.entries[key] = entry
@@ -41,7 +40,7 @@ class App(tk.Tk):
             "DDA",
             "Bresenham",
             "Ponto Médio Circunferência",
-            "Equação Circunferência",
+            "Método Polinomial",
             "Método Trigonométrico"
         )
         self.algoritmo_menu.grid(row=5, column=1, padx=5, pady=10, sticky="ew")
@@ -54,41 +53,52 @@ class App(tk.Tk):
         ttk.Label(control_frame, text="Coordenadas Geradas:").grid(row=7, column=0, columnspan=2, pady=5, sticky="w")
         self.output_text = tk.Text(control_frame, height=20, width=30)
         self.output_text.grid(row=8, column=0, columnspan=2, padx=5, pady=5, sticky="nsew")
-        
+
         plot_frame = ttk.Frame(self)
         plot_frame.pack(side="right", fill="both", expand=True, padx=10, pady=10)
 
         fig = Figure(figsize=(6, 6), dpi=100)
         self.plot_ax = fig.add_subplot(111)
-        
+
         self.canvas = FigureCanvasTkAgg(fig, master=plot_frame)
         self.canvas.get_tk_widget().pack(side="top", fill="both", expand=True)
-        
+
         self.toggle_inputs()
 
     def toggle_inputs(self, event=None):
-        algo = self.algoritmo_var.get()
-        is_circulo = "Circunferência" in algo or "Trigonométrico" in algo
+        for entry in self.entries.values():
+            entry.delete(0, tk.END)
 
-        self.labels["x0"].config(text="x0:" if not is_circulo else "xc:")
-        self.labels["y0"].config(text="y0:" if not is_circulo else "yc:")
-        
+        self.output_text.delete(1.0, tk.END)
+
+        self.plot_ax.clear()
+        self.plot_ax.set_title("Selecione um algoritmo e clique em Desenhar")
+        self.plot_ax.grid(True)
+        self.canvas.draw()
+
+        algo = self.algoritmo_var.get()
+        is_circulo = "Circunferência" in algo or "Trigonométrico" in algo or "Polinomial" in algo
+
+        self.labels["x0"].config(text="xc:" if is_circulo else "x0:")
+        self.labels["y0"].config(text="yc:" if is_circulo else "y0:")
+
         state_reta = "normal" if not is_circulo else "disabled"
         self.labels["x1"].config(state=state_reta)
         self.entries["x1"].config(state=state_reta)
         self.labels["y1"].config(state=state_reta)
         self.entries["y1"].config(state=state_reta)
-        
+
         state_circulo = "normal" if is_circulo else "disabled"
         self.labels["r"].config(state=state_circulo)
         self.entries["r"].config(state=state_circulo)
-        
+
     def desenhar(self):
         algo = self.algoritmo_var.get()
         try:
-            params = {key: int(entry.get()) for key, entry in self.entries.items() if entry.cget('state') != 'disabled' and entry.get()}
+            params = {key: int(entry.get()) for key, entry in self.entries.items() if
+                      entry.cget('state') != 'disabled' and entry.get()}
             pontos = []
-            
+
             if algo == "DDA":
                 pontos = dda_line(params["x0"], params["y0"], params["x1"], params["y1"])
             elif algo == "Bresenham":
@@ -103,12 +113,13 @@ class App(tk.Tk):
             self.mostrar_resultados(pontos)
 
         except ValueError:
-            messagebox.showerror("Erro de Entrada", "Por favor, preencha todos os campos necessários com números inteiros.")
+            messagebox.showerror("Erro de Entrada",
+                                 "Por favor, preencha todos os campos necessários com números inteiros.")
         except KeyError:
-             messagebox.showerror("Erro de Entrada", "Por favor, preencha todos os campos do algoritmo selecionado.")
+            messagebox.showerror("Erro de Entrada", "Por favor, preencha todos os campos do algoritmo selecionado.")
         except Exception as e:
             messagebox.showerror("Erro", f"Ocorreu um erro inesperado: {e}")
-            
+
     def mostrar_resultados(self, pontos):
         self.output_text.delete(1.0, tk.END)
         if not pontos:
@@ -116,15 +127,30 @@ class App(tk.Tk):
             self.plot_ax.clear()
             self.canvas.draw()
             return
-            
+
         pontos_str = "\n".join(map(str, pontos[:100]))
         self.output_text.insert(tk.END, pontos_str)
         if len(pontos) > 100:
-            self.output_text.insert(tk.END, f"\n... (e mais {len(pontos)-100} pontos)")
+            self.output_text.insert(tk.END, f"\n... (e mais {len(pontos) - 100} pontos)")
 
         self.plot_ax.clear()
+
+        algo = self.algoritmo_var.get()
+        is_circulo = "Circunferência" in algo or "Trigonométrico" in algo or "Polinomial" in algo
+
+        if algo in ["Ponto Médio Circunferência", "Método Polinomial"]:
+            xc = int(self.entries["x0"].get())
+            yc = int(self.entries["y0"].get())
+            pontos.sort(key=lambda p: math.atan2(p[1] - yc, p[0] - xc))
+
         xs, ys = zip(*pontos)
-        self.plot_ax.scatter(xs, ys, s=10, color="red")
+
+        if is_circulo:
+            xs = list(xs) + [xs[0]]
+            ys = list(ys) + [ys[0]]
+
+        self.plot_ax.plot(xs, ys, marker='o', markersize=5, linestyle='-', color="red")
+
         self.plot_ax.set_title(self.algoritmo_var.get())
         self.plot_ax.grid(True)
         self.plot_ax.set_aspect('equal', adjustable='box')

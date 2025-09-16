@@ -15,7 +15,7 @@ def circunferencia_ponto_medio(xc, yc, r):
             (xc + y, yc - x),
             (xc - y, yc - x)
         ])
-        
+
         if d < 0:
             d += 2 * x + 3
         else:
