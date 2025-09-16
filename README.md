@@ -13,7 +13,7 @@ Para armazenar os laboratórios e projetos da cadeira de computação gráfica.
 ### 📋 Checklist dos laboratórios
 
 - [x] Laboratório 1
-- [ ] Laboratório 2
+- [x] Laboratório 2
 - [ ] Laboratório 3
 
 ##
