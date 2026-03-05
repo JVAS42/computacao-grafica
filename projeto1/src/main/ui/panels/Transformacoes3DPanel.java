@@ -6,6 +6,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -17,6 +18,7 @@ public class Transformacoes3DPanel extends JPanel {
 
     // Estado do Objeto e Câmera
     private List<double[]> objectVertices = new ArrayList<>();
+    private List<double[]> objectVerticesOriginal = new ArrayList<>(); // Guarda o objeto original para a Janela
     private int[][] objectEdges = new int[0][0];
     private double camRotX = 0, camRotY = 0, camRotZ = 0;
     private int zoom = 100;
@@ -27,8 +29,6 @@ public class Transformacoes3DPanel extends JPanel {
     private JComboBox<String> comboEixoRot;
     private JTextField txtRotAngulo;
     private JTextField txtEscalaX, txtEscalaY, txtEscalaZ;
-    private JTextField txtCisXY, txtCisXZ, txtCisYZ;
-    private JComboBox<String> comboReflexao;
 
     // Sliders de Câmera
     private JSlider sldCamX, sldCamY, sldCamZ, sldZoom;
@@ -57,15 +57,11 @@ public class Transformacoes3DPanel extends JPanel {
         setupPainelDireito();
     }
 
-    // ==========================================
-    // PAINEL ESQUERDO (Controles)
-    // ==========================================
     private void setupPainelEsquerdo() {
         JPanel painelEsq = new JPanel();
         painelEsq.setLayout(new BoxLayout(painelEsq, BoxLayout.Y_AXIS));
         painelEsq.setPreferredSize(new Dimension(280, 0));
 
-        // 1. Objeto 3D
         JPanel pnlObjeto = new JPanel(new GridLayout(3, 1, 5, 5));
         pnlObjeto.setBorder(BorderFactory.createTitledBorder("Objeto 3D"));
         pnlObjeto.add(new JLabel("Tipo: Cubo"));
@@ -78,10 +74,8 @@ public class Transformacoes3DPanel extends JPanel {
         painelEsq.add(pnlObjeto);
         painelEsq.add(Box.createVerticalStrut(10));
 
-        // 2. Transformações (Abas simuladas com painéis)
         JTabbedPane tabbedTransformacoes = new JTabbedPane();
 
-        // Aba Translação
         JPanel pnlTrans = new JPanel(new GridLayout(4, 2, 5, 5));
         pnlTrans.add(new JLabel("X:")); pnlTrans.add(txtTransX = new JTextField("0"));
         pnlTrans.add(new JLabel("Y:")); pnlTrans.add(txtTransY = new JTextField("0"));
@@ -89,14 +83,12 @@ public class Transformacoes3DPanel extends JPanel {
         pnlTrans.add(new JLabel()); pnlTrans.add(criarBotao("Aplicar", e -> aplicarTranslacao()));
         tabbedTransformacoes.addTab("Translação", pnlTrans);
 
-        // Aba Rotação
         JPanel pnlRot = new JPanel(new GridLayout(3, 2, 5, 5));
         pnlRot.add(new JLabel("Eixo:")); pnlRot.add(comboEixoRot = new JComboBox<>(new String[]{"x", "y", "z"}));
         pnlRot.add(new JLabel("Ângulo:")); pnlRot.add(txtRotAngulo = new JTextField("0"));
         pnlRot.add(new JLabel()); pnlRot.add(criarBotao("Aplicar", e -> aplicarRotacao()));
         tabbedTransformacoes.addTab("Rotação", pnlRot);
 
-        // Aba Escala
         JPanel pnlEscala = new JPanel(new GridLayout(4, 2, 5, 5));
         pnlEscala.add(new JLabel("X:")); pnlEscala.add(txtEscalaX = new JTextField("1"));
         pnlEscala.add(new JLabel("Y:")); pnlEscala.add(txtEscalaY = new JTextField("1"));
@@ -104,20 +96,18 @@ public class Transformacoes3DPanel extends JPanel {
         pnlEscala.add(new JLabel()); pnlEscala.add(criarBotao("Aplicar", e -> aplicarEscala()));
         tabbedTransformacoes.addTab("Escala", pnlEscala);
 
-        // Aba Cisalhamento e Reflexão omitidas parcialmente por espaço, mas seguem o mesmo padrão
         painelEsq.add(tabbedTransformacoes);
         painelEsq.add(Box.createVerticalStrut(10));
 
-        // 3. Visualização (Câmera e Zoom)
         JPanel pnlVis = new JPanel(new GridLayout(5, 3, 2, 2));
-        pnlVis.setBorder(BorderFactory.createTitledBorder("Visualização"));
+        pnlVis.setBorder(BorderFactory.createTitledBorder("Câmera / Visualização"));
 
         sldCamX = configurarSlider(pnlVis, "X:", lblCamX = new JLabel("0°"), -180, 180, 0);
         sldCamY = configurarSlider(pnlVis, "Y:", lblCamY = new JLabel("0°"), -180, 180, 0);
         sldCamZ = configurarSlider(pnlVis, "Z:", lblCamZ = new JLabel("0°"), -180, 180, 0);
         sldZoom = configurarSlider(pnlVis, "Zoom:", lblZoom = new JLabel("100%"), 10, 300, 100);
 
-        JButton btnResetVis = criarBotao("Resetar Visualização", e -> resetarVisualizacao());
+        JButton btnResetVis = criarBotao("Resetar Câmera", e -> resetarVisualizacao());
         pnlVis.add(new JLabel()); pnlVis.add(btnResetVis); pnlVis.add(new JLabel());
         painelEsq.add(pnlVis);
 
@@ -136,18 +126,15 @@ public class Transformacoes3DPanel extends JPanel {
         return slider;
     }
 
-    // ==========================================
-    // PAINEL CENTRAL (Telas de Desenho)
-    // ==========================================
     private void setupPainelCentral() {
         JPanel painelCentro = new JPanel(new GridBagLayout());
 
         mainCanvas = new Canvas3D();
-        mainCanvas.setPreferredSize(new Dimension(500, 500));
+        mainCanvas.setPreferredSize(new Dimension(650, 450)); // Área ampliada para caber Janela e Viewport
 
         viewportCanvas = new ViewportCanvas();
         viewportCanvas.setPreferredSize(new Dimension(250, 250));
-        viewportCanvas.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), "View Port 2D (Top-Down)", TitledBorder.CENTER, TitledBorder.TOP));
+        viewportCanvas.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), "Top-Down (2D)", TitledBorder.CENTER, TitledBorder.TOP));
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 10, 10, 10);
@@ -160,9 +147,6 @@ public class Transformacoes3DPanel extends JPanel {
         add(painelCentro, BorderLayout.CENTER);
     }
 
-    // ==========================================
-    // PAINEL DIREITO (Informações)
-    // ==========================================
     private void setupPainelDireito() {
         JPanel painelDir = new JPanel();
         painelDir.setLayout(new BoxLayout(painelDir, BoxLayout.Y_AXIS));
@@ -213,27 +197,26 @@ public class Transformacoes3DPanel extends JPanel {
         return btn;
     }
 
-    // ==========================================
-    // LÓGICA E TRANSFORMAÇÕES
-    // ==========================================
     private void gerarCubo() {
         try {
             double size = Double.parseDouble(txtTamanhoObj.getText());
             objectVertices.clear();
-            // Padrão JS: V1 na origem (0,0,0)
-            objectVertices.add(new double[]{0, 0, 0});
-            objectVertices.add(new double[]{size, 0, 0});
-            objectVertices.add(new double[]{size, size, 0});
-            objectVertices.add(new double[]{0, size, 0});
-            objectVertices.add(new double[]{0, 0, size});
-            objectVertices.add(new double[]{size, 0, size});
-            objectVertices.add(new double[]{size, size, size});
-            objectVertices.add(new double[]{0, size, size});
+            objectVerticesOriginal.clear();
+
+            double[][] verticesBase = {
+                    {0, 0, 0}, {size, 0, 0}, {size, size, 0}, {0, size, 0},
+                    {0, 0, size}, {size, 0, size}, {size, size, size}, {0, size, size}
+            };
+
+            for(double[] v : verticesBase) {
+                objectVertices.add(new double[]{v[0], v[1], v[2]});
+                objectVerticesOriginal.add(new double[]{v[0], v[1], v[2]});
+            }
 
             objectEdges = new int[][]{
-                    {0, 1}, {1, 2}, {2, 3}, {3, 0}, // Base
-                    {4, 5}, {5, 6}, {6, 7}, {7, 4}, // Topo
-                    {0, 4}, {1, 5}, {2, 6}, {3, 7}  // Laterais
+                    {0, 1}, {1, 2}, {2, 3}, {3, 0},
+                    {4, 5}, {5, 6}, {6, 7}, {7, 4},
+                    {0, 4}, {1, 5}, {2, 6}, {3, 7}
             };
 
             resetarVisualizacao();
@@ -249,7 +232,6 @@ public class Transformacoes3DPanel extends JPanel {
         double tx = Double.parseDouble(txtTransX.getText());
         double ty = Double.parseDouble(txtTransY.getText());
         double tz = Double.parseDouble(txtTransZ.getText());
-
         double[][] matriz = Transformacoes3D.translacao(tx, ty, tz);
         aplicarMatrizObjeto(matriz, "Translação (TX: " + tx + ", TY: " + ty + ", TZ: " + tz + ")");
     }
@@ -259,13 +241,10 @@ public class Transformacoes3DPanel extends JPanel {
         double sx = Double.parseDouble(txtEscalaX.getText());
         double sy = Double.parseDouble(txtEscalaY.getText());
         double sz = Double.parseDouble(txtEscalaZ.getText());
-
-        // Fixo no vértice 1 (índice 0) igual ao JS
         double[] origem = objectVertices.get(0);
         double[][] toOrigin = Transformacoes3D.translacao(-origem[0], -origem[1], -origem[2]);
         double[][] scale = Transformacoes3D.escala(sx, sy, sz);
         double[][] toPos = Transformacoes3D.translacao(origem[0], origem[1], origem[2]);
-
         double[][] matFinal = Transformacoes3D.multiplicarMatrizes(toPos, Transformacoes3D.multiplicarMatrizes(scale, toOrigin));
         aplicarMatrizObjeto(matFinal, "Escala em V1 (SX: " + sx + ", SY: " + sy + ", SZ: " + sz + ")");
     }
@@ -274,16 +253,13 @@ public class Transformacoes3DPanel extends JPanel {
         if (objectVertices.isEmpty()) return;
         String eixo = (String) comboEixoRot.getSelectedItem();
         double ang = Double.parseDouble(txtRotAngulo.getText());
-
         double[] origem = objectVertices.get(0);
         double[][] toOrigin = Transformacoes3D.translacao(-origem[0], -origem[1], -origem[2]);
         double[][] toPos = Transformacoes3D.translacao(origem[0], origem[1], origem[2]);
-
         double[][] rotMat;
         if (eixo.equals("x")) rotMat = Transformacoes3D.rotacaoX(ang);
         else if (eixo.equals("y")) rotMat = Transformacoes3D.rotacaoY(ang);
         else rotMat = Transformacoes3D.rotacaoZ(ang);
-
         double[][] matFinal = Transformacoes3D.multiplicarMatrizes(toPos, Transformacoes3D.multiplicarMatrizes(rotMat, toOrigin));
         aplicarMatrizObjeto(matFinal, "Rotação Real (Eixo: " + eixo.toUpperCase() + ", Âng: " + ang + "°)");
     }
@@ -315,6 +291,7 @@ public class Transformacoes3DPanel extends JPanel {
 
     private void limparTudo() {
         objectVertices.clear();
+        objectVerticesOriginal.clear();
         objectEdges = new int[0][0];
         historicoBuilder.setLength(0); historicoCount = 1;
         txtHistorico.setText("");
@@ -357,93 +334,165 @@ public class Transformacoes3DPanel extends JPanel {
     }
 
     // ==========================================
-    // CÁLCULO DE PROJEÇÃO (3D -> 2D)
-    // ==========================================
-    private Point projetarPonto(double x, double y, double z, int width, int height) {
-        double[] pt = {x, y, z, 1};
-
-        // Aplica rotação da câmera
-        double[][] camXMat = Transformacoes3D.rotacaoX(camRotX);
-        double[][] camYMat = Transformacoes3D.rotacaoY(camRotY);
-        double[][] camZMat = Transformacoes3D.rotacaoZ(camRotZ);
-
-        double[][] camTransf = Transformacoes3D.multiplicarMatrizes(camYMat, camXMat);
-        camTransf = Transformacoes3D.multiplicarMatrizes(camZMat, camTransf);
-        pt = Transformacoes3D.multiplicarMatrizVetor(camTransf, pt);
-
-        // Projeção isométrica/perspectiva customizada do seu script.js
-        double f = zoom / 100.0;
-        double px = (pt[0] - pt[2]) * f * 0.7071 + width / 2.0;
-        double py = (-pt[1] + (pt[0] + pt[2]) * 0.5) * f * 0.7071 + height / 2.0;
-
-        return new Point((int) Math.round(px), (int) Math.round(py));
-    }
-
-    // ==========================================
-    // ÁREA DE DESENHO PRINCIPAL
+    // ÁREA DE DESENHO PRINCIPAL (Janela vs Viewport)
     // ==========================================
     private class Canvas3D extends JPanel {
+
+        // Limites da Janela do Mundo
+        private final double W_XMIN = -250, W_XMAX = 250;
+        private final double W_YMIN = -250, W_YMAX = 250;
+
         public Canvas3D() {
             setBackground(Color.WHITE);
             setBorder(BorderFactory.createLineBorder(Color.BLACK));
         }
 
-        private void drawLineDDA(Graphics g, Point p1, Point p2) {
-            g.drawLine(p1.x, p1.y, p2.x, p2.y); // Usando a linha nativa do Java por otimização de renderização 3D
+        // Função para realizar a Projeção Isométrica em Coordenadas de Mundo 2D
+        private double[] projetarMundo(double[] ptOriginal, double cx, double cy, double cz, int zLevel) {
+            double[] pt = {ptOriginal[0], ptOriginal[1], ptOriginal[2], 1};
+
+            double[][] rotX = Transformacoes3D.rotacaoX(cx);
+            double[][] rotY = Transformacoes3D.rotacaoY(cy);
+            double[][] rotZ = Transformacoes3D.rotacaoZ(cz);
+
+            double[][] camTransf = Transformacoes3D.multiplicarMatrizes(rotZ, Transformacoes3D.multiplicarMatrizes(rotY, rotX));
+            pt = Transformacoes3D.multiplicarMatrizVetor(camTransf, pt);
+
+            double f = zLevel / 100.0;
+            // Projeção isométrica sem depender das dimensões da tela (mantendo na coord. Mundo)
+            double px = (pt[0] - pt[2]) * f * 0.7071;
+            double py = (pt[1] + (pt[0] + pt[2]) * 0.5) * f * 0.7071;
+            return new double[]{px, py};
+        }
+
+        // Mapeamento matemático do Mundo para uma região específica (Viewport) da tela
+        private Point2D.Double mapWorldToScreen(Point2D.Double pt, int vXmin, int vXmax, int vYmin, int vYmax) {
+            double sx = vXmin + ((pt.x - W_XMIN) / (W_XMAX - W_XMIN)) * (vXmax - vXmin);
+            double sy = vYmin + ((W_YMAX - pt.y) / (W_YMAX - W_YMIN)) * (vYmax - vYmin);
+            return new Point2D.Double(sx, sy);
+        }
+
+        // ==========================================
+        // ALGORITMO DE RECORTE (COHEN-SUTHERLAND)
+        // ==========================================
+        private int computeOutCodeScreen(double x, double y, double xmin, double ymin, double xmax, double ymax) {
+            int code = 0;
+            if (x < xmin) code |= 1;
+            else if (x > xmax) code |= 2;
+            if (y < ymin) code |= 8;
+            else if (y > ymax) code |= 4;
+            return code;
+        }
+
+        private double[] cohenSutherlandClip(double x0, double y0, double x1, double y1, double xmin, double ymin, double xmax, double ymax) {
+            int outcode0 = computeOutCodeScreen(x0, y0, xmin, ymin, xmax, ymax);
+            int outcode1 = computeOutCodeScreen(x1, y1, xmin, ymin, xmax, ymax);
+            boolean accept = false;
+
+            while (true) {
+                if ((outcode0 | outcode1) == 0) {
+                    accept = true; break;
+                } else if ((outcode0 & outcode1) != 0) {
+                    break;
+                } else {
+                    double x = 0, y = 0;
+                    int outcodeOut = (outcode0 != 0) ? outcode0 : outcode1;
+
+                    if ((outcodeOut & 8) != 0) {
+                        x = x0 + (x1 - x0) * (ymin - y0) / (y1 - y0); y = ymin;
+                    } else if ((outcodeOut & 4) != 0) {
+                        x = x0 + (x1 - x0) * (ymax - y0) / (y1 - y0); y = ymax;
+                    } else if ((outcodeOut & 2) != 0) {
+                        y = y0 + (y1 - y0) * (xmax - x0) / (x1 - x0); x = xmax;
+                    } else if ((outcodeOut & 1) != 0) {
+                        y = y0 + (y1 - y0) * (xmin - x0) / (x1 - x0); x = xmin;
+                    }
+
+                    if (outcodeOut == outcode0) {
+                        x0 = x; y0 = y; outcode0 = computeOutCodeScreen(x0, y0, xmin, ymin, xmax, ymax);
+                    } else {
+                        x1 = x; y1 = y; outcode1 = computeOutCodeScreen(x1, y1, xmin, ymin, xmax, ymax);
+                    }
+                }
+            }
+            if (accept) return new double[]{x0, y0, x1, y1};
+            return null;
         }
 
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
             int w = getWidth(); int h = getHeight();
-            int length = (int) (1655 * (zoom / 100.0));
 
-            // Desenha Eixos Fixos
-            Point center = projetarPonto(0, 0, 0, w, h);
-            g.setColor(Color.RED);   drawLineDDA(g, center, projetarPonto(length, 0, 0, w, h));
-            g.setColor(Color.GREEN); drawLineDDA(g, center, projetarPonto(0, length, 0, w, h));
-            g.setColor(Color.BLUE);  drawLineDDA(g, center, projetarPonto(0, 0, length, w, h));
+            // Setup de Áreas
+            int winX = 10, winY = 30, winW = w/2 - 20, winH = h - 40;
+            int vpX = w/2 + 10, vpY = 30, vpW = w/2 - 20, vpH = h - 40;
+
+            g.setColor(new Color(245, 245, 245)); g.fillRect(winX, winY, winW, winH);
+            g.setColor(Color.LIGHT_GRAY); g.drawRect(winX, winY, winW, winH);
+            g.setColor(Color.BLACK); g.drawString("Janela do Mundo (Objeto Original)", winX, winY - 5);
+
+            g.setColor(Color.WHITE); g.fillRect(vpX, vpY, vpW, vpH);
+            g.setColor(Color.BLUE); g.drawRect(vpX, vpY, vpW, vpH);
+            g.setColor(Color.BLACK); g.drawString("Viewport (Projeção Isométrica + Recorte)", vpX, vpY - 5);
 
             if (objectVertices.isEmpty()) return;
 
+            // 1. Janela do Mundo: Desenhar o Objeto Original
+            g.setColor(Color.GRAY);
+            for (int[] aresta : objectEdges) {
+                double[] v1 = objectVerticesOriginal.get(aresta[0]);
+                double[] v2 = objectVerticesOriginal.get(aresta[1]);
+
+                double[] p1w = projetarMundo(v1, 0, 0, 0, 100);
+                double[] p2w = projetarMundo(v2, 0, 0, 0, 100);
+
+                Point2D.Double sp1 = mapWorldToScreen(new Point2D.Double(p1w[0], p1w[1]), winX, winX+winW, winY, winY+winH);
+                Point2D.Double sp2 = mapWorldToScreen(new Point2D.Double(p2w[0], p2w[1]), winX, winX+winW, winY, winY+winH);
+                g.drawLine((int)sp1.x, (int)sp1.y, (int)sp2.x, (int)sp2.y);
+            }
+
+            // 2. Viewport: Desenhar o Objeto Transformado e Recortado
             g.setColor(Color.BLACK);
             for (int[] aresta : objectEdges) {
                 double[] v1 = objectVertices.get(aresta[0]);
                 double[] v2 = objectVertices.get(aresta[1]);
-                Point p1 = projetarPonto(v1[0], v1[1], v1[2], w, h);
-                Point p2 = projetarPonto(v2[0], v2[1], v2[2], w, h);
-                drawLineDDA(g, p1, p2);
+
+                // Mapeia e Rotaciona pra projeção Isométrica do Mundo
+                double[] p1w = projetarMundo(v1, camRotX, camRotY, camRotZ, zoom);
+                double[] p2w = projetarMundo(v2, camRotX, camRotY, camRotZ, zoom);
+
+                // Mapeia do Mundo para a Viewport
+                Point2D.Double sp1 = mapWorldToScreen(new Point2D.Double(p1w[0], p1w[1]), vpX, vpX+vpW, vpY, vpY+vpH);
+                Point2D.Double sp2 = mapWorldToScreen(new Point2D.Double(p2w[0], p2w[1]), vpX, vpX+vpW, vpY, vpY+vpH);
+
+                // Aplica Clipping na Viewport
+                double[] clipped = cohenSutherlandClip(sp1.x, sp1.y, sp2.x, sp2.y, vpX, vpY, vpX+vpW, vpY+vpH);
+                if (clipped != null) {
+                    g.drawLine((int)clipped[0], (int)clipped[1], (int)clipped[2], (int)clipped[3]);
+                }
             }
         }
     }
 
-    // ==========================================
-    // VIEWPORT SECUNDÁRIO (Mundo 2D Top-Down)
-    // ==========================================
     private class ViewportCanvas extends JPanel {
         public ViewportCanvas() {
             setBackground(Color.WHITE);
         }
-
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
             if (objectVertices.isEmpty()) return;
-
             int size = Math.min(getWidth(), getHeight());
             double xMin = -100, yMin = -100, xMax = 100, yMax = 100;
-
             g.setColor(Color.BLACK);
             for (int[] aresta : objectEdges) {
                 double[] v1 = objectVertices.get(aresta[0]);
                 double[] v2 = objectVertices.get(aresta[1]);
-
-                // Converte as coordenadas do Mundo XY direto para o Canvas (Top-Down)
                 int cx1 = (int) (((v1[0] - xMin) / (xMax - xMin)) * size);
                 int cy1 = (int) (size - ((v1[1] - yMin) / (yMax - yMin)) * size);
                 int cx2 = (int) (((v2[0] - xMin) / (xMax - xMin)) * size);
                 int cy2 = (int) (size - ((v2[1] - yMin) / (yMax - yMin)) * size);
-
                 g.drawLine(cx1, cy1, cx2, cy2);
             }
         }

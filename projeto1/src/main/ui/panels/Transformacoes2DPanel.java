@@ -45,6 +45,7 @@ public class Transformacoes2DPanel extends JPanel {
     // Estado do Objeto e Sequencia
     private CanvasPanel canvas;
     private List<Point2D.Double> quadradoAtual = new ArrayList<>();
+    private List<Point2D.Double> quadradoOriginal = new ArrayList<>(); // Guarda o objeto original (Mundo)
     private List<TransformacaoConfig> sequenciaAtual = new ArrayList<>();
     private StringBuilder historicoStr = new StringBuilder();
     private int historicoCount = 1;
@@ -58,9 +59,6 @@ public class Transformacoes2DPanel extends JPanel {
         setupPainelDireito();
     }
 
-    // ==========================================
-    // PAINEL ESQUERDO
-    // ==========================================
     private void setupPainelEsquerdo() {
         JPanel painelEsq = new JPanel();
         painelEsq.setLayout(new BoxLayout(painelEsq, BoxLayout.Y_AXIS));
@@ -73,11 +71,9 @@ public class Transformacoes2DPanel extends JPanel {
         painelEsq.add(Box.createVerticalStrut(5));
         painelEsq.add(new JSeparator());
 
-        // Blocos
         painelEsq.add(criarBlocoDuplo("Translação:", "X:", txtTransX = new JTextField("0"), "Y:", txtTransY = new JTextField("0"), "Aplicar Translação", this::aplicarTranslacao));
         painelEsq.add(criarBlocoDuplo("Escala:", "X:", txtEscalaX = new JTextField("1"), "Y:", txtEscalaY = new JTextField("1"), "Aplicar Escala", this::aplicarEscala));
 
-        // Rotação (3 campos)
         JPanel pnlRot = new JPanel(new GridLayout(4, 1, 2, 2));
         pnlRot.setOpaque(false);
         pnlRot.add(new JLabel("Rotação:"));
@@ -93,7 +89,6 @@ public class Transformacoes2DPanel extends JPanel {
         painelEsq.add(pnlRot);
         painelEsq.add(new JSeparator());
 
-        // Reflexão
         JPanel pnlRef = new JPanel(new GridLayout(3, 1, 2, 2));
         pnlRef.setOpaque(false);
         pnlRef.add(new JLabel("Reflexão:"));
@@ -107,7 +102,6 @@ public class Transformacoes2DPanel extends JPanel {
 
         painelEsq.add(criarBlocoDuplo("Cisalhamento:", "X:", txtCisX = new JTextField("0"), "Y:", txtCisY = new JTextField("0"), "Aplicar Cisalhamento", this::aplicarCisalhamento));
 
-        // Configurar Quadrado
         JPanel pnlQuad = new JPanel(new GridLayout(5, 1, 2, 2));
         pnlQuad.setOpaque(false);
         pnlQuad.add(new JLabel("Configurar Quadrado:"));
@@ -158,9 +152,6 @@ public class Transformacoes2DPanel extends JPanel {
         return btn;
     }
 
-    // ==========================================
-    // PAINEL DIREITO
-    // ==========================================
     private void setupPainelDireito() {
         JPanel painelDir = new JPanel();
         painelDir.setLayout(new BoxLayout(painelDir, BoxLayout.Y_AXIS));
@@ -195,7 +186,6 @@ public class Transformacoes2DPanel extends JPanel {
         comboSequencia = new JComboBox<>(new String[]{"Translação", "Rotação", "Escala", "Cisalhamento", "Reflexão"});
         painelDir.add(comboSequencia);
 
-        // Painel dinâmico para a Sequência usando CardLayout
         cardSeqParams = new CardLayout();
         panelSeqParams = new JPanel(cardSeqParams);
         panelSeqParams.setOpaque(false);
@@ -220,7 +210,6 @@ public class Transformacoes2DPanel extends JPanel {
         add(scroll, BorderLayout.EAST);
     }
 
-    // Paineis auxiliares para o CardLayout da Sequencia
     private JPanel criarPanelSeqTrans() {
         JPanel p = new JPanel(new GridLayout(2, 2)); p.setOpaque(false);
         p.add(new JLabel("X:")); p.add(seqTransX = new JTextField("0"));
@@ -253,9 +242,6 @@ public class Transformacoes2DPanel extends JPanel {
         return p;
     }
 
-    // ==========================================
-    // CANVAS
-    // ==========================================
     private void setupCanvas() {
         JPanel wrapper = new JPanel(new BorderLayout());
         wrapper.setBackground(COR_FUNDO);
@@ -265,19 +251,12 @@ public class Transformacoes2DPanel extends JPanel {
         lblVoltar.setBorder(new EmptyBorder(10, 0, 10, 0));
         wrapper.add(lblVoltar, BorderLayout.NORTH);
 
-        JPanel centerWrapper = new JPanel(new GridBagLayout());
-        centerWrapper.setOpaque(false);
         canvas = new CanvasPanel();
-        canvas.setPreferredSize(new Dimension(500, 500));
-        centerWrapper.add(canvas);
-        wrapper.add(centerWrapper, BorderLayout.CENTER);
+        wrapper.add(canvas, BorderLayout.CENTER);
 
         add(wrapper, BorderLayout.CENTER);
     }
 
-    // ==========================================
-    // LÓGICA DE TRANSFORMAÇÕES E EVENTOS
-    // ==========================================
     private void gerarQuadrado() {
         try {
             double size = Double.parseDouble(txtQuadTamanho.getText());
@@ -285,10 +264,15 @@ public class Transformacoes2DPanel extends JPanel {
             double y = Double.parseDouble(txtQuadPosY.getText());
 
             quadradoAtual.clear();
-            quadradoAtual.add(new Point2D.Double(x, y));
-            quadradoAtual.add(new Point2D.Double(x + size, y));
-            quadradoAtual.add(new Point2D.Double(x + size, y + size));
-            quadradoAtual.add(new Point2D.Double(x, y + size));
+            quadradoOriginal.clear();
+
+            Point2D.Double p1 = new Point2D.Double(x, y);
+            Point2D.Double p2 = new Point2D.Double(x + size, y);
+            Point2D.Double p3 = new Point2D.Double(x + size, y + size);
+            Point2D.Double p4 = new Point2D.Double(x, y + size);
+
+            quadradoAtual.add(p1); quadradoAtual.add(p2); quadradoAtual.add(p3); quadradoAtual.add(p4);
+            quadradoOriginal.add(p1); quadradoOriginal.add(p2); quadradoOriginal.add(p3); quadradoOriginal.add(p4);
 
             atualizarInfoObjeto();
             canvas.repaint();
@@ -312,14 +296,11 @@ public class Transformacoes2DPanel extends JPanel {
         try {
             double sx = Double.parseDouble(txtEscalaX.getText());
             double sy = Double.parseDouble(txtEscalaY.getText());
-
-            // Escala em torno do primeiro vértice
             Point2D.Double origem = quadradoAtual.get(0);
             double[][] t1 = Transformacoes2D.criarMatrizTranslacao(-origem.x, -origem.y);
             double[][] s = Transformacoes2D.criarMatrizEscala(sx, sy);
             double[][] t2 = Transformacoes2D.criarMatrizTranslacao(origem.x, origem.y);
             double[][] matrizFinal = Transformacoes2D.multiplicarMatrizes(t2, Transformacoes2D.multiplicarMatrizes(s, t1));
-
             aplicarMatrizEmTodos(matrizFinal, "Escala: Sx=" + sx + ", Sy=" + sy);
         } catch (Exception e) {}
     }
@@ -363,9 +344,6 @@ public class Transformacoes2DPanel extends JPanel {
         canvas.repaint();
     }
 
-    // ==========================================
-    // SEQUÊNCIA DE TRANSFORMAÇÕES
-    // ==========================================
     private class TransformacaoConfig {
         String tipo; double[][] matriz; String log;
         public TransformacaoConfig(String t, double[][] m, String l) { tipo = t; matriz = m; log = l; }
@@ -384,9 +362,6 @@ public class Transformacoes2DPanel extends JPanel {
                     m = Transformacoes2D.criarMatrizRotacao(Double.parseDouble(seqRotAng.getText()), Double.parseDouble(seqRotCX.getText()), Double.parseDouble(seqRotCY.getText()));
                     log = "Seq: Rotação"; break;
                 case "Escala":
-                    // Na sequencia, a escala precisa do centro do objeto na hora de aplicar.
-                    // Para simplificar e seguir a risca o JS, guardaremos a matriz crua se for na origem, ou faremos o cálculo no "aplicar"
-                    // Como o JS faz a escala da sequencia em torno do vértice 0, faremos o cálculo na hora de aplicar.
                     m = Transformacoes2D.criarMatrizEscala(Double.parseDouble(seqEscalaX.getText()), Double.parseDouble(seqEscalaY.getText()));
                     log = "Seq: Escala"; break;
                 case "Cisalhamento":
@@ -421,9 +396,6 @@ public class Transformacoes2DPanel extends JPanel {
         sequenciaAtual.clear();
     }
 
-    // ==========================================
-    // FUNÇÕES UTILITÁRIAS
-    // ==========================================
     private void atualizarInfoObjeto() {
         if (quadradoAtual.isEmpty()) {
             txtVertices.setText("Nenhum objeto gerado.");
@@ -449,6 +421,7 @@ public class Transformacoes2DPanel extends JPanel {
 
     private void limparTudo() {
         quadradoAtual.clear();
+        quadradoOriginal.clear();
         sequenciaAtual.clear();
         historicoStr.setLength(0);
         historicoCount = 1;
@@ -458,54 +431,151 @@ public class Transformacoes2DPanel extends JPanel {
     }
 
     // ==========================================
-    // ÁREA DE DESENHO (Canvas)
+    // ÁREA DE DESENHO E MAPEAMENTO WINDOW->VIEWPORT
     // ==========================================
     private class CanvasPanel extends JPanel {
+
+        // Limites da Janela do Mundo
+        private final double W_XMIN = -150, W_XMAX = 150;
+        private final double W_YMIN = -150, W_YMAX = 150;
+
         public CanvasPanel() {
             setBackground(Color.WHITE);
             setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
         }
 
-        // Simula o setPixel do JS
-        private void setPixel(Graphics g, double cartX, double cartY) {
-            int screenX = (int) Math.round(cartX + getWidth() / 2.0);
-            int screenY = (int) Math.round(getHeight() / 2.0 - cartY);
-            g.fillRect(screenX, screenY, 1, 1);
+        // Mapeamento matemático do Mundo para uma região específica (Viewport) da tela
+        private Point2D.Double mapWorldToScreen(Point2D.Double pt, int vXmin, int vXmax, int vYmin, int vYmax) {
+            double sx = vXmin + ((pt.x - W_XMIN) / (W_XMAX - W_XMIN)) * (vXmax - vXmin);
+            double sy = vYmin + ((W_YMAX - pt.y) / (W_YMAX - W_YMIN)) * (vYmax - vYmin); // Y inverte na tela
+            return new Point2D.Double(sx, sy);
         }
 
-        // Reimplementa o DDA internamente para simular o comportamento exato do JS na plotagem das arestas
-        private void drawLineDDA(Graphics g, Point2D.Double p1, Point2D.Double p2) {
-            double length = Math.max(Math.abs(p2.x - p1.x), Math.abs(p2.y - p1.y));
-            double xinc = (p2.x - p1.x) / length;
-            double yinc = (p2.y - p1.y) / length;
+        // ==========================================
+        // ALGORITMO DE RECORTE (COHEN-SUTHERLAND)
+        // Aplicado após o mapeamento (nas coordenadas da viewport)
+        // ==========================================
+        private int computeOutCodeScreen(double x, double y, double xmin, double ymin, double xmax, double ymax) {
+            int code = 0;
+            if (x < xmin) code |= 1; // ESQUERDA
+            else if (x > xmax) code |= 2; // DIREITA
+            if (y < ymin) code |= 8; // TOPO (Y cresce pra baixo na tela)
+            else if (y > ymax) code |= 4; // FUNDO
+            return code;
+        }
 
-            double x = p1.x;
-            double y = p1.y;
+        private double[] cohenSutherlandClip(double x0, double y0, double x1, double y1, double xmin, double ymin, double xmax, double ymax) {
+            int outcode0 = computeOutCodeScreen(x0, y0, xmin, ymin, xmax, ymax);
+            int outcode1 = computeOutCodeScreen(x1, y1, xmin, ymin, xmax, ymax);
+            boolean accept = false;
 
-            setPixel(g, x, y);
+            while (true) {
+                if ((outcode0 | outcode1) == 0) { // Totalmente dentro
+                    accept = true;
+                    break;
+                } else if ((outcode0 & outcode1) != 0) { // Totalmente fora
+                    break;
+                } else {
+                    double x = 0, y = 0;
+                    int outcodeOut = (outcode0 != 0) ? outcode0 : outcode1;
+
+                    if ((outcodeOut & 8) != 0) { // TOPO
+                        x = x0 + (x1 - x0) * (ymin - y0) / (y1 - y0);
+                        y = ymin;
+                    } else if ((outcodeOut & 4) != 0) { // FUNDO
+                        x = x0 + (x1 - x0) * (ymax - y0) / (y1 - y0);
+                        y = ymax;
+                    } else if ((outcodeOut & 2) != 0) { // DIREITA
+                        y = y0 + (y1 - y0) * (xmax - x0) / (x1 - x0);
+                        x = xmax;
+                    } else if ((outcodeOut & 1) != 0) { // ESQUERDA
+                        y = y0 + (y1 - y0) * (xmin - x0) / (x1 - x0);
+                        x = xmin;
+                    }
+
+                    if (outcodeOut == outcode0) {
+                        x0 = x; y0 = y;
+                        outcode0 = computeOutCodeScreen(x0, y0, xmin, ymin, xmax, ymax);
+                    } else {
+                        x1 = x; y1 = y;
+                        outcode1 = computeOutCodeScreen(x1, y1, xmin, ymin, xmax, ymax);
+                    }
+                }
+            }
+            if (accept) return new double[]{x0, y0, x1, y1};
+            return null; // Linha rejeitada
+        }
+
+        private void drawLineDDA(Graphics g, double x1, double y1, double x2, double y2) {
+            double length = Math.max(Math.abs(x2 - x1), Math.abs(y2 - y1));
+            double xinc = (x2 - x1) / length;
+            double yinc = (y2 - y1) / length;
+
+            double x = x1;
+            double y = y1;
+
+            g.fillRect((int)Math.round(x), (int)Math.round(y), 1, 1);
             for (int i = 0; i < length; i++) {
                 x += xinc;
                 y += yinc;
-                setPixel(g, x, y);
+                g.fillRect((int)Math.round(x), (int)Math.round(y), 1, 1);
             }
         }
 
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
-            int w = getWidth();
-            int h = getHeight();
+            int w = getWidth(); int h = getHeight();
 
-            g.setColor(new Color(200, 200, 200));
-            g.drawLine(w / 2, 0, w / 2, h);
-            g.drawLine(0, h / 2, w, h / 2);
+            // Dividindo a tela em Duas Áreas: Esquerda (Janela/Mundo) e Direita (Viewport/Processado)
+            int winX = 10, winY = 30, winW = w/2 - 20, winH = h - 40;
+            int vpX = w/2 + 10, vpY = 30, vpW = w/2 - 20, vpH = h - 40;
 
+            // Fundo Janela
+            g.setColor(new Color(245, 245, 245)); g.fillRect(winX, winY, winW, winH);
+            g.setColor(Color.LIGHT_GRAY); g.drawRect(winX, winY, winW, winH);
+            g.setColor(Color.BLACK); g.drawString("Janela do Mundo (Original)", winX, winY - 5);
+            // Eixos da Janela
+            g.drawLine(winX + winW/2, winY, winX + winW/2, winY + winH);
+            g.drawLine(winX, winY + winH/2, winX + winW, winY + winH/2);
+
+            // Fundo Viewport
+            g.setColor(Color.WHITE); g.fillRect(vpX, vpY, vpW, vpH);
+            g.setColor(Color.BLUE); g.drawRect(vpX, vpY, vpW, vpH);
+            g.setColor(Color.BLACK); g.drawString("Viewport (Transformado + Recorte)", vpX, vpY - 5);
+            // Eixos do Viewport
+            g.setColor(Color.LIGHT_GRAY);
+            g.drawLine(vpX + vpW/2, vpY, vpX + vpW/2, vpY + vpH);
+            g.drawLine(vpX, vpY + vpH/2, vpX + vpW, vpY + vpH/2);
+
+            if (quadradoOriginal.isEmpty()) return;
+
+            // 1. Desenhar Objeto Original Mapeado na Janela Esquerda
+            g.setColor(Color.GRAY);
+            for (int i = 0; i < quadradoOriginal.size(); i++) {
+                Point2D.Double p1 = quadradoOriginal.get(i);
+                Point2D.Double p2 = quadradoOriginal.get((i + 1) % quadradoOriginal.size());
+                Point2D.Double sp1 = mapWorldToScreen(p1, winX, winX+winW, winY, winY+winH);
+                Point2D.Double sp2 = mapWorldToScreen(p2, winX, winX+winW, winY, winY+winH);
+                drawLineDDA(g, sp1.x, sp1.y, sp2.x, sp2.y);
+            }
+
+            // 2. Mapear e Aplicar Recorte no Objeto Transformado na Viewport Direita
             g.setColor(Color.BLACK);
-            if (!quadradoAtual.isEmpty()) {
-                for (int i = 0; i < quadradoAtual.size(); i++) {
-                    Point2D.Double p1 = quadradoAtual.get(i);
-                    Point2D.Double p2 = quadradoAtual.get((i + 1) % quadradoAtual.size());
-                    drawLineDDA(g, p1, p2);
+            for (int i = 0; i < quadradoAtual.size(); i++) {
+                Point2D.Double p1 = quadradoAtual.get(i);
+                Point2D.Double p2 = quadradoAtual.get((i + 1) % quadradoAtual.size());
+
+                // Passo 1: Mapeia pra tela do Viewport
+                Point2D.Double sp1 = mapWorldToScreen(p1, vpX, vpX+vpW, vpY, vpY+vpH);
+                Point2D.Double sp2 = mapWorldToScreen(p2, vpX, vpX+vpW, vpY, vpY+vpH);
+
+                // Passo 2: Aplica o Algoritmo de Recorte (Cohen-Sutherland) na Viewport
+                double[] clipped = cohenSutherlandClip(sp1.x, sp1.y, sp2.x, sp2.y, vpX, vpY, vpX+vpW, vpY+vpH);
+
+                // Passo 3: Se houver intersecção com a Viewport, desenha a reta recortada
+                if (clipped != null) {
+                    drawLineDDA(g, clipped[0], clipped[1], clipped[2], clipped[3]);
                 }
             }
         }
