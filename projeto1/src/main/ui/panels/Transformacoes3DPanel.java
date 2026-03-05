@@ -419,6 +419,61 @@ public class Transformacoes3DPanel extends JPanel {
             return null;
         }
 
+        // ==========================================
+        // NOVO: DESENHO DOS EIXOS CARTESIANOS
+        // ==========================================
+        private void desenharEixos(Graphics g, int bX, int bY, int bW, int bH, boolean usarCamera) {
+            double rx = usarCamera ? camRotX : 0;
+            double ry = usarCamera ? camRotY : 0;
+            double rz = usarCamera ? camRotZ : 0;
+            int z = usarCamera ? zoom : 100;
+
+            double L = 250; // Limites de desenho baseados no W_MAX
+
+            // X e Y (Verde acinzentado) e Z (Vermelho) conforme a imagem
+            Color corEixoXY = new Color(130, 180, 140);
+            Color corEixoZ = new Color(200, 60, 60);
+
+            desenharEixoUnico(g, new double[]{-L, 0, 0}, new double[]{L, 0, 0}, rx, ry, rz, z, bX, bY, bW, bH, corEixoXY, "X", "-X");
+            desenharEixoUnico(g, new double[]{0, -L, 0}, new double[]{0, L, 0}, rx, ry, rz, z, bX, bY, bW, bH, corEixoXY, "Y", "-Y");
+            desenharEixoUnico(g, new double[]{0, 0, -L}, new double[]{0, 0, L}, rx, ry, rz, z, bX, bY, bW, bH, corEixoZ, "Z", "-Z");
+
+            // Rótulo da origem central (0,0,0)
+            double[] pOrigem = projetarMundo(new double[]{0, 0, 0}, rx, ry, rz, z);
+            Point2D.Double spOrigem = mapWorldToScreen(new Point2D.Double(pOrigem[0], pOrigem[1]), bX, bX+bW, bY, bY+bH);
+            if (spOrigem.x >= bX && spOrigem.x <= bX+bW && spOrigem.y >= bY && spOrigem.y <= bY+bH) {
+                g.setColor(Color.DARK_GRAY);
+                g.drawString("0,0,0", (int)spOrigem.x - 12, (int)spOrigem.y + 15);
+            }
+        }
+
+        private void desenharEixoUnico(Graphics g, double[] v1, double[] v2, double rx, double ry, double rz, int zLevel, int bX, int bY, int bW, int bH, Color cor, String lblPos, String lblNeg) {
+            double[] p1w = projetarMundo(v1, rx, ry, rz, zLevel);
+            double[] p2w = projetarMundo(v2, rx, ry, rz, zLevel);
+
+            Point2D.Double sp1 = mapWorldToScreen(new Point2D.Double(p1w[0], p1w[1]), bX, bX+bW, bY, bY+bH);
+            Point2D.Double sp2 = mapWorldToScreen(new Point2D.Double(p2w[0], p2w[1]), bX, bX+bW, bY, bY+bH);
+
+            double[] clipped = cohenSutherlandClip(sp1.x, sp1.y, sp2.x, sp2.y, bX, bY, bX+bW, bY+bH);
+            if (clipped != null) {
+                g.setColor(cor);
+                g.drawLine((int)clipped[0], (int)clipped[1], (int)clipped[2], (int)clipped[3]);
+
+                g.setColor(Color.GRAY);
+                // Define qual ponta recebe qual label dependendo da distância na tela
+                double d1 = Math.hypot(sp1.x - clipped[0], sp1.y - clipped[1]);
+                double d2 = Math.hypot(sp1.x - clipped[2], sp1.y - clipped[3]);
+
+                if (d1 < d2) {
+                    g.drawString(lblNeg, (int)clipped[0] + 4, (int)clipped[1] - 4);
+                    g.drawString(lblPos, (int)clipped[2] + 4, (int)clipped[3] - 4);
+                } else {
+                    g.drawString(lblPos, (int)clipped[0] + 4, (int)clipped[1] - 4);
+                    g.drawString(lblNeg, (int)clipped[2] + 4, (int)clipped[3] - 4);
+                }
+            }
+        }
+
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
@@ -435,6 +490,10 @@ public class Transformacoes3DPanel extends JPanel {
             g.setColor(Color.WHITE); g.fillRect(vpX, vpY, vpW, vpH);
             g.setColor(Color.BLUE); g.drawRect(vpX, vpY, vpW, vpH);
             g.setColor(Color.BLACK); g.drawString("Viewport (Projeção Isométrica + Recorte)", vpX, vpY - 5);
+
+            // ---> DESENHA OS EIXOS EM AMBAS AS VIZUALIZAÇÕES <---
+            desenharEixos(g, winX, winY, winW, winH, false);
+            desenharEixos(g, vpX, vpY, vpW, vpH, true);
 
             if (objectVertices.isEmpty()) return;
 
@@ -453,7 +512,7 @@ public class Transformacoes3DPanel extends JPanel {
             }
 
             // 2. Viewport: Desenhar o Objeto Transformado e Recortado
-            g.setColor(Color.BLACK);
+            g.setColor(Color.BLUE); // Cubo agora desenhado em azul
             for (int[] aresta : objectEdges) {
                 double[] v1 = objectVertices.get(aresta[0]);
                 double[] v2 = objectVertices.get(aresta[1]);
