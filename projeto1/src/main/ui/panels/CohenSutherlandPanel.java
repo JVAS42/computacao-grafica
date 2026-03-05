@@ -18,6 +18,7 @@ public class CohenSutherlandPanel extends JPanel {
     private final Color COR_BOTAO_VERDE = new Color(76, 175, 80);
     private final Color COR_BOTAO_VERMELHO = new Color(244, 67, 54);
     private final Color COR_BOTAO_ESCURO = new Color(46, 125, 50);
+    private final Color COR_BOTAO_AZUL = new Color(33, 150, 243);
 
     // Estado Global
     private double xMin = 150, yMin = 100, xMax = 450, yMax = 300;
@@ -26,6 +27,11 @@ public class CohenSutherlandPanel extends JPanel {
     private boolean showOnlyClipped = false;
     private int clickCount = 0;
     private double startX, startY;
+
+    // Variáveis para Animação
+    private Timer timerAnimacao;
+    private double anguloAnimacao = 0;
+    private boolean isAnimando = false;
 
     // Componentes Esquerdos
     private JLabel lblLiveCoords;
@@ -141,9 +147,10 @@ public class CohenSutherlandPanel extends JPanel {
         painelDir.add(criarLinhaForm("Y2:", txtY2 = new JTextField()));
         painelDir.add(Box.createVerticalStrut(15));
 
-        JPanel pnlBotoes = new JPanel(new GridLayout(3, 1, 0, 5));
+        JPanel pnlBotoes = new JPanel(new GridLayout(4, 1, 0, 5));
         pnlBotoes.setOpaque(false);
         pnlBotoes.add(criarBotao("Desenhar Linha", COR_BOTAO_VERDE, e -> adicionarLinhaManual()));
+        pnlBotoes.add(criarBotao("Animar Rotação", COR_BOTAO_AZUL, e -> alternarAnimacao()));
         pnlBotoes.add(criarBotao("Resetar", COR_BOTAO_VERMELHO, e -> resetValues()));
         pnlBotoes.add(criarBotao("Aplicar Recorte", COR_BOTAO_ESCURO, e -> {
             showOnlyClipped = true;
@@ -211,6 +218,9 @@ public class CohenSutherlandPanel extends JPanel {
     }
 
     private void resetValues() {
+        if (timerAnimacao != null) timerAnimacao.stop();
+        isAnimando = false;
+
         xMin = 150; xMax = 450; yMin = 100; yMax = 300;
         txtXMin.setText("150"); txtXMax.setText("450");
         txtYMin.setText("100"); txtYMax.setText("300");
@@ -224,6 +234,7 @@ public class CohenSutherlandPanel extends JPanel {
     }
 
     private void adicionarLinhaManual() {
+        if (isAnimando) alternarAnimacao(); // Para a animação se for adicionar linha manual
         try {
             double x1 = Double.parseDouble(txtX1.getText());
             double y1 = Double.parseDouble(txtY1.getText());
@@ -242,6 +253,27 @@ public class CohenSutherlandPanel extends JPanel {
         gerarBlocoHistoricoHTML(res, lines.size());
         atualizarHistoricoUI();
         canvas.repaint();
+    }
+
+    private void alternarAnimacao() {
+        if (isAnimando) {
+            timerAnimacao.stop();
+            isAnimando = false;
+            canvas.repaint();
+        } else {
+            lines.clear();  // apenas limpa linhas
+            historyHtmlBlocks.clear();
+            atualizarHistoricoUI();
+
+            isAnimando = true;
+            showOnlyClipped = false;
+
+            timerAnimacao = new Timer(50, e -> {
+                anguloAnimacao += Math.toRadians(2);
+                canvas.repaint();
+            });
+            timerAnimacao.start();
+        }
     }
 
     private void gerarBlocoHistoricoHTML(ClipResult res, int lineIndex) {
@@ -312,6 +344,7 @@ public class CohenSutherlandPanel extends JPanel {
             addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
+                    if (isAnimando) return; // Bloqueia cliques manuais durante a animação
                     lblLastPoint.setText(String.format("Último ponto: (%d, %d)", e.getX(), e.getY()));
                     if (clickCount == 0) {
                         startX = e.getX(); startY = e.getY();
@@ -327,6 +360,7 @@ public class CohenSutherlandPanel extends JPanel {
         private void drawLineDDA(Graphics g, double x1, double y1, double x2, double y2) {
             double dx = x2 - x1, dy = y2 - y1;
             double steps = Math.max(Math.abs(dx), Math.abs(dy));
+            if (steps == 0) return;
             double xInc = dx / steps, yInc = dy / steps;
             double x = x1, y = y1;
             for (int i = 0; i <= steps; i++) {
@@ -347,6 +381,38 @@ public class CohenSutherlandPanel extends JPanel {
             g.setColor(Color.BLUE);
             g.drawRect((int)xMin, (int)yMin, (int)(xMax - xMin), (int)(yMax - yMin));
 
+            // Lógica de Animação
+            if (isAnimando) {
+                double centroX = xMin + (xMax - xMin) / 2.0;
+                double centroY = yMin + (yMax - yMin) / 2.0;
+
+                // Comprimento maior que a diagonal da janela
+                double diagonal = Math.hypot(xMax - xMin, yMax - yMin);
+                double comprimento = diagonal * 1.3;
+
+                double lx1 = centroX + (comprimento / 2.0) * Math.cos(anguloAnimacao);
+                double ly1 = centroY + (comprimento / 2.0) * Math.sin(anguloAnimacao);
+                double lx2 = centroX - (comprimento / 2.0) * Math.cos(anguloAnimacao);
+                double ly2 = centroY - (comprimento / 2.0) * Math.sin(anguloAnimacao);
+
+                ClipResult res = CohenSutherland.clipLine(lx1, ly1, lx2, ly2, xMin, xMax, yMin, yMax);
+
+                // Desenha a parte aceita da linha animada (Verde)
+                if (res.accept) {
+                    g.setColor(new Color(0, 128, 0));
+                    drawLineDDA(g, res.x1, res.y1, res.x2, res.y2);
+                }
+
+                // Desenha as partes rejeitadas (Vermelho) para visualizar o recorte acontecendo
+                if (!showOnlyClipped) {
+                    g.setColor(new Color(187, 0, 0));
+                    drawLineDDA(g, lx1, ly1, res.x1, res.y1);
+                    drawLineDDA(g, lx2, ly2, res.x2, res.y2);
+                }
+                return; // Interrompe o desenho das outras linhas enquanto a animação ocorre
+            }
+
+            // Lógica de desenho de linhas estáticas (quando não está animando)
             for (LineDef l : lines) {
                 ClipResult res = CohenSutherland.clipLine(l.x1, l.y1, l.x2, l.y2, xMin, xMax, yMin, yMax);
 
