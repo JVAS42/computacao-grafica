@@ -33,6 +33,8 @@ public class MainWindow extends JFrame {
         mainPanel.add(new main.ui.panels.SutherlandHodgmanPanel(), "RECORTE_POLIGONOS_SH");
         mainPanel.add(new main.ui.panels.WeilerAthertonPanel(), "RECORTE_POLIGONOS_WA");
 
+        mainPanel.add(new main.ui.panels.BezierPanel(), "BEZIER");
+
         // Configura o Menu Superior (agora que o cardLayout e mainPanel existem)
         configurarMenuSuperior();
 
@@ -51,6 +53,7 @@ public class MainWindow extends JFrame {
         JMenuItem itemParabola = new JMenuItem("Parábola");
         JMenuItem item2D = new JMenuItem("2D");
         JMenuItem item3D = new JMenuItem("3D");
+        JMenuItem itemBezier = new JMenuItem("Curvas de Bézier");
 
         // Adiciona as ações de clique para trocar os painéis
         itemCoordenadas.addActionListener(e -> cardLayout.show(mainPanel, "COORDENADAS"));
@@ -60,6 +63,7 @@ public class MainWindow extends JFrame {
         itemParabola.addActionListener(e -> cardLayout.show(mainPanel, "PARABOLA"));
         item2D.addActionListener(e -> cardLayout.show(mainPanel, "2D"));
         item3D.addActionListener(e -> cardLayout.show(mainPanel, "3D"));
+        itemBezier.addActionListener(e -> cardLayout.show(mainPanel, "BEZIER"));
 
         // --- Submenu para os Algoritmos de Recorte ---
         JMenu menuRecortes = new JMenu("Algoritmos de Recorte");
@@ -92,6 +96,8 @@ public class MainWindow extends JFrame {
 
         // Adiciona o submenu agrupado de recortes
         menuModulos.add(menuRecortes);
+
+        menuModulos.add(itemBezier);
 
         menuBar.add(menuModulos);
         setJMenuBar(menuBar);
