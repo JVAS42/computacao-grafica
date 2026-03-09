@@ -544,9 +544,7 @@ public class Transformacoes2DPanel extends JPanel {
             g.setColor(Color.BLUE); g.drawRect(vpX, vpY, vpW, vpH);
             g.setColor(Color.BLACK); g.drawString("Viewport (Transformado + Recorte)", vpX, vpY - 5);
             // Eixos do Viewport
-            g.setColor(Color.LIGHT_GRAY);
-            g.drawLine(vpX + vpW/2, vpY, vpX + vpW/2, vpY + vpH);
-            g.drawLine(vpX, vpY + vpH/2, vpX + vpW, vpY + vpH/2);
+
 
             if (quadradoOriginal.isEmpty()) return;
 
