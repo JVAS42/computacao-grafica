@@ -97,6 +97,7 @@ public class Transformacoes2DPanel extends JPanel {
         pnlRefChecks.add(chkRefY = new JCheckBox("Em Y")); chkRefY.setOpaque(false);
         pnlRef.add(pnlRefChecks);
         pnlRef.add(criarBotao("Aplicar Reflexão", e -> aplicarReflexao()));
+        pnlRef.add(criarBotao("Remover Reflexão", e -> removerReflexao()));
         painelEsq.add(pnlRef);
         painelEsq.add(new JSeparator());
 
@@ -112,7 +113,7 @@ public class Transformacoes2DPanel extends JPanel {
         painelEsq.add(pnlQuad);
 
         JScrollPane scroll = new JScrollPane(painelEsq);
-        scroll.setPreferredSize(new Dimension(240, 0));
+        scroll.setPreferredSize(new Dimension(300, 0)); // painel esquerdo
         scroll.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, Color.GRAY));
         add(scroll, BorderLayout.WEST);
     }
@@ -205,7 +206,7 @@ public class Transformacoes2DPanel extends JPanel {
         painelDir.add(criarBotao("Aplicar Sequência", e -> aplicarSequencia()));
 
         JScrollPane scroll = new JScrollPane(painelDir);
-        scroll.setPreferredSize(new Dimension(260, 0));
+        scroll.setPreferredSize(new Dimension(300, 0)); // painel direito
         scroll.setBorder(BorderFactory.createMatteBorder(0, 1, 0, 0, Color.GRAY));
         add(scroll, BorderLayout.EAST);
     }
@@ -323,6 +324,23 @@ public class Transformacoes2DPanel extends JPanel {
         if (!rx && !ry) return;
         double[][] matriz = Transformacoes2D.criarMatrizReflexao(rx, ry);
         aplicarMatrizEmTodos(matriz, "Reflexão: " + (rx ? "X " : "") + (ry ? "Y" : ""));
+    }
+
+    // remoção da reflexao
+    private void removerReflexao () {
+        if (quadradoOriginal.isEmpty()) return;
+
+        quadradoAtual.clear();
+
+        for (Point2D.Double p :quadradoOriginal) {
+            quadradoAtual.add(new Point2D.Double(p.x, p.y));
+        }
+        chkRefX.setSelected(false);
+        chkRefY.setSelected(false);
+
+        addLog("Reflexão removida, objeto volta para ponto original");
+        atualizarInfoObjeto();
+        canvas.repaint();
     }
 
     private void aplicarCisalhamento() {
