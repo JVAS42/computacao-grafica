@@ -194,16 +194,23 @@ public class CohenSutherlandPanel extends JPanel {
 
         JPanel pnlTopo = new JPanel(new FlowLayout(FlowLayout.CENTER));
         pnlTopo.setOpaque(false);
-        pnlTopo.add(new JLabel("Voltar ao Início", SwingConstants.CENTER));
+        JButton btnVoltar = new JButton("Voltar ao Início");
+        btnVoltar.setBackground(COR_BOTAO_AZUL);
+        btnVoltar.setForeground(Color.WHITE);
+        btnVoltar.setFocusPainted(false);
+        btnVoltar.addActionListener(e -> resetValues());
+
+        pnlTopo.add(btnVoltar);
+
         wrapper.add(pnlTopo, BorderLayout.SOUTH);
 
-        JPanel centerWrapper = new JPanel(new GridBagLayout());
-        centerWrapper.setOpaque(false);
         canvas = new CanvasPanel();
-        canvas.setPreferredSize(new Dimension(600, 450));
-        centerWrapper.add(canvas);
+        canvas.setPreferredSize(new Dimension(1200, 700));
 
-        wrapper.add(centerWrapper, BorderLayout.CENTER);
+        JScrollPane scroll = new JScrollPane(canvas);
+        scroll.setBorder(null);
+
+        wrapper.add(scroll, BorderLayout.CENTER);
         add(wrapper, BorderLayout.CENTER);
     }
 
@@ -332,7 +339,7 @@ public class CohenSutherlandPanel extends JPanel {
     private class CanvasPanel extends JPanel {
         public CanvasPanel() {
             setBackground(Color.WHITE);
-            setBorder(BorderFactory.createLineBorder(Color.BLACK));
+            setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 2));
 
             addMouseMotionListener(new MouseMotionAdapter() {
                 @Override
