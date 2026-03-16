@@ -4,6 +4,17 @@ import java.awt.geom.Point2D;
 
 public class Transformacoes2D {
 
+    public static void imprimirMatriz(double[][] matriz, String nome) {
+        System.out.println(nome + ":");
+        for (double[] linha : matriz) {
+            for (double valor : linha) {
+                System.out.printf("%8.3f ", valor); // formato alinhado
+            }
+            System.out.println();
+        }
+        System.out.println();
+    }
+
     // ===============================
     // Operações Básicas de Matrizes
     // ===============================

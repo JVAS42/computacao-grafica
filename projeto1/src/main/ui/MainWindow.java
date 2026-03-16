@@ -20,6 +20,7 @@ public class MainWindow extends JFrame {
         mainPanel = new JPanel(cardLayout);
 
         // Adiciona painéis ao CardLayout
+        mainPanel.add(new main.ui.panels.HomePanel(), "HOME");
         mainPanel.add(new main.ui.panels.CoordenadasPanel(), "COORDENADAS");
         mainPanel.add(new main.ui.panels.RetasPanel(), "RETAS");
         mainPanel.add(new main.ui.panels.CircunferenciaPanel(), "CIRCUNFERENCIA");
@@ -39,6 +40,7 @@ public class MainWindow extends JFrame {
         configurarMenuSuperior();
 
         add(mainPanel, BorderLayout.CENTER);
+        cardLayout.show(mainPanel, "HOME");
     }
 
     private void configurarMenuSuperior() {
