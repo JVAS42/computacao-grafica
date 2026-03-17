@@ -159,7 +159,7 @@ public class CoordenadasPanel extends JPanel {
         wrapperCanvas.setOpaque(false);
 
         canvas = new CanvasPanel();
-        canvas.setPreferredSize(new Dimension(500, 400)); // Tamanho aproximado da imagem
+        canvas.setPreferredSize(new Dimension(601, 401)); // Tamanho aproximado da imagem
 
         wrapperCanvas.add(canvas);
         add(wrapperCanvas, BorderLayout.CENTER);
