@@ -40,6 +40,7 @@ public class AlgoritmoRetas {
     // ===============================
     // Algoritmo do Ponto Médio (Bresenham) - 8 oitantes
     // ===============================
+    
     public static List<Point> pontoMedio(int x1, int y1, int x2, int y2) {
         List<Point> pontos = new ArrayList<>();
 

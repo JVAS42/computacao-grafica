@@ -30,6 +30,8 @@ public class RetasPanel extends JPanel {
     private int startX, startY;
     private List<LineDef> linhas = new ArrayList<>();
 
+    private JPanel painelListaPontos;
+
     public RetasPanel() {
         setLayout(new BorderLayout());
 
@@ -37,55 +39,111 @@ public class RetasPanel extends JPanel {
         setupPainelEsquerdo();
         setupPainelDireito();
 
+        // 1. Criamos um painel para ser o fundo cinza
+        JPanel containerCentro = new JPanel(new GridBagLayout()); 
+        containerCentro.setBackground(new Color(211, 211, 211)); // Cor cinza claro
+
+        // 2. Configuramos o canvas para 500x500
         canvas = new CanvasPanel();
-        add(canvas, BorderLayout.CENTER);
+        canvas.setPreferredSize(new Dimension(500, 500));
+        canvas.setMinimumSize(new Dimension(500, 500));
+        canvas.setMaximumSize(new Dimension(500, 500));
+
+        // 3. Colocamos o canvas dentro do fundo cinza (o GridBagLayout centraliza ele)
+        containerCentro.add(canvas);
+
+        // 4. Adicionamos o conjunto todo ao centro da tela
+        add(containerCentro, BorderLayout.CENTER);
+        comboAlgoritmo.addActionListener(e -> limparCanvas());
     }
 
     // ===============================
     // Configuração do Layout Esquerdo
     // ===============================
     private void setupPainelEsquerdo() {
-        JPanel painelEsquerdo = new JPanel();
-        painelEsquerdo.setLayout(new BoxLayout(painelEsquerdo, BoxLayout.Y_AXIS));
-        painelEsquerdo.setBorder(new EmptyBorder(10, 10, 10, 10));
-        painelEsquerdo.setPreferredSize(new Dimension(200, 0));
+        JPanel painelEsquerdo = new JPanel(new BorderLayout());
+        painelEsquerdo.setBorder(new EmptyBorder(15, 15, 15, 15));
+        painelEsquerdo.setPreferredSize(new Dimension(240, 0));
 
-        // Informações do Plano
-        painelEsquerdo.add(new JLabel("Informações Do Plano"));
-        painelEsquerdo.add(new JSeparator());
-        painelEsquerdo.add(Box.createVerticalStrut(10));
-
+        // --- TOPO: Informações do Plano ---
+        JPanel topoInfo = new JPanel();
+        topoInfo.setLayout(new BoxLayout(topoInfo, BoxLayout.Y_AXIS));
+        
+        JLabel titlePlano = new JLabel("INFORMAÇÕES DO PLANO");
+        titlePlano.setFont(new Font("SansSerif", Font.BOLD, 12));
+        titlePlano.setAlignmentX(Component.LEFT_ALIGNMENT);
+        
         lblCoordenadaLive = new JLabel("Coordenada: (0, 0)");
         lblQuadrante = new JLabel("Quadrante: Origem");
-        painelEsquerdo.add(lblCoordenadaLive);
-        painelEsquerdo.add(lblQuadrante);
+        
+        topoInfo.add(titlePlano);
+        topoInfo.add(new JSeparator());
+        topoInfo.add(Box.createVerticalStrut(8));
+        topoInfo.add(lblCoordenadaLive);
+        topoInfo.add(lblQuadrante);
+        topoInfo.add(Box.createVerticalStrut(20));
 
-        painelEsquerdo.add(Box.createVerticalGlue()); // Empurra o resto para baixo
+        // --- MEIO: Controles de Entrada (Grid) ---
+        JPanel painelInputs = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(4, 0, 4, 10); // Espaçamento entre elementos
 
-        // Controles de Entrada
-        painelEsquerdo.add(new JLabel("Algoritmo:"));
+        // Algoritmo Selector
+        gbc.gridx = 0; gbc.gridy = 0;
+        painelInputs.add(new JLabel("Algoritmo:"), gbc);
+        
+        gbc.gridx = 1; gbc.gridwidth = 1;
         comboAlgoritmo = new JComboBox<>(new String[]{"DDA", "Ponto Médio"});
-        comboAlgoritmo.addActionListener(e -> limparCanvas()); // Limpa ao trocar algoritmo
-        painelEsquerdo.add(comboAlgoritmo);
-        painelEsquerdo.add(Box.createVerticalStrut(10));
+        painelInputs.add(comboAlgoritmo, gbc);
+        
 
-        txtX1 = new JTextField(5); txtY1 = new JTextField(5);
-        txtX2 = new JTextField(5); txtY2 = new JTextField(5);
+        // X e Y Inicial
+        addInputRow(painelInputs, "X Inicial:", txtX1 = new JTextField(4), 1);
+        addInputRow(painelInputs, "Y Inicial:", txtY1 = new JTextField(4), 2);
+        
+        // Separador visual entre Início e Fim
+        gbc.gridx = 0; gbc.gridy = 3; gbc.gridwidth = 2;
+        painelInputs.add(Box.createVerticalStrut(10), gbc);
 
-        painelEsquerdo.add(new JLabel("X Inicial:")); painelEsquerdo.add(txtX1);
-        painelEsquerdo.add(new JLabel("Y Inicial:")); painelEsquerdo.add(txtY1);
-        painelEsquerdo.add(new JLabel("X Final:")); painelEsquerdo.add(txtX2);
-        painelEsquerdo.add(new JLabel("Y Final:")); painelEsquerdo.add(txtY2);
+        // X e Y Final
+        addInputRow(painelInputs, "X Final:", txtX2 = new JTextField(4), 4);
+        addInputRow(painelInputs, "Y Final:", txtY2 = new JTextField(4), 5);
 
-        painelEsquerdo.add(Box.createVerticalStrut(10));
-
-        btnDesenhar = new JButton("Desenhar");
-        btnDesenhar.setBackground(new Color(92, 184, 92)); // Verde similar à imagem
+        // --- BAIXO: Botão Desenhar ---
+        JPanel painelBotao = new JPanel(new BorderLayout());
+        btnDesenhar = new JButton("DESENHAR");
+        btnDesenhar.setPreferredSize(new Dimension(0, 40));
+        btnDesenhar.setBackground(new Color(40, 167, 69)); // Verde mais moderno
         btnDesenhar.setForeground(Color.WHITE);
+        btnDesenhar.setFocusPainted(false);
+        btnDesenhar.setFont(new Font("SansSerif", Font.BOLD, 13));
         btnDesenhar.addActionListener(e -> desenharViaInputs());
-        painelEsquerdo.add(btnDesenhar);
+        painelBotao.add(btnDesenhar, BorderLayout.NORTH);
+
+        // Montagem Final
+        JPanel containerNorte = new JPanel(new BorderLayout());
+        containerNorte.add(topoInfo, BorderLayout.NORTH);
+        containerNorte.add(painelInputs, BorderLayout.CENTER);
+
+        painelEsquerdo.add(containerNorte, BorderLayout.NORTH);
+        painelEsquerdo.add(painelBotao, BorderLayout.SOUTH);
 
         add(painelEsquerdo, BorderLayout.WEST);
+    }
+
+    // Método auxiliar para criar as linhas de input de forma padronizada
+    private void addInputRow(JPanel panel, String label, JTextField field, int row) {
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(2, 0, 2, 5);
+        gbc.anchor = GridBagConstraints.WEST;
+        
+        gbc.gridx = 0; gbc.gridy = row;
+        panel.add(new JLabel(label), gbc);
+        
+        gbc.gridx = 1; gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1.0;
+        panel.add(field, gbc);
     }
 
     // ===============================
@@ -93,28 +151,58 @@ public class RetasPanel extends JPanel {
     // ===============================
     private void setupPainelDireito() {
         JPanel painelDireito = new JPanel(new BorderLayout());
-        painelDireito.setBorder(new EmptyBorder(10, 10, 10, 10));
-        painelDireito.setPreferredSize(new Dimension(250, 0));
+        painelDireito.setBorder(new EmptyBorder(15, 15, 15, 15));
+        painelDireito.setPreferredSize(new Dimension(280, 0));
 
-        JPanel headerPanel = new JPanel(new GridLayout(3, 1));
-        headerPanel.add(new JLabel("Informações Da Reta Atual"));
-        headerPanel.add(new JSeparator());
+        // --- CABEÇALHO ---
+        JPanel headerPanel = new JPanel();
+        headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.Y_AXIS));
+        
+        JLabel title = new JLabel("INFORMAÇÕES DA RETA");
+        title.setFont(new Font("SansSerif", Font.BOLD, 12));
+        
         lblInfoReta = new JLabel("Nenhuma reta desenhada");
+        lblInfoReta.setFont(new Font("SansSerif", Font.PLAIN, 11));
+        lblInfoReta.setForeground(Color.GRAY);
+        lblInfoReta.setBorder(new EmptyBorder(5, 0, 5, 0));
+
+        headerPanel.add(title);
+        headerPanel.add(new JSeparator());
         headerPanel.add(lblInfoReta);
+        headerPanel.add(Box.createVerticalStrut(10));
+
         painelDireito.add(headerPanel, BorderLayout.NORTH);
 
-        txtAreaHistorico = new JTextArea();
-        txtAreaHistorico.setEditable(false);
-        JScrollPane scrollPane = new JScrollPane(txtAreaHistorico);
+        // --- ÁREA DE PONTOS (HISTÓRICO) ---
+        // Usamos um painel com BoxLayout para empilhar os pontos
+        JPanel listaPontosContainer = new JPanel();
+        listaPontosContainer.setLayout(new BoxLayout(listaPontosContainer, BoxLayout.Y_AXIS));
+        listaPontosContainer.setBackground(Color.WHITE);
+
+        JScrollPane scrollPane = new JScrollPane(listaPontosContainer);
+        scrollPane.setBorder(BorderFactory.createLineBorder(new Color(230, 230, 230)));
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16); // Scroll mais suave
+        
+        // Referência para podermos limpar depois
+        this.txtAreaHistorico = new JTextArea(); // Mantemos a variável para não quebrar a lógica
+        // Mas agora vamos usar um container para os "labels" bonitos
+        this.painelListaPontos = listaPontosContainer; 
+
         painelDireito.add(scrollPane, BorderLayout.CENTER);
 
-        btnLimpar = new JButton("Limpar");
-        btnLimpar.setBackground(new Color(92, 184, 92));
+        // --- RODAPÉ (BOTÃO LIMPAR) ---
+        btnLimpar = new JButton("LIMPAR TELA");
+        btnLimpar.setPreferredSize(new Dimension(0, 35));
+        btnLimpar.setBackground(new Color(40, 167, 69));
         btnLimpar.setForeground(Color.WHITE);
+        btnLimpar.setFocusPainted(false);
+        btnLimpar.setFont(new Font("SansSerif", Font.BOLD, 12));
         btnLimpar.addActionListener(e -> limparCanvas());
 
-        JPanel bottomPanel = new JPanel();
-        bottomPanel.add(btnLimpar);
+        JPanel bottomPanel = new JPanel(new BorderLayout());
+        bottomPanel.setBorder(new EmptyBorder(10, 0, 0, 0));
+        bottomPanel.add(btnLimpar, BorderLayout.CENTER);
+        
         painelDireito.add(bottomPanel, BorderLayout.SOUTH);
 
         add(painelDireito, BorderLayout.EAST);
@@ -129,7 +217,9 @@ public class RetasPanel extends JPanel {
         txtX1.setText(""); txtY1.setText("");
         txtX2.setText(""); txtY2.setText("");
         lblInfoReta.setText("Nenhuma reta desenhada");
-        txtAreaHistorico.setText("");
+        painelListaPontos.removeAll(); // Limpa a nova lista visual
+        painelListaPontos.revalidate();
+        painelListaPontos.repaint();
         canvas.repaint();
     }
 
@@ -149,24 +239,39 @@ public class RetasPanel extends JPanel {
     }
 
     private void atualizarHistorico(int x1, int y1, int x2, int y2) {
-        lblInfoReta.setText(String.format("X Ini: %d  Y Ini: %d | X Fin: %d  Y Fin: %d", x1, y1, x2, y2));
+        // Atualiza o resumo no topo
+        lblInfoReta.setText(String.format("Início: (%d, %d)  |  Fim: (%d, %d)", x1, y1, x2, y2));
 
         String alg = (String) comboAlgoritmo.getSelectedItem();
-        List<Point> pontosGerados;
+        List<Point> pontosGerados = "DDA".equals(alg) ? 
+                AlgoritmoRetas.dda(x1, y1, x2, y2) : 
+                AlgoritmoRetas.pontoMedio(x1, y1, x2, y2);
 
-        if ("DDA".equals(alg)) {
-            pontosGerados = AlgoritmoRetas.dda(x1, y1, x2, y2);
-        } else {
-            pontosGerados = AlgoritmoRetas.pontoMedio(x1, y1, x2, y2);
-        }
+        painelListaPontos.removeAll(); // Limpa a lista visual antiga
 
-        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < pontosGerados.size(); i++) {
             Point p = pontosGerados.get(i);
-            sb.append(String.format("X%d: %d \t Y%d: %d\n", i+1, p.x, i+1, p.y));
+            
+            // Cria um painel para cada linha de coordenada
+            JPanel item = new JPanel(new GridLayout(1, 2));
+            item.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
+            item.setBackground(Color.WHITE);
+            item.setBorder(new EmptyBorder(5, 10, 5, 10));
+
+            JLabel lblX = new JLabel("X" + (i + 1) + ": " + p.x);
+            JLabel lblY = new JLabel("Y" + (i + 1) + ": " + p.y);
+            lblX.setFont(new Font("Monospaced", Font.BOLD, 12));
+            lblY.setFont(new Font("Monospaced", Font.BOLD, 12));
+
+            item.add(lblX);
+            item.add(lblY);
+
+            painelListaPontos.add(item);
+            painelListaPontos.add(new JSeparator(JSeparator.HORIZONTAL));
         }
-        txtAreaHistorico.setText(sb.toString());
-        txtAreaHistorico.setCaretPosition(0); // Volta o scroll para o topo
+
+        painelListaPontos.revalidate();
+        painelListaPontos.repaint();
     }
 
     private String getQuadrante(int x, int y) {
