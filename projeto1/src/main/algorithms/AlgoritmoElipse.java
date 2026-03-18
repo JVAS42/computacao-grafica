@@ -38,7 +38,7 @@ public class AlgoritmoElipse {
         }
 
         // Região 2 (Inclinação maior que 1)
-        double p2 = ry2 * Math.pow(x + 0.5, 2) + rx2 * Math.pow(y - 1, 2) - (rx2 * ry2);
+        double p2 = (double)ry2 * (x + 0.5) * (x + 0.5) + (double)rx2 * (y - 1) * (y - 1) - (double)rx2 * ry2;
         while (y > 0) {
             y--;
             py -= doisRx2;

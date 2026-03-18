@@ -38,26 +38,32 @@ public class AlgoritmoCircunferencia {
         List<Point> pontos = new ArrayList<>();
         int x = 0;
         int y = r;
-        int p = 1 - r;
+        int p = 1 - r; // Valor inicial conforme imagem image_f753be.png
 
-        while (x <= y) {
-            pontos.add(new Point(xc + x, yc + y));
-            pontos.add(new Point(xc - x, yc + y));
-            pontos.add(new Point(xc + x, yc - y));
-            pontos.add(new Point(xc - x, yc - y));
-            pontos.add(new Point(xc + y, yc + x));
-            pontos.add(new Point(xc - y, yc + x));
-            pontos.add(new Point(xc + y, yc - x));
-            pontos.add(new Point(xc - y, yc - x));
+        adicionarPontosCirculo(xc, yc, x, y, pontos);
 
-            if (p < 0) {
-                p = p + 2 * x + 3;
-            } else {
-                p = p + 2 * (x - y) + 5;
-                y--;
-            }
+        while (x < y) {
             x++;
+            if (p < 0) {
+                p += 2 * x + 1;
+            } else {
+                y--;
+                p += 2 * (x - y) + 1;
+            }
+            adicionarPontosCirculo(xc, yc, x, y, pontos);
         }
         return pontos;
+    }
+
+    // Simetria de 8 octantes conforme imagem image_f753b6.png
+    private static void adicionarPontosCirculo(int xc, int yc, int x, int y, List<Point> pontos) {
+        pontos.add(new Point(xc + x, yc + y));
+        pontos.add(new Point(xc - x, yc + y));
+        pontos.add(new Point(xc + x, yc - y));
+        pontos.add(new Point(xc - x, yc - y));
+        pontos.add(new Point(xc + y, yc + x));
+        pontos.add(new Point(xc - y, yc + x));
+        pontos.add(new Point(xc + y, yc - x));
+        pontos.add(new Point(xc - y, yc - x));
     }
 }

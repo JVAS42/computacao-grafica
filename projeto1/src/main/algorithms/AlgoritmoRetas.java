@@ -5,10 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AlgoritmoRetas {
-
-    // ===============================
     // Algoritmo DDA
-    // ===============================
     public static List<Point> dda(int x1, int y1, int x2, int y2) {
         List<Point> pontos = new ArrayList<>();
 
