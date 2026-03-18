@@ -32,7 +32,7 @@ public class MainWindow extends JFrame {
         // --- Novos painéis de recorte adicionados aqui ---
         mainPanel.add(new main.ui.panels.CohenSutherlandPanel(), "RECORTE_LINHAS");
         mainPanel.add(new main.ui.panels.SutherlandHodgmanPanel(), "RECORTE_POLIGONOS_SH");
-        mainPanel.add(new main.ui.panels.WeilerAthertonPanel(), "RECORTE_POLIGONOS_WA");
+        // mainPanel.add(new main.ui.panels.WeilerAthertonPanel(), "RECORTE_POLIGONOS_WA");
 
         mainPanel.add(new main.ui.panels.BezierPanel(), "BEZIER");
 
@@ -76,13 +76,13 @@ public class MainWindow extends JFrame {
         JMenuItem itemSutherlandHodgman = new JMenuItem("Recorte de Polígonos (Sutherland-Hodgman)");
         itemSutherlandHodgman.addActionListener(e -> cardLayout.show(mainPanel, "RECORTE_POLIGONOS_SH"));
 
-        JMenuItem itemWeilerAtherton = new JMenuItem("Recorte de Polígonos (Weiler-Atherton)");
-        itemWeilerAtherton.addActionListener(e -> cardLayout.show(mainPanel, "RECORTE_POLIGONOS_WA"));
+        /*JMenuItem itemWeilerAtherton = new JMenuItem("Recorte de Polígonos (Weiler-Atherton)");
+        itemWeilerAtherton.addActionListener(e -> cardLayout.show(mainPanel, "RECORTE_POLIGONOS_WA"));*/
 
         // Adiciona os itens ao submenu
         menuRecortes.add(itemCohenSutherland);
         menuRecortes.add(itemSutherlandHodgman);
-        menuRecortes.add(itemWeilerAtherton);
+        //menuRecortes.add(itemWeilerAtherton);
 
         // --- Adiciona todos os itens ao menu principal ---
         menuModulos.add(itemCoordenadas);

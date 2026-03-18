@@ -15,8 +15,9 @@ import java.awt.geom.Area;
 
 public class Transformacoes2DPanel extends JPanel {
 
-    private final Color COR_FUNDO = new Color(245, 245, 245);
-    private final Color COR_BOTAO = new Color(60, 140, 60);
+    // ALTERAÇÃO: Cores atualizadas conforme solicitado
+    private final Color COR_FUNDO = new Color(240, 240, 240); // #F0F0F0
+    private final Color COR_BOTAO = new Color(33, 53, 85);    // #213555
     private final int LARGURA_LATERAL = 280;
 
     // Controles Esq - Translação
@@ -49,10 +50,10 @@ public class Transformacoes2DPanel extends JPanel {
     private StringBuilder historicoStr = new StringBuilder();
     private int historicoCount = 1;
 
-    // Controles de Viewport (Adicionar aos campos de classe)
+    // Controles de Viewport
     private JTextField txtVpMinX, txtVpMaxX, txtVpMinY, txtVpMaxY;
     private double vpMinX = -250, vpMaxX = 250, vpMinY = -250, vpMaxY = 250;
-    private JCheckBox chkAtivarVp; // Nova caixa de seleção
+    private JCheckBox chkAtivarVp;
 
 
     public Transformacoes2DPanel() {
@@ -68,6 +69,7 @@ public class Transformacoes2DPanel extends JPanel {
         JPanel containerEsq = new JPanel();
         containerEsq.setLayout(new BoxLayout(containerEsq, BoxLayout.Y_AXIS));
         containerEsq.setBorder(new EmptyBorder(10, 10, 10, 10));
+        containerEsq.setBackground(COR_FUNDO); // Mantendo consistência do fundo
 
         // Bloco Translação
         containerEsq.add(criarSecaoSimples("Translação", "X:", txtTransX = new JTextField("0"), "Y:", txtTransY = new JTextField("0"), "Aplicar Translação", this::aplicarTranslacao));
@@ -75,11 +77,11 @@ public class Transformacoes2DPanel extends JPanel {
         // Bloco Escala
         containerEsq.add(criarSecaoSimples("Escala", "X:", txtEscalaX = new JTextField("1"), "Y:", txtEscalaY = new JTextField("1"), "Aplicar Escala", this::aplicarEscala));
 
-        // Bloco Rotação - CORREÇÃO: Restaurando estilo visual original
+        // Bloco Rotação
         JPanel pnlRot = new JPanel(new GridBagLayout());
         pnlRot.setBorder(BorderFactory.createTitledBorder("Rotação"));
+        pnlRot.setBackground(COR_FUNDO);
 
-        // Criando os labels de texto simples como na imagem original
         JLabel lblRotX = new JLabel("X:");
         JLabel lblRotY = new JLabel("Y:");
         JLabel lblRotAng = new JLabel("Ângulo:");
@@ -88,15 +90,14 @@ public class Transformacoes2DPanel extends JPanel {
         txtRotY = new JTextField("0");
         txtRotAngulo = new JTextField("0");
 
-        // Usando GridBagLayout para alinhar os componentes, mas mantendo a aparência de texto simples
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(2, 5, 2, 5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
         // Linha 0: X
-        gbc.gridy = 0; gbc.gridx = 0; gbc.weightx = 0.0; // Label não cresce
+        gbc.gridy = 0; gbc.gridx = 0; gbc.weightx = 0.0;
         pnlRot.add(lblRotX, gbc);
-        gbc.gridx = 1; gbc.weightx = 1.0; // Campo de texto cresce
+        gbc.gridx = 1; gbc.weightx = 1.0;
         pnlRot.add(txtRotX, gbc);
 
         // Linha 1: Y
@@ -115,25 +116,29 @@ public class Transformacoes2DPanel extends JPanel {
         adicionarBotaoGrid(pnlRot, 3, "Aplicar Rotação", e -> aplicarRotacao());
         containerEsq.add(pnlRot);
 
-        // Bloco Reflexão (MANTIDO)
+        // Bloco Reflexão
         JPanel pnlRef = new JPanel(new GridBagLayout());
         pnlRef.setBorder(BorderFactory.createTitledBorder("Reflexão"));
+        pnlRef.setBackground(COR_FUNDO);
         JPanel pnlChecks = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        pnlChecks.setBackground(COR_FUNDO);
         pnlChecks.add(chkRefX = new JCheckBox("Em X"));
         pnlChecks.add(chkRefY = new JCheckBox("Em Y"));
+        chkRefX.setBackground(COR_FUNDO);
+        chkRefY.setBackground(COR_FUNDO);
         gbc = new GridBagConstraints();
         gbc.gridwidth = 2; gbc.gridx = 0; gbc.gridy = 0; gbc.fill = GridBagConstraints.HORIZONTAL;
         pnlRef.add(pnlChecks, gbc);
         adicionarBotaoGrid(pnlRef, 1, "Aplicar Reflexão", e -> aplicarReflexao());
-        adicionarBotaoGrid(pnlRef, 2, "Remover Reflexão", e -> removerReflexao());
         containerEsq.add(pnlRef);
 
-        // Bloco Cisalhamento (MANTIDO)
+        // Bloco Cisalhamento
         containerEsq.add(criarSecaoSimples("Cisalhamento", "X:", txtCisX = new JTextField("0"), "Y:", txtCisY = new JTextField("0"), "Aplicar Cisalhamento", this::aplicarCisalhamento));
 
-        // Bloco Gerar Quadrado (MANTIDO)
+        // Bloco Gerar Quadrado
         JPanel pnlQuad = new JPanel(new GridBagLayout());
         pnlQuad.setBorder(BorderFactory.createTitledBorder("Configurar Quadrado"));
+        pnlQuad.setBackground(COR_FUNDO);
         adicionarComponenteGrid(pnlQuad, 0, "Tamanho:", txtQuadTamanho = new JTextField("50"));
         adicionarComponenteGrid(pnlQuad, 1, "Posição X:", txtQuadPosX = new JTextField("0"));
         adicionarComponenteGrid(pnlQuad, 2, "Posição Y:", txtQuadPosY = new JTextField("0"));
@@ -150,10 +155,12 @@ public class Transformacoes2DPanel extends JPanel {
         JPanel containerDir = new JPanel();
         containerDir.setLayout(new BoxLayout(containerDir, BoxLayout.Y_AXIS));
         containerDir.setBorder(new EmptyBorder(10, 10, 10, 10));
+        containerDir.setBackground(COR_FUNDO);
 
         // Vértices
         JPanel pnlVert = new JPanel(new BorderLayout());
         pnlVert.setBorder(BorderFactory.createTitledBorder("Vértices do Objeto"));
+        pnlVert.setBackground(COR_FUNDO);
         txtVertices = new JTextArea(6, 15);
         txtVertices.setEditable(false);
         txtVertices.setFont(new Font("Monospaced", Font.PLAIN, 11));
@@ -184,6 +191,7 @@ public class Transformacoes2DPanel extends JPanel {
         // Sequência
         JPanel pnlSeq = new JPanel(new GridBagLayout());
         pnlSeq.setBorder(BorderFactory.createTitledBorder("Sequência de Comandos"));
+        pnlSeq.setBackground(COR_FUNDO);
         comboSequencia = new JComboBox<>(new String[]{"Translação", "Rotação", "Escala", "Cisalhamento", "Reflexão"});
 
         GridBagConstraints gbc = new GridBagConstraints();
@@ -193,6 +201,7 @@ public class Transformacoes2DPanel extends JPanel {
 
         cardSeqParams = new CardLayout();
         panelSeqParams = new JPanel(cardSeqParams);
+        panelSeqParams.setBackground(COR_FUNDO);
         panelSeqParams.add(criarPanelSeqTrans(), "Translação");
         panelSeqParams.add(criarPanelSeqRot(), "Rotação");
         panelSeqParams.add(criarPanelSeqEscala(), "Escala");
@@ -220,6 +229,7 @@ public class Transformacoes2DPanel extends JPanel {
     private JPanel criarSecaoSimples(String titulo, String l1, JTextField f1, String l2, JTextField f2, String btnT, Runnable acao) {
         JPanel p = new JPanel(new GridBagLayout());
         p.setBorder(BorderFactory.createTitledBorder(titulo));
+        p.setBackground(COR_FUNDO);
         adicionarComponenteGrid(p, 0, l1, f1);
         adicionarComponenteGrid(p, 1, l2, f2);
         adicionarBotaoGrid(p, 2, btnT, e -> acao.run());
@@ -232,7 +242,8 @@ public class Transformacoes2DPanel extends JPanel {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.gridy = row;
         gbc.gridx = 0; gbc.weightx = 0.3;
-        p.add(new JLabel(label), gbc);
+        JLabel lbl = new JLabel(label);
+        p.add(lbl, gbc);
         gbc.gridx = 1; gbc.weightx = 0.7;
         p.add(field, gbc);
     }
@@ -259,12 +270,14 @@ public class Transformacoes2DPanel extends JPanel {
 
     private JPanel criarPanelSeqTrans() {
         JPanel p = new JPanel(new GridBagLayout());
+        p.setBackground(COR_FUNDO);
         adicionarComponenteGrid(p, 0, "X:", seqTransX = new JTextField("0"));
         adicionarComponenteGrid(p, 1, "Y:", seqTransY = new JTextField("0"));
         return p;
     }
     private JPanel criarPanelSeqRot() {
         JPanel p = new JPanel(new GridBagLayout());
+        p.setBackground(COR_FUNDO);
         adicionarComponenteGrid(p, 0, "Ang:", seqRotAng = new JTextField("0"));
         adicionarComponenteGrid(p, 1, "CX:", seqRotCX = new JTextField("0"));
         adicionarComponenteGrid(p, 2, "CY:", seqRotCY = new JTextField("0"));
@@ -272,26 +285,31 @@ public class Transformacoes2DPanel extends JPanel {
     }
     private JPanel criarPanelSeqEscala() {
         JPanel p = new JPanel(new GridBagLayout());
+        p.setBackground(COR_FUNDO);
         adicionarComponenteGrid(p, 0, "X:", seqEscalaX = new JTextField("1"));
         adicionarComponenteGrid(p, 1, "Y:", seqEscalaY = new JTextField("1"));
         return p;
     }
     private JPanel criarPanelSeqCis() {
         JPanel p = new JPanel(new GridBagLayout());
+        p.setBackground(COR_FUNDO);
         adicionarComponenteGrid(p, 0, "X:", seqCisX = new JTextField("0"));
         adicionarComponenteGrid(p, 1, "Y:", seqCisY = new JTextField("0"));
         return p;
     }
     private JPanel criarPanelSeqRef() {
         JPanel p = new JPanel(new FlowLayout());
+        p.setBackground(COR_FUNDO);
         p.add(seqRefX = new JCheckBox("X"));
         p.add(seqRefY = new JCheckBox("Y"));
+        seqRefX.setBackground(COR_FUNDO);
+        seqRefY.setBackground(COR_FUNDO);
         return p;
     }
 
     private void setupCanvas() {
         JPanel wrapper = new JPanel(new BorderLayout());
-        wrapper.setBackground(Color.GRAY);
+        wrapper.setBackground(new Color(40, 40, 40)); // Alterado levemente para destacar a área de desenho
         JLabel lbl = new JLabel("Visualização Computacional", SwingConstants.CENTER);
         lbl.setFont(new Font("Arial", Font.BOLD, 14));
         lbl.setForeground(Color.WHITE);
@@ -302,10 +320,7 @@ public class Transformacoes2DPanel extends JPanel {
         add(wrapper, BorderLayout.CENTER);
     }
 
-    // ==========================================
-    // LÓGICA DE TRANSFORMAÇÕES (MANTIDA ORIGINAL)
-    // ==========================================
-
+    // Lógica permanece inalterada...
     private void gerarQuadrado() {
         try {
             double size = Double.parseDouble(txtQuadTamanho.getText());
@@ -363,15 +378,6 @@ public class Transformacoes2DPanel extends JPanel {
         if (!rx && !ry) return;
         double[][] matriz = Transformacoes2D.criarMatrizReflexao(rx, ry);
         aplicarMatrizEmTodos(matriz, "Reflexão: " + (rx ? "X " : "") + (ry ? "Y" : ""));
-    }
-
-    private void removerReflexao() {
-        if (quadradoOriginal.isEmpty()) return;
-        quadradoAtual.clear();
-        for (Point2D.Double p : quadradoOriginal) quadradoAtual.add(new Point2D.Double(p.x, p.y));
-        chkRefX.setSelected(false); chkRefY.setSelected(false);
-        addLog("Objeto resetado ao original");
-        atualizarInfoObjeto(); canvas.repaint();
     }
 
     private void aplicarCisalhamento() {
@@ -445,9 +451,40 @@ public class Transformacoes2DPanel extends JPanel {
     }
 
     private void limparTudo() {
-        quadradoAtual.clear(); quadradoOriginal.clear(); sequenciaAtual.clear();
-        historicoStr.setLength(0); historicoCount = 1; txtHistorico.setText("");
-        atualizarInfoObjeto(); canvas.repaint();
+        quadradoAtual.clear();
+        quadradoOriginal.clear();
+        sequenciaAtual.clear();
+        historicoStr.setLength(0);
+        historicoCount = 1;
+        txtHistorico.setText("");
+        txtTransX.setText("0");
+        txtTransY.setText("0");
+        txtEscalaX.setText("1");
+        txtEscalaY.setText("1");
+        txtRotX.setText("0");
+        txtRotY.setText("0");
+        txtRotAngulo.setText("0");
+        chkRefX.setSelected(false);
+        chkRefY.setSelected(false);
+        txtCisX.setText("0");
+        txtCisY.setText("0");
+        txtQuadTamanho.setText("50");
+        txtQuadPosX.setText("0");
+        txtQuadPosY.setText("0");
+        comboSequencia.setSelectedIndex(0);
+        seqTransX.setText("0");
+        seqTransY.setText("0");
+        seqRotAng.setText("0");
+        seqRotCX.setText("0");
+        seqRotCY.setText("0");
+        seqEscalaX.setText("1");
+        seqEscalaY.setText("1");
+        seqCisX.setText("0");
+        seqCisY.setText("0");
+        seqRefX.setSelected(false);
+        seqRefY.setSelected(false);
+        atualizarInfoObjeto();
+        canvas.repaint();
     }
 
     private class TransformacaoConfig {
@@ -465,25 +502,24 @@ public class Transformacoes2DPanel extends JPanel {
     private JPanel criarPainelViewport() {
         JPanel pnlVp = new JPanel(new GridBagLayout());
         pnlVp.setBorder(BorderFactory.createTitledBorder("Configurar ViewPort"));
+        pnlVp.setBackground(COR_FUNDO);
 
         chkAtivarVp = new JCheckBox("Ativar Viewport");
+        chkAtivarVp.setBackground(COR_FUNDO);
 
-        // Inicializa campos (desabilitados por padrão)
         txtVpMinX = new JTextField("-100", 5);
         txtVpMaxX = new JTextField("100", 5);
         txtVpMinY = new JTextField("-100", 5);
         txtVpMaxY = new JTextField("100", 5);
 
-        setCamposVpEnabled(false); // Começa desativado
+        setCamposVpEnabled(false);
 
-        // Listener para o Checkbox
         chkAtivarVp.addActionListener(e -> {
             boolean ativo = chkAtivarVp.isSelected();
             setCamposVpEnabled(ativo);
-            canvas.repaint(); // Redesenha para mostrar/esconder o pontilhado
+            canvas.repaint();
         });
 
-        // Layout
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2;
         pnlVp.add(chkAtivarVp, gbc);
@@ -507,111 +543,24 @@ public class Transformacoes2DPanel extends JPanel {
 
             historicoStr.append(historicoCount++).append(". Viewport atualizada\n");
             txtHistorico.setText(historicoStr.toString());
-            canvas.repaint(); // Redesenha com a nova escala
+            canvas.repaint();
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(this, "Valores de Viewport inválidos.");
         }
     }
 
-    private Point2D.Double mapWorldToScreen(Point2D.Double p, int screenW, int screenH) {
-        // Calcula a posição relativa (0.0 a 1.0) dentro dos limites da Viewport
-        double xRelativo = (p.x - vpMinX) / (vpMaxX - vpMinX);
-        double yRelativo = (p.y - vpMinY) / (vpMaxY - vpMinY);
-
-        // Multiplica pelo tamanho real da tela (pixels)
-        double sx = xRelativo * screenW;
-        // Inverte o Y: no Java o 0 é no topo, no plano cartesiano o 0 é embaixo
-        double sy = (1.0 - yRelativo) * screenH;
-
-        return new Point2D.Double(sx, sy);
-    }
-
-    // ==========================================
-    // ÁREA DE DESENHO E MAPEAMENTO WINDOW->VIEWPORT
-    // ==========================================
     private class CanvasPanel extends JPanel {
-
-        // Limites da Janela do Mundo
-        private final double W_XMIN = -150, W_XMAX = 150;
-        private final double W_YMIN = -150, W_YMAX = 150;
-
         public CanvasPanel() {
-            setBackground(Color.WHITE);
+            setBackground(Color.WHITE); // Mantendo a tela principal BRANCA
             setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
-        }
-
-        // Mapeamento matemático do Mundo para uma região específica (Viewport) da tela
-        private Point2D.Double mapWorldToScreen(Point2D.Double p, double minX, double maxX, double minY, double maxY, int width, int height) {
-            // Regra de três para mapear o intervalo [min, max] para [0, largura/altura]
-            double sx = (p.x - minX) / (maxX - minX) * width;
-            // Inversão do eixo Y (no Java Y cresce para baixo)
-            double sy = (1 - (p.y - minY) / (maxY - minY)) * height;
-            return new Point2D.Double(sx, sy);
-        }
-
-        // ==========================================
-        // ALGORITMO DE RECORTE (COHEN-SUTHERLAND)
-        // Aplicado após o mapeamento (nas coordenadas da viewport)
-        // ==========================================
-        private int computeOutCodeScreen(double x, double y, double xmin, double ymin, double xmax, double ymax) {
-            int code = 0;
-            if (x < xmin) code |= 1; // ESQUERDA
-            else if (x > xmax) code |= 2; // DIREITA
-            if (y < ymin) code |= 8; // TOPO (Y cresce pra baixo na tela)
-            else if (y > ymax) code |= 4; // FUNDO
-            return code;
-        }
-
-        private double[] cohenSutherlandClip(double x0, double y0, double x1, double y1, double xmin, double ymin, double xmax, double ymax) {
-            int outcode0 = computeOutCodeScreen(x0, y0, xmin, ymin, xmax, ymax);
-            int outcode1 = computeOutCodeScreen(x1, y1, xmin, ymin, xmax, ymax);
-            boolean accept = false;
-
-            while (true) {
-                if ((outcode0 | outcode1) == 0) { // Totalmente dentro
-                    accept = true;
-                    break;
-                } else if ((outcode0 & outcode1) != 0) { // Totalmente fora
-                    break;
-                } else {
-                    double x = 0, y = 0;
-                    int outcodeOut = (outcode0 != 0) ? outcode0 : outcode1;
-
-                    if ((outcodeOut & 8) != 0) { // TOPO
-                        x = x0 + (x1 - x0) * (ymin - y0) / (y1 - y0);
-                        y = ymin;
-                    } else if ((outcodeOut & 4) != 0) { // FUNDO
-                        x = x0 + (x1 - x0) * (ymax - y0) / (y1 - y0);
-                        y = ymax;
-                    } else if ((outcodeOut & 2) != 0) { // DIREITA
-                        y = y0 + (y1 - y0) * (xmax - x0) / (x1 - x0);
-                        x = xmax;
-                    } else if ((outcodeOut & 1) != 0) { // ESQUERDA
-                        y = y0 + (y1 - y0) * (xmin - x0) / (x1 - x0);
-                        x = xmin;
-                    }
-
-                    if (outcodeOut == outcode0) {
-                        x0 = x; y0 = y;
-                        outcode0 = computeOutCodeScreen(x0, y0, xmin, ymin, xmax, ymax);
-                    } else {
-                        x1 = x; y1 = y;
-                        outcode1 = computeOutCodeScreen(x1, y1, xmin, ymin, xmax, ymax);
-                    }
-                }
-            }
-            if (accept) return new double[]{x0, y0, x1, y1};
-            return null; // Linha rejeitada
         }
 
         private void drawLineDDA(Graphics g, double x1, double y1, double x2, double y2) {
             double length = Math.max(Math.abs(x2 - x1), Math.abs(y2 - y1));
             double xinc = (x2 - x1) / length;
             double yinc = (y2 - y1) / length;
-
             double x = x1;
             double y = y1;
-
             g.fillRect((int)Math.round(x), (int)Math.round(y), 1, 1);
             for (int i = 0; i < length; i++) {
                 x += xinc;
@@ -621,48 +570,35 @@ public class Transformacoes2DPanel extends JPanel {
         }
 
         private Point2D.Double worldToCanvas(double x, double y, int width, int height) {
-            // Mapeia as coordenadas para que o centro (0,0) fique no meio do painel
             double canvasX = x + (width / 2.0);
             double canvasY = (height / 2.0) - y;
             return new Point2D.Double(canvasX, canvasY);
         }
 
-        // Função utilitária para calcular os limites da Viewport em pixels
         private Rectangle getLimitesViewportPixels(int w, int h) {
-            if (chkAtivarVp == null || !chkAtivarVp.isSelected()) {
-                return null;
-            }
+            if (chkAtivarVp == null || !chkAtivarVp.isSelected()) return null;
             try {
                 double vMinX = Double.parseDouble(txtVpMinX.getText());
                 double vMaxX = Double.parseDouble(txtVpMaxX.getText());
                 double vMinY = Double.parseDouble(txtVpMinY.getText());
                 double vMaxY = Double.parseDouble(txtVpMaxY.getText());
-
                 Point2D.Double pMin = worldToCanvas(vMinX, vMinY, w, h);
                 Point2D.Double pMax = worldToCanvas(vMaxX, vMaxY, w, h);
-
                 int x = (int) Math.min(pMin.x, pMax.x);
                 int y = (int) Math.min(pMin.y, pMax.y);
                 int largura = (int) Math.abs(pMax.x - pMin.x);
                 int altura = (int) Math.abs(pMax.y - pMin.y);
-
                 return new Rectangle(x, y, largura, altura);
-            } catch (Exception e) {
-                return null;
-            }
+            } catch (Exception e) { return null; }
         }
-
 
         private void desenharObjeto(Graphics2D g2, int w, int h) {
             g2.setStroke(new BasicStroke(2));
             for (int i = 0; i < quadradoAtual.size(); i++) {
                 Point2D.Double p1 = quadradoAtual.get(i);
                 Point2D.Double p2 = quadradoAtual.get((i + 1) % quadradoAtual.size());
-
-                // Usa a tua função de conversão para pixels
                 Point2D.Double s1 = worldToCanvas(p1.x, p1.y, w, h);
                 Point2D.Double s2 = worldToCanvas(p2.x, p2.y, w, h);
-
                 g2.drawLine((int)s1.x, (int)s1.y, (int)s2.x, (int)s2.y);
             }
         }
@@ -673,44 +609,30 @@ public class Transformacoes2DPanel extends JPanel {
             Graphics2D g2 = (Graphics2D) g;
             int w = getWidth();
             int h = getHeight();
-
-            // 1. Desenha os eixos cinzentos de fundo
             g2.setColor(new Color(220, 220, 220));
             g2.drawLine(w / 2, 0, w / 2, h);
             g2.drawLine(0, h / 2, w, h / 2);
 
             if (quadradoAtual != null && !quadradoAtual.isEmpty()) {
-
-                // Se a Viewport estiver ativa, usamos a lógica de duas cores
                 if (chkAtivarVp != null && chkAtivarVp.isSelected()) {
                     Rectangle limitesVp = getLimitesViewportPixels(w, h);
-
                     if (limitesVp != null) {
                         Shape clipOriginal = g2.getClip();
-
-                        // --- CAMADA PRETA (DENTRO) ---
                         g2.setClip(limitesVp);
                         g2.setColor(Color.BLACK);
                         desenharObjeto(g2, w, h);
-
-                        // --- CAMADA CINZENTA (FORA) ---
                         Area foraDaVp = new Area(new Rectangle(0, 0, w, h));
                         foraDaVp.subtract(new Area(limitesVp));
                         g2.setClip(foraDaVp);
                         g2.setColor(new Color(180, 180, 180));
                         desenharObjeto(g2, w, h);
-
-                        // Restaura o clip e desenha a borda vermelha por cima
                         g2.setClip(clipOriginal);
-
-                        // Desenha o pontilhado vermelho
                         float[] dash = {5.0f};
                         g2.setStroke(new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash, 0.0f));
                         g2.setColor(Color.RED);
                         g2.draw(limitesVp);
                     }
                 } else {
-                    // Se a viewport estiver desligada, desenha tudo normal em preto
                     g2.setColor(Color.BLACK);
                     g2.setStroke(new BasicStroke(2));
                     desenharObjeto(g2, w, h);

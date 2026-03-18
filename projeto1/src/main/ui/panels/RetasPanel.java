@@ -34,14 +34,15 @@ public class RetasPanel extends JPanel {
 
     public RetasPanel() {
         setLayout(new BorderLayout());
+        setBackground(Color.decode("#F0F0F0"));
 
         // Inicializa as áreas principais
         setupPainelEsquerdo();
         setupPainelDireito();
 
-        // 1. Criamos um painel para ser o fundo cinza
-        JPanel containerCentro = new JPanel(new GridBagLayout()); 
-        containerCentro.setBackground(new Color(211, 211, 211)); // Cor cinza claro
+        // 1. Criamos um painel para ser o fundo
+        JPanel containerCentro = new JPanel(new GridBagLayout());
+        containerCentro.setBackground(Color.decode("#F0F0F0")); // Fundo padronizado
 
         // 2. Configuramos o canvas para 500x500
         canvas = new CanvasPanel();
@@ -49,7 +50,7 @@ public class RetasPanel extends JPanel {
         canvas.setMinimumSize(new Dimension(500, 500));
         canvas.setMaximumSize(new Dimension(500, 500));
 
-        // 3. Colocamos o canvas dentro do fundo cinza (o GridBagLayout centraliza ele)
+        // 3. Colocamos o canvas dentro do fundo (o GridBagLayout centraliza ele)
         containerCentro.add(canvas);
 
         // 4. Adicionamos o conjunto todo ao centro da tela
@@ -62,67 +63,86 @@ public class RetasPanel extends JPanel {
     // ===============================
     private void setupPainelEsquerdo() {
         JPanel painelEsquerdo = new JPanel(new BorderLayout());
-        painelEsquerdo.setBorder(new EmptyBorder(15, 15, 15, 15));
-        painelEsquerdo.setPreferredSize(new Dimension(240, 0));
+        painelEsquerdo.setPreferredSize(new Dimension(320, 0)); // Aumentado para evitar cortes
+        painelEsquerdo.setBackground(Color.decode("#F0F0F0"));
+        painelEsquerdo.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 0, 0, 1, Color.LIGHT_GRAY),
+                new EmptyBorder(15, 15, 15, 15)
+        ));
 
         // --- TOPO: Informações do Plano ---
         JPanel topoInfo = new JPanel();
         topoInfo.setLayout(new BoxLayout(topoInfo, BoxLayout.Y_AXIS));
-        
+        topoInfo.setOpaque(false);
+
         JLabel titlePlano = new JLabel("INFORMAÇÕES DO PLANO");
-        titlePlano.setFont(new Font("SansSerif", Font.BOLD, 12));
+        titlePlano.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        titlePlano.setForeground(Color.decode("#213555"));
         titlePlano.setAlignmentX(Component.LEFT_ALIGNMENT);
-        
+
         lblCoordenadaLive = new JLabel("Coordenada: (0, 0)");
+        lblCoordenadaLive.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+
         lblQuadrante = new JLabel("Quadrante: Origem");
-        
+        lblQuadrante.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+
         topoInfo.add(titlePlano);
+        topoInfo.add(Box.createVerticalStrut(5));
         topoInfo.add(new JSeparator());
-        topoInfo.add(Box.createVerticalStrut(8));
+        topoInfo.add(Box.createVerticalStrut(10));
         topoInfo.add(lblCoordenadaLive);
+        topoInfo.add(Box.createVerticalStrut(5));
         topoInfo.add(lblQuadrante);
-        topoInfo.add(Box.createVerticalStrut(20));
+        topoInfo.add(Box.createVerticalStrut(25));
 
         // --- MEIO: Controles de Entrada (Grid) ---
         JPanel painelInputs = new JPanel(new GridBagLayout());
+        painelInputs.setOpaque(false);
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(4, 0, 4, 10); // Espaçamento entre elementos
+        gbc.insets = new Insets(5, 0, 5, 10); // Espaçamento entre elementos
 
         // Algoritmo Selector
         gbc.gridx = 0; gbc.gridy = 0;
-        painelInputs.add(new JLabel("Algoritmo:"), gbc);
-        
+        JLabel lblAlg = new JLabel("Algoritmo:");
+        lblAlg.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        painelInputs.add(lblAlg, gbc);
+
         gbc.gridx = 1; gbc.gridwidth = 1;
         comboAlgoritmo = new JComboBox<>(new String[]{"DDA", "Ponto Médio"});
+        comboAlgoritmo.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         painelInputs.add(comboAlgoritmo, gbc);
-        
+
+        // Instancia campos com o novo estilo visual
+        txtX1 = estilizarTextField(4);
+        txtY1 = estilizarTextField(4);
+        txtX2 = estilizarTextField(4);
+        txtY2 = estilizarTextField(4);
 
         // X e Y Inicial
-        addInputRow(painelInputs, "X Inicial:", txtX1 = new JTextField(4), 1);
-        addInputRow(painelInputs, "Y Inicial:", txtY1 = new JTextField(4), 2);
-        
+        addInputRow(painelInputs, "X Inicial:", txtX1, 1);
+        addInputRow(painelInputs, "Y Inicial:", txtY1, 2);
+
         // Separador visual entre Início e Fim
         gbc.gridx = 0; gbc.gridy = 3; gbc.gridwidth = 2;
-        painelInputs.add(Box.createVerticalStrut(10), gbc);
+        painelInputs.add(Box.createVerticalStrut(15), gbc);
 
         // X e Y Final
-        addInputRow(painelInputs, "X Final:", txtX2 = new JTextField(4), 4);
-        addInputRow(painelInputs, "Y Final:", txtY2 = new JTextField(4), 5);
+        addInputRow(painelInputs, "X Final:", txtX2, 4);
+        addInputRow(painelInputs, "Y Final:", txtY2, 5);
 
         // --- BAIXO: Botão Desenhar ---
         JPanel painelBotao = new JPanel(new BorderLayout());
-        btnDesenhar = new JButton("DESENHAR");
-        btnDesenhar.setPreferredSize(new Dimension(0, 40));
-        btnDesenhar.setBackground(new Color(40, 167, 69)); // Verde mais moderno
-        btnDesenhar.setForeground(Color.WHITE);
-        btnDesenhar.setFocusPainted(false);
-        btnDesenhar.setFont(new Font("SansSerif", Font.BOLD, 13));
+        painelBotao.setOpaque(false);
+        painelBotao.setBorder(new EmptyBorder(20, 0, 0, 0));
+
+        btnDesenhar = estilizarBotao("DESENHAR");
         btnDesenhar.addActionListener(e -> desenharViaInputs());
         painelBotao.add(btnDesenhar, BorderLayout.NORTH);
 
         // Montagem Final
         JPanel containerNorte = new JPanel(new BorderLayout());
+        containerNorte.setOpaque(false);
         containerNorte.add(topoInfo, BorderLayout.NORTH);
         containerNorte.add(painelInputs, BorderLayout.CENTER);
 
@@ -133,14 +153,17 @@ public class RetasPanel extends JPanel {
     }
 
     // Método auxiliar para criar as linhas de input de forma padronizada
-    private void addInputRow(JPanel panel, String label, JTextField field, int row) {
+    private void addInputRow(JPanel panel, String labelStr, JTextField field, int row) {
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(2, 0, 2, 5);
+        gbc.insets = new Insets(4, 0, 4, 10);
         gbc.anchor = GridBagConstraints.WEST;
-        
+
         gbc.gridx = 0; gbc.gridy = row;
-        panel.add(new JLabel(label), gbc);
-        
+        JLabel label = new JLabel(labelStr);
+        label.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        label.setForeground(Color.DARK_GRAY);
+        panel.add(label, gbc);
+
         gbc.gridx = 1; gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1.0;
         panel.add(field, gbc);
@@ -151,22 +174,29 @@ public class RetasPanel extends JPanel {
     // ===============================
     private void setupPainelDireito() {
         JPanel painelDireito = new JPanel(new BorderLayout());
-        painelDireito.setBorder(new EmptyBorder(15, 15, 15, 15));
-        painelDireito.setPreferredSize(new Dimension(280, 0));
+        painelDireito.setPreferredSize(new Dimension(320, 0)); // Aumentado para evitar cortes
+        painelDireito.setBackground(Color.decode("#F0F0F0"));
+        painelDireito.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 1, 0, 0, Color.LIGHT_GRAY),
+                new EmptyBorder(15, 15, 15, 15)
+        ));
 
         // --- CABEÇALHO ---
         JPanel headerPanel = new JPanel();
         headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.Y_AXIS));
-        
+        headerPanel.setOpaque(false);
+
         JLabel title = new JLabel("INFORMAÇÕES DA RETA");
-        title.setFont(new Font("SansSerif", Font.BOLD, 12));
-        
+        title.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        title.setForeground(Color.decode("#213555"));
+
         lblInfoReta = new JLabel("Nenhuma reta desenhada");
-        lblInfoReta.setFont(new Font("SansSerif", Font.PLAIN, 11));
+        lblInfoReta.setFont(new Font("Segoe UI", Font.ITALIC, 12));
         lblInfoReta.setForeground(Color.GRAY);
-        lblInfoReta.setBorder(new EmptyBorder(5, 0, 5, 0));
+        lblInfoReta.setBorder(new EmptyBorder(8, 0, 8, 0));
 
         headerPanel.add(title);
+        headerPanel.add(Box.createVerticalStrut(5));
         headerPanel.add(new JSeparator());
         headerPanel.add(lblInfoReta);
         headerPanel.add(Box.createVerticalStrut(10));
@@ -177,35 +207,54 @@ public class RetasPanel extends JPanel {
         // Usamos um painel com BoxLayout para empilhar os pontos
         JPanel listaPontosContainer = new JPanel();
         listaPontosContainer.setLayout(new BoxLayout(listaPontosContainer, BoxLayout.Y_AXIS));
-        listaPontosContainer.setBackground(Color.WHITE);
+        listaPontosContainer.setBackground(Color.WHITE); // Fundo branco para a lista contrastar com o F0F0F0
 
         JScrollPane scrollPane = new JScrollPane(listaPontosContainer);
-        scrollPane.setBorder(BorderFactory.createLineBorder(new Color(230, 230, 230)));
+        scrollPane.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
         scrollPane.getVerticalScrollBar().setUnitIncrement(16); // Scroll mais suave
-        
+
         // Referência para podermos limpar depois
-        this.txtAreaHistorico = new JTextArea(); // Mantemos a variável para não quebrar a lógica
-        // Mas agora vamos usar um container para os "labels" bonitos
-        this.painelListaPontos = listaPontosContainer; 
+        this.txtAreaHistorico = new JTextArea();
+        this.painelListaPontos = listaPontosContainer;
 
         painelDireito.add(scrollPane, BorderLayout.CENTER);
 
         // --- RODAPÉ (BOTÃO LIMPAR) ---
-        btnLimpar = new JButton("LIMPAR TELA");
-        btnLimpar.setPreferredSize(new Dimension(0, 35));
-        btnLimpar.setBackground(new Color(40, 167, 69));
-        btnLimpar.setForeground(Color.WHITE);
-        btnLimpar.setFocusPainted(false);
-        btnLimpar.setFont(new Font("SansSerif", Font.BOLD, 12));
+        btnLimpar = estilizarBotao("LIMPAR TELA");
         btnLimpar.addActionListener(e -> limparCanvas());
 
         JPanel bottomPanel = new JPanel(new BorderLayout());
-        bottomPanel.setBorder(new EmptyBorder(10, 0, 0, 0));
+        bottomPanel.setOpaque(false);
+        bottomPanel.setBorder(new EmptyBorder(15, 0, 0, 0));
         bottomPanel.add(btnLimpar, BorderLayout.CENTER);
-        
+
         painelDireito.add(bottomPanel, BorderLayout.SOUTH);
 
         add(painelDireito, BorderLayout.EAST);
+    }
+
+    // ===============================
+    // Utilitários Visuais
+    // ===============================
+    private JTextField estilizarTextField(int columns) {
+        JTextField txt = new JTextField(columns);
+        txt.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        txt.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Color.LIGHT_GRAY),
+                BorderFactory.createEmptyBorder(6, 6, 6, 6)
+        ));
+        return txt;
+    }
+
+    private JButton estilizarBotao(String texto) {
+        JButton btn = new JButton(texto);
+        btn.setBackground(Color.decode("#213555"));
+        btn.setForeground(Color.WHITE);
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btn.setFocusPainted(false);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btn.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
+        return btn;
     }
 
     // ===============================
@@ -217,7 +266,7 @@ public class RetasPanel extends JPanel {
         txtX1.setText(""); txtY1.setText("");
         txtX2.setText(""); txtY2.setText("");
         lblInfoReta.setText("Nenhuma reta desenhada");
-        painelListaPontos.removeAll(); // Limpa a nova lista visual
+        painelListaPontos.removeAll();
         painelListaPontos.revalidate();
         painelListaPontos.repaint();
         canvas.repaint();
@@ -234,7 +283,7 @@ public class RetasPanel extends JPanel {
             atualizarHistorico(x1, y1, x2, y2);
             canvas.repaint();
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Preencha todas as coordenadas com números inteiros válidos.");
+            JOptionPane.showMessageDialog(this, "Preencha todas as coordenadas com números inteiros válidos.", "Entrada Inválida", JOptionPane.WARNING_MESSAGE);
         }
     }
 
@@ -243,15 +292,15 @@ public class RetasPanel extends JPanel {
         lblInfoReta.setText(String.format("Início: (%d, %d)  |  Fim: (%d, %d)", x1, y1, x2, y2));
 
         String alg = (String) comboAlgoritmo.getSelectedItem();
-        List<Point> pontosGerados = "DDA".equals(alg) ? 
-                AlgoritmoRetas.dda(x1, y1, x2, y2) : 
+        List<Point> pontosGerados = "DDA".equals(alg) ?
+                AlgoritmoRetas.dda(x1, y1, x2, y2) :
                 AlgoritmoRetas.pontoMedio(x1, y1, x2, y2);
 
         painelListaPontos.removeAll(); // Limpa a lista visual antiga
 
         for (int i = 0; i < pontosGerados.size(); i++) {
             Point p = pontosGerados.get(i);
-            
+
             // Cria um painel para cada linha de coordenada
             JPanel item = new JPanel(new GridLayout(1, 2));
             item.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
@@ -262,12 +311,18 @@ public class RetasPanel extends JPanel {
             JLabel lblY = new JLabel("Y" + (i + 1) + ": " + p.y);
             lblX.setFont(new Font("Monospaced", Font.BOLD, 12));
             lblY.setFont(new Font("Monospaced", Font.BOLD, 12));
+            lblX.setForeground(Color.DARK_GRAY);
+            lblY.setForeground(Color.DARK_GRAY);
 
             item.add(lblX);
             item.add(lblY);
 
             painelListaPontos.add(item);
-            painelListaPontos.add(new JSeparator(JSeparator.HORIZONTAL));
+
+            // Adiciona uma linha sutil de separação
+            JSeparator sep = new JSeparator(JSeparator.HORIZONTAL);
+            sep.setForeground(new Color(240, 240, 240));
+            painelListaPontos.add(sep);
         }
 
         painelListaPontos.revalidate();
@@ -293,13 +348,13 @@ public class RetasPanel extends JPanel {
     }
 
     // ===============================
-    // Área de Desenho Customizada (Substitui o Canvas do HTML)
+    // Área de Desenho Customizada
     // ===============================
     private class CanvasPanel extends JPanel {
 
         public CanvasPanel() {
-            setBackground(Color.WHITE);
-            setBorder(BorderFactory.createLineBorder(Color.GRAY));
+            setBackground(Color.WHITE); // Tela principal permanece branca
+            setBorder(BorderFactory.createLineBorder(Color.decode("#CCCCCC"), 1));
 
             // Rastreador de Mouse (Hover)
             addMouseMotionListener(new MouseMotionAdapter() {
@@ -351,12 +406,12 @@ public class RetasPanel extends JPanel {
             int h = getHeight();
 
             // 1. Desenha os Eixos Cartesianos
-            g.setColor(Color.LIGHT_GRAY);
+            g.setColor(new Color(220, 220, 220)); // Cinza bem claro para não conflitar com as retas
             g.drawLine(w / 2, 0, w / 2, h); // Eixo Y
             g.drawLine(0, h / 2, w, h / 2); // Eixo X
 
             // 2. Desenha as retas calculando os pixels
-            g.setColor(Color.BLACK);
+            g.setColor(Color.RED); // Cor da reta alterada para RED
             String alg = (String) comboAlgoritmo.getSelectedItem();
 
             for (LineDef linha : linhas) {
@@ -367,8 +422,8 @@ public class RetasPanel extends JPanel {
                 for (Point p : pontos) {
                     int screenX = cartesianToScreenX(p.x);
                     int screenY = cartesianToScreenY(p.y);
-                    // Pinta um "pixel" (retângulo 1x1 ou 2x2 para melhor visibilidade)
-                    g.fillRect(screenX, screenY, 2, 2);
+                    // Pinta exatamente 1 pixel de tamanho
+                    g.fillRect(screenX, screenY, 1, 1);
                 }
             }
         }

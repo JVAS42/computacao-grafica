@@ -13,11 +13,14 @@ import java.util.Locale;
 
 public class SutherlandHodgmanPanel extends JPanel {
 
-    private final Color COR_FUNDO = new Color(224, 224, 224);
-    private final Color COR_BOTAO_VERDE = new Color(76, 175, 80);
-    private final Color COR_BOTAO_VERMELHO = new Color(244, 67, 54);
-    private final Color COR_BOTAO_ESCURO = new Color(46, 125, 50);
-    private final Color COR_BOTAO_AZUL = new Color(33, 150, 243);
+    // Cores da interface
+    private final Color COR_FUNDO = Color.decode("#F0F0F0");
+    private final Color COR_BOTAO = Color.decode("#213555");
+
+    // Cores do desenho (Novas)
+    private final Color RED_SOLIDO = Color.RED;
+    // Vermelho com 100 de Alpha (transparência vai de 0 a 255)
+    private final Color RED_PREENCHIMENTO = new Color(255, 0, 0, 100);
 
     // Estado Global
     private double xMin = 150, yMin = 100, xMax = 450, yMax = 300;
@@ -47,25 +50,26 @@ public class SutherlandHodgmanPanel extends JPanel {
     }
 
     // ==========================================
-    // PAINEL ESQUERDO (IGUAL AO COHEN-SUTHERLAND)
+    // PAINEL ESQUERDO
     // ==========================================
     private void setupPainelEsquerdo() {
         JPanel painelEsq = new JPanel();
         painelEsq.setLayout(new BoxLayout(painelEsq, BoxLayout.Y_AXIS));
-        painelEsq.setPreferredSize(new Dimension(220, 0));
+        painelEsq.setPreferredSize(new Dimension(250, 0));
         painelEsq.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(0, 0, 0, 1, Color.GRAY),
-                new EmptyBorder(15, 15, 15, 15)));
+                new EmptyBorder(20, 20, 20, 20)));
         painelEsq.setBackground(COR_FUNDO);
 
         JLabel tituloEsq = new JLabel("Coordenadas da Janela");
-        tituloEsq.setFont(new Font("Arial", Font.BOLD, 14));
+        tituloEsq.setFont(new Font("SansSerif", Font.BOLD, 15));
         painelEsq.add(tituloEsq);
-        painelEsq.add(Box.createVerticalStrut(5));
-        painelEsq.add(new JSeparator());
         painelEsq.add(Box.createVerticalStrut(10));
+        painelEsq.add(new JSeparator());
+        painelEsq.add(Box.createVerticalStrut(15));
 
         lblLiveCoords = new JLabel("X: 0, Y: 0");
+        lblLiveCoords.setFont(new Font("SansSerif", Font.PLAIN, 14));
         painelEsq.add(lblLiveCoords);
 
         painelEsq.add(Box.createVerticalGlue());
@@ -77,9 +81,9 @@ public class SutherlandHodgmanPanel extends JPanel {
         painelEsq.add(criarLinhaForm("Ymax:", txtYMax = new JTextField(String.valueOf((int)yMax))));
         painelEsq.add(Box.createVerticalStrut(10));
         painelEsq.add(criarLinhaForm("Ymin:", txtYMin = new JTextField(String.valueOf((int)yMin))));
-        painelEsq.add(Box.createVerticalStrut(20));
+        painelEsq.add(Box.createVerticalStrut(25));
 
-        JButton btnDefinir = criarBotao("Definir Valores", COR_BOTAO_VERDE, e -> {
+        JButton btnDefinir = criarBotao("Definir Valores", e -> {
             try {
                 xMax = Double.parseDouble(txtXMax.getText());
                 xMin = Double.parseDouble(txtXMin.getText());
@@ -100,13 +104,15 @@ public class SutherlandHodgmanPanel extends JPanel {
     }
 
     private JPanel criarLinhaForm(String label, JTextField tf) {
-        JPanel pnl = new JPanel(new BorderLayout(5, 0));
+        JPanel pnl = new JPanel(new BorderLayout(10, 0));
         pnl.setOpaque(false);
         JLabel l = new JLabel(label);
-        l.setPreferredSize(new Dimension(40, 20));
+        l.setFont(new Font("SansSerif", Font.BOLD, 13));
+        l.setPreferredSize(new Dimension(50, 25));
+        tf.setFont(new Font("SansSerif", Font.PLAIN, 13));
         pnl.add(l, BorderLayout.WEST);
         pnl.add(tf, BorderLayout.CENTER);
-        pnl.setMaximumSize(new Dimension(Integer.MAX_VALUE, 25));
+        pnl.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
         return pnl;
     }
 
@@ -116,41 +122,44 @@ public class SutherlandHodgmanPanel extends JPanel {
     private void setupPainelDireito() {
         JPanel painelDir = new JPanel();
         painelDir.setLayout(new BoxLayout(painelDir, BoxLayout.Y_AXIS));
-        painelDir.setPreferredSize(new Dimension(300, 0));
+        painelDir.setPreferredSize(new Dimension(320, 0));
         painelDir.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(0, 1, 0, 0, Color.GRAY),
-                new EmptyBorder(15, 15, 15, 15)));
+                new EmptyBorder(20, 20, 20, 20)));
         painelDir.setBackground(COR_FUNDO);
 
         JLabel tituloDir = new JLabel("Criar Polígono", SwingConstants.CENTER);
-        tituloDir.setFont(new Font("Arial", Font.BOLD, 14));
+        tituloDir.setFont(new Font("SansSerif", Font.BOLD, 15));
         tituloDir.setAlignmentX(Component.CENTER_ALIGNMENT);
         painelDir.add(tituloDir);
-        painelDir.add(Box.createVerticalStrut(5));
-        painelDir.add(new JSeparator());
         painelDir.add(Box.createVerticalStrut(10));
+        painelDir.add(new JSeparator());
+        painelDir.add(Box.createVerticalStrut(15));
 
         lblLastPoint = new JLabel("Último ponto: (-, -)");
+        lblLastPoint.setFont(new Font("SansSerif", Font.PLAIN, 14));
         lblLastPoint.setAlignmentX(Component.CENTER_ALIGNMENT);
         painelDir.add(lblLastPoint);
         painelDir.add(Box.createVerticalStrut(10));
 
         lblStatus = new JLabel("Status: Desenhando...");
+        lblStatus.setFont(new Font("SansSerif", Font.ITALIC, 13));
         lblStatus.setAlignmentX(Component.CENTER_ALIGNMENT);
         painelDir.add(lblStatus);
 
-        painelDir.add(Box.createVerticalGlue()); // Empurra os botões para baixo
+        painelDir.add(Box.createVerticalGlue());
 
-        JPanel pnlBotoes = new JPanel(new GridLayout(3, 1, 0, 5));
+        JPanel pnlBotoes = new JPanel(new GridLayout(3, 1, 0, 15));
         pnlBotoes.setOpaque(false);
-        pnlBotoes.add(criarBotao("Fechar Polígono", COR_BOTAO_AZUL, e -> {
+
+        pnlBotoes.add(criarBotao("Fechar Polígono", e -> {
             if (poligonoOriginal.size() > 2) {
                 isFechado = true;
                 lblStatus.setText("Status: Polígono Fechado.");
                 canvas.repaint();
             }
         }));
-        pnlBotoes.add(criarBotao("Aplicar Recorte", COR_BOTAO_ESCURO, e -> {
+        pnlBotoes.add(criarBotao("Aplicar Recorte", e -> {
             if (isFechado) {
                 poligonoRecortado = SutherlandHodgman.clipPolygon(poligonoOriginal, xMin, xMax, yMin, yMax);
                 mostrarRecortado = true;
@@ -158,7 +167,7 @@ public class SutherlandHodgmanPanel extends JPanel {
                 canvas.repaint();
             }
         }));
-        pnlBotoes.add(criarBotao("Resetar", COR_BOTAO_VERMELHO, e -> resetValues()));
+        pnlBotoes.add(criarBotao("Resetar", e -> resetValues()));
 
         JPanel wrapperBotoes = new JPanel(new FlowLayout(FlowLayout.CENTER));
         wrapperBotoes.setOpaque(false);
@@ -168,12 +177,14 @@ public class SutherlandHodgmanPanel extends JPanel {
         add(painelDir, BorderLayout.EAST);
     }
 
-    private JButton criarBotao(String texto, Color cor, ActionListener acao) {
+    private JButton criarBotao(String texto, ActionListener acao) {
         JButton btn = new JButton(texto);
-        btn.setBackground(cor);
+        btn.setBackground(COR_BOTAO);
         btn.setForeground(Color.WHITE);
         btn.setFocusPainted(false);
-        btn.setPreferredSize(new Dimension(140, 30));
+        btn.setFont(new Font("SansSerif", Font.BOLD, 13));
+        btn.setMargin(new Insets(8, 20, 8, 20));
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btn.addActionListener(acao);
         return btn;
     }
@@ -202,7 +213,9 @@ public class SutherlandHodgmanPanel extends JPanel {
 
         JPanel pnlTopo = new JPanel(new FlowLayout(FlowLayout.CENTER));
         pnlTopo.setOpaque(false);
-        pnlTopo.add(new JLabel("Voltar ao Início", SwingConstants.CENTER));
+        JLabel lblTopo = new JLabel("Área de Visualização", SwingConstants.CENTER);
+        lblTopo.setFont(new Font("SansSerif", Font.BOLD, 14));
+        pnlTopo.add(lblTopo);
         wrapper.add(pnlTopo, BorderLayout.SOUTH);
 
         JPanel centerWrapper = new JPanel(new GridBagLayout());
@@ -218,7 +231,7 @@ public class SutherlandHodgmanPanel extends JPanel {
     private class CanvasPanel extends JPanel {
         public CanvasPanel() {
             setBackground(Color.WHITE);
-            setBorder(BorderFactory.createLineBorder(Color.BLACK));
+            setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 2));
 
             addMouseMotionListener(new MouseMotionAdapter() {
                 @Override
@@ -260,20 +273,22 @@ public class SutherlandHodgmanPanel extends JPanel {
             Graphics2D g2d = (Graphics2D) g;
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-            // Desenha Título Fixo Simulado no topo do Canvas
-            g2d.setColor(Color.BLACK);
+            // Título Fixo Simulado
+            g2d.setColor(Color.DARK_GRAY);
+            g2d.setFont(new Font("SansSerif", Font.PLAIN, 12));
             g2d.drawString(String.format(Locale.US, "Xmax: %.0f | Xmin: %.0f | Ymax: %.0f | Ymin: %.0f", xMax, xMin, yMax, yMin), getWidth()/2 - 140, 20);
 
-            // Desenha a Janela de Recorte (Azul)
-            g2d.setColor(Color.BLUE);
+            // Janela de Recorte (Preta, 1px)
+            g2d.setColor(Color.BLACK);
             g2d.setStroke(new BasicStroke(1));
             g2d.drawRect((int)xMin, (int)yMin, (int)(xMax - xMin), (int)(yMax - yMin));
 
-            // Desenha o polígono original
-            if (!mostrarRecortado && !poligonoOriginal.isEmpty()) {
-                g2d.setColor(Color.RED);
-                g2d.setStroke(new BasicStroke(1));
+            // Configuração padrão de desenho do polígono (RED, 1px)
+            g2d.setStroke(new BasicStroke(1));
 
+            // --- DESENHO DO POLÍGONO ORIGINAL (Antes do recorte) ---
+            if (!mostrarRecortado && !poligonoOriginal.isEmpty()) {
+                g2d.setColor(RED_SOLIDO);
                 for (int i = 0; i < poligonoOriginal.size() - 1; i++) {
                     Ponto p1 = poligonoOriginal.get(i);
                     Ponto p2 = poligonoOriginal.get(i + 1);
@@ -286,19 +301,27 @@ public class SutherlandHodgmanPanel extends JPanel {
                     g2d.drawLine((int)pLast.x, (int)pLast.y, (int)pFirst.x, (int)pFirst.y);
                 }
 
+                // Vértices originais
                 for (Ponto p : poligonoOriginal) {
                     g2d.fillOval((int)p.x - 3, (int)p.y - 3, 6, 6);
                 }
             }
 
-            // Desenha o polígono recortado
+            // --- DESENHO DO POLÍGONO RECORTADO (AQUI ESTÁ A MUDANÇA) ---
             if (mostrarRecortado && !poligonoRecortado.isEmpty()) {
-                g2d.setColor(new Color(76, 175, 80, 150)); // Verde semi-transparente
-                drawPolygon(g2d, poligonoRecortado, true);
 
-                g2d.setColor(new Color(46, 125, 50)); // Verde escuro para borda
-                g2d.setStroke(new BasicStroke(2));
-                drawPolygon(g2d, poligonoRecortado, false);
+                // 1. Pinta o interior (o que está dentro do recorte)
+                g2d.setColor(RED_PREENCHIMENTO); // Vermelho transparente
+                drawPolygon(g2d, poligonoRecortado, true); // true = PREENCHER
+
+                // 2. Desenha a borda sólida por cima
+                g2d.setColor(RED_SOLIDO);
+                drawPolygon(g2d, poligonoRecortado, false); // false = SÓ BORDA
+
+                // 3. Desenha bolinhas nos novos vértices recortados
+                for (Ponto p : poligonoRecortado) {
+                    g2d.fillOval((int)p.x - 3, (int)p.y - 3, 6, 6);
+                }
             }
         }
     }

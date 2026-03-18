@@ -47,6 +47,15 @@ public class Transformacoes3DPanel extends JPanel {
     private Canvas3D mainCanvas;
     private ViewportCanvas viewportCanvas;
 
+
+    // Limites da Janela do Mundo (World Window)
+    private double xwMin = -100, xwMax = 100, ywMin = -100, ywMax = 100;
+    // Limites da Viewport (Tela)
+    private double xvMin = 0, xvMax = 500, yvMin = 0, yvMax = 500;
+
+    // Componentes de UI para o Mundo
+    private JTextField txtXwMin, txtXwMax, txtYwMin, txtYwMax;
+
     public Transformacoes3DPanel() {
         setLayout(new BorderLayout(10, 10));
         setBackground(COR_FUNDO);
@@ -57,61 +66,100 @@ public class Transformacoes3DPanel extends JPanel {
         setupPainelDireito();
     }
 
+    // Métodos auxiliares para manter o estilo visual
+    private JPanel criarSecao(String titulo) {
+        JPanel p = new JPanel();
+        p.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), titulo, TitledBorder.CENTER, TitledBorder.TOP));
+        p.setMaximumSize(new Dimension(260, 100));
+        return p;
+    }
+
+    private JButton criarBotaoMenu(String texto, java.awt.event.ActionListener acao) {
+        JButton btn = new JButton(texto);
+        btn.setAlignmentX(Component.CENTER_ALIGNMENT);
+        btn.setMaximumSize(new Dimension(240, 30));
+        btn.addActionListener(acao);
+        return btn;
+    }
+
     private void setupPainelEsquerdo() {
         JPanel painelEsq = new JPanel();
         painelEsq.setLayout(new BoxLayout(painelEsq, BoxLayout.Y_AXIS));
         painelEsq.setPreferredSize(new Dimension(280, 0));
+        painelEsq.setBackground(COR_FUNDO);
 
-        JPanel pnlObjeto = new JPanel(new GridLayout(3, 1, 5, 5));
-        pnlObjeto.setBorder(BorderFactory.createTitledBorder("Objeto 3D"));
-        pnlObjeto.add(new JLabel("Tipo: Cubo"));
-        JPanel pnlTamanho = new JPanel(new BorderLayout());
-        pnlTamanho.add(new JLabel("Tamanho: "), BorderLayout.WEST);
+        // --- SEÇÃO: DESENHA CUBO ---
+        JPanel pnlObjeto = criarSecao("Desenha Cubo");
+        pnlObjeto.add(new JLabel("Tamanho:"));
         txtTamanhoObj = new JTextField("40");
-        pnlTamanho.add(txtTamanhoObj, BorderLayout.CENTER);
-        pnlObjeto.add(pnlTamanho);
-        pnlObjeto.add(criarBotao("Gerar Objeto", e -> gerarCubo()));
+        pnlObjeto.add(txtTamanhoObj);
+        pnlObjeto.add(criarBotao("Gerar Cubo", e -> gerarCubo()));
         painelEsq.add(pnlObjeto);
+
+        // --- SEÇÃO: TRANSLAÇÃO ---
+        JPanel pnlTrans = criarSecao("TRANSLAÇÃO");
+        pnlTrans.setLayout(new GridLayout(2, 3, 5, 2));
+        pnlTrans.add(new JLabel("X")); pnlTrans.add(new JLabel("Y")); pnlTrans.add(new JLabel("Z"));
+        pnlTrans.add(txtTransX = new JTextField("-50"));
+        pnlTrans.add(txtTransY = new JTextField("-50"));
+        pnlTrans.add(txtTransZ = new JTextField("-50"));
+        painelEsq.add(pnlTrans);
+        painelEsq.add(criarBotaoMenu("Translação", e -> aplicarTranslacao()));
+
+        // --- SEÇÃO: ESCALA ---
+        JPanel pnlEscala = criarSecao("ESCALA");
+        pnlEscala.setLayout(new GridLayout(2, 3, 5, 2));
+        pnlEscala.add(new JLabel("X")); pnlEscala.add(new JLabel("Y")); pnlEscala.add(new JLabel("Z"));
+        pnlEscala.add(txtEscalaX = new JTextField("0.5"));
+        pnlEscala.add(txtEscalaY = new JTextField("0.5"));
+        pnlEscala.add(txtEscalaZ = new JTextField("1"));
+        painelEsq.add(pnlEscala);
+        painelEsq.add(criarBotaoMenu("Escala", e -> aplicarEscala()));
+
+        // --- SEÇÃO: REFLEXÃO ---
+        JPanel pnlReflexao = criarSecao("REFLEXÃO");
+        JRadioButton rbXY = new JRadioButton("em XY");
+        JRadioButton rbYZ = new JRadioButton("em YZ");
+        JRadioButton rbXZ = new JRadioButton("em XZ", true);
+        ButtonGroup groupRef = new ButtonGroup();
+        groupRef.add(rbXY); groupRef.add(rbYZ); groupRef.add(rbXZ);
+        pnlReflexao.add(rbXY); pnlReflexao.add(rbYZ); pnlReflexao.add(rbXZ);
+        painelEsq.add(pnlReflexao);
+        painelEsq.add(criarBotaoMenu("Reflexão", e -> {} /* Implementar lógica */));
+
+        // --- SEÇÃO: ROTAÇÃO ---
+        JPanel pnlRotacao = criarSecao("ROTAÇÃO");
+        JPanel pnlRotEixos = new JPanel(new GridLayout(3, 1));
+        JRadioButton rbRotX = new JRadioButton("eixo X", true);
+        JRadioButton rbRotY = new JRadioButton("eixo Y");
+        JRadioButton rbRotZ = new JRadioButton("eixo Z");
+        ButtonGroup groupRot = new ButtonGroup();
+        groupRot.add(rbRotX); groupRot.add(rbRotY); groupRot.add(rbRotZ);
+        pnlRotEixos.add(rbRotX); pnlRotEixos.add(rbRotY); pnlRotEixos.add(rbRotZ);
+        pnlRotacao.add(pnlRotEixos);
+        pnlRotacao.add(new JLabel("Ângulo:"));
+        txtRotAngulo = new JTextField("30");
+        pnlRotacao.add(txtRotAngulo);
+        painelEsq.add(pnlRotacao);
+        painelEsq.add(criarBotaoMenu("Rotação", e -> aplicarRotacao()));
+
+        // --- SEÇÃO: CISALHAMENTO ---
+        JPanel pnlCisalha = criarSecao("CISALHAMENTO");
+        pnlCisalha.setLayout(new GridLayout(2, 2, 5, 2));
+        pnlCisalha.add(new JLabel("X")); pnlCisalha.add(new JLabel("Y"));
+        pnlCisalha.add(new JTextField("1")); pnlCisalha.add(new JTextField("1"));
+        painelEsq.add(pnlCisalha);
+        painelEsq.add(criarBotaoMenu("Cisalhamento", e -> {} /* Implementar lógica */));
+
+        // --- BOTÕES FINAIS ---
         painelEsq.add(Box.createVerticalStrut(10));
+        painelEsq.add(criarBotaoMenu("Limpa Tela", e -> limparTudo()));
+        painelEsq.add(criarBotaoMenu("Animação", e -> {}));
 
-        JTabbedPane tabbedTransformacoes = new JTabbedPane();
-
-        JPanel pnlTrans = new JPanel(new GridLayout(4, 2, 5, 5));
-        pnlTrans.add(new JLabel("X:")); pnlTrans.add(txtTransX = new JTextField("0"));
-        pnlTrans.add(new JLabel("Y:")); pnlTrans.add(txtTransY = new JTextField("0"));
-        pnlTrans.add(new JLabel("Z:")); pnlTrans.add(txtTransZ = new JTextField("0"));
-        pnlTrans.add(new JLabel()); pnlTrans.add(criarBotao("Aplicar", e -> aplicarTranslacao()));
-        tabbedTransformacoes.addTab("Translação", pnlTrans);
-
-        JPanel pnlRot = new JPanel(new GridLayout(3, 2, 5, 5));
-        pnlRot.add(new JLabel("Eixo:")); pnlRot.add(comboEixoRot = new JComboBox<>(new String[]{"x", "y", "z"}));
-        pnlRot.add(new JLabel("Ângulo:")); pnlRot.add(txtRotAngulo = new JTextField("0"));
-        pnlRot.add(new JLabel()); pnlRot.add(criarBotao("Aplicar", e -> aplicarRotacao()));
-        tabbedTransformacoes.addTab("Rotação", pnlRot);
-
-        JPanel pnlEscala = new JPanel(new GridLayout(4, 2, 5, 5));
-        pnlEscala.add(new JLabel("X:")); pnlEscala.add(txtEscalaX = new JTextField("1"));
-        pnlEscala.add(new JLabel("Y:")); pnlEscala.add(txtEscalaY = new JTextField("1"));
-        pnlEscala.add(new JLabel("Z:")); pnlEscala.add(txtEscalaZ = new JTextField("1"));
-        pnlEscala.add(new JLabel()); pnlEscala.add(criarBotao("Aplicar", e -> aplicarEscala()));
-        tabbedTransformacoes.addTab("Escala", pnlEscala);
-
-        painelEsq.add(tabbedTransformacoes);
-        painelEsq.add(Box.createVerticalStrut(10));
-
-        JPanel pnlVis = new JPanel(new GridLayout(5, 3, 2, 2));
-        pnlVis.setBorder(BorderFactory.createTitledBorder("Câmera / Visualização"));
-
-        sldCamX = configurarSlider(pnlVis, "X:", lblCamX = new JLabel("0°"), -180, 180, 0);
-        sldCamY = configurarSlider(pnlVis, "Y:", lblCamY = new JLabel("0°"), -180, 180, 0);
-        sldCamZ = configurarSlider(pnlVis, "Z:", lblCamZ = new JLabel("0°"), -180, 180, 0);
-        sldZoom = configurarSlider(pnlVis, "Zoom:", lblZoom = new JLabel("100%"), 10, 300, 100);
-
-        JButton btnResetVis = criarBotao("Resetar Câmera", e -> resetarVisualizacao());
-        pnlVis.add(new JLabel()); pnlVis.add(btnResetVis); pnlVis.add(new JLabel());
-        painelEsq.add(pnlVis);
-
-        add(new JScrollPane(painelEsq), BorderLayout.WEST);
+        // Adiciona ao scroll para garantir que caiba em telas menores
+        JScrollPane scroll = new JScrollPane(painelEsq);
+        scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        add(scroll, BorderLayout.WEST);
     }
 
     private JSlider configurarSlider(JPanel pnl, String label, JLabel lblValor, int min, int max, int val) {
@@ -130,11 +178,13 @@ public class Transformacoes3DPanel extends JPanel {
         JPanel painelCentro = new JPanel(new GridBagLayout());
 
         mainCanvas = new Canvas3D();
-        mainCanvas.setPreferredSize(new Dimension(650, 450)); // Área ampliada para caber Janela e Viewport
+        mainCanvas.setPreferredSize(new Dimension(600, 600)); // Tamanho igual ao canvas JS
 
         viewportCanvas = new ViewportCanvas();
         viewportCanvas.setPreferredSize(new Dimension(250, 250));
-        viewportCanvas.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), "Top-Down (2D)", TitledBorder.CENTER, TitledBorder.TOP));
+        viewportCanvas.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(Color.BLACK), "Top-Down (2D)",
+                TitledBorder.CENTER, TitledBorder.TOP));
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 10, 10, 10);
@@ -151,6 +201,22 @@ public class Transformacoes3DPanel extends JPanel {
         JPanel painelDir = new JPanel();
         painelDir.setLayout(new BoxLayout(painelDir, BoxLayout.Y_AXIS));
         painelDir.setPreferredSize(new Dimension(280, 0));
+
+        // --- NOVO: SEÇÃO DE CÂMERA / VISUALIZAÇÃO ---
+        JPanel pnlCamera = criarSecao("CÂMERA / VISUALIZAÇÃO");
+        pnlCamera.setLayout(new GridLayout(4, 1, 5, 5));
+        pnlCamera.setMaximumSize(new Dimension(280, 180));
+
+        lblCamX = new JLabel("0°"); lblCamY = new JLabel("0°");
+        lblCamZ = new JLabel("0°"); lblZoom = new JLabel("100%");
+
+        sldCamX = configurarSlider(pnlCamera, "Rot X:", lblCamX, -180, 180, 0);
+        sldCamY = configurarSlider(pnlCamera, "Rot Y:", lblCamY, -180, 180, 0);
+        sldCamZ = configurarSlider(pnlCamera, "Rot Z:", lblCamZ, -180, 180, 0);
+        sldZoom = configurarSlider(pnlCamera, "Zoom:", lblZoom, 10, 300, 100);
+
+        painelDir.add(pnlCamera);
+        painelDir.add(Box.createVerticalStrut(10));
 
         JPanel pnlInfo = new JPanel(new BorderLayout());
         pnlInfo.setBorder(BorderFactory.createTitledBorder("Informações do Objeto"));
@@ -181,6 +247,7 @@ public class Transformacoes3DPanel extends JPanel {
         pnlHist.add(new JScrollPane(txtHistorico), BorderLayout.CENTER);
         painelDir.add(pnlHist);
 
+
         JButton btnLimpar = criarBotao("Limpar Tudo", e -> limparTudo());
         painelDir.add(Box.createVerticalStrut(10));
         painelDir.add(btnLimpar);
@@ -195,6 +262,17 @@ public class Transformacoes3DPanel extends JPanel {
         btn.setFocusPainted(false);
         btn.addActionListener(acao);
         return btn;
+    }
+
+    private double[] mundoParaViewport(double x, double y) {
+        // Mesma lógica do script.js:
+        // x_view = xvMin + (x_mundo - xwMin) * (xvMax - xvMin) / (xwMax - xwMin)
+        double xv = xvMin + (x - xwMin) * (xvMax - xvMin) / (xwMax - xwMin);
+
+        // No Java/Swing, o Y é invertido (0 no topo), então subtraímos de yvMax para manter a orientação
+        double yv = yvMax - (yvMin + (y - ywMin) * (yvMax - yvMin) / (ywMax - ywMin));
+
+        return new double[]{xv, yv};
     }
 
     private void gerarCubo() {
@@ -535,24 +613,22 @@ public class Transformacoes3DPanel extends JPanel {
     }
 
     private class ViewportCanvas extends JPanel {
-        public ViewportCanvas() {
-            setBackground(Color.WHITE);
-        }
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
             if (objectVertices.isEmpty()) return;
-            int size = Math.min(getWidth(), getHeight());
-            double xMin = -100, yMin = -100, xMax = 100, yMax = 100;
+
             g.setColor(Color.BLACK);
             for (int[] aresta : objectEdges) {
                 double[] v1 = objectVertices.get(aresta[0]);
                 double[] v2 = objectVertices.get(aresta[1]);
-                int cx1 = (int) (((v1[0] - xMin) / (xMax - xMin)) * size);
-                int cy1 = (int) (size - ((v1[1] - yMin) / (yMax - yMin)) * size);
-                int cx2 = (int) (((v2[0] - xMin) / (xMax - xMin)) * size);
-                int cy2 = (int) (size - ((v2[1] - yMin) / (yMax - yMin)) * size);
-                g.drawLine(cx1, cy1, cx2, cy2);
+
+                // Projeta os pontos 3D para o plano 2D (ex: Top-Down usando X e Z)
+                // e converte para coordenadas da Viewport
+                double[] p1v = mundoParaViewport(v1[0], v1[2]);
+                double[] p2v = mundoParaViewport(v2[0], v2[2]);
+
+                g.drawLine((int)p1v[0], (int)p1v[1], (int)p2v[0], (int)p2v[1]);
             }
         }
     }

@@ -14,14 +14,10 @@ import java.util.Locale;
 
 public class CohenSutherlandPanel extends JPanel {
 
-    private final Color COR_FUNDO = new Color(224, 224, 224);
-    private final Color COR_BOTAO_VERDE = new Color(76, 175, 80);
-    private final Color COR_BOTAO_VERMELHO = new Color(244, 67, 54);
-    private final Color COR_BOTAO_ESCURO = new Color(46, 125, 50);
-    private final Color COR_BOTAO_AZUL = new Color(33, 150, 243);
+    // Viewport perfeitamente centralizada em um Canvas de 500x500 (Tamanho 200x200)
+    private double xMin = 150, yMin = 150, xMax = 350, yMax = 350;
 
     // Estado Global
-    private double xMin = 150, yMin = 100, xMax = 450, yMax = 300;
     private List<LineDef> lines = new ArrayList<>();
     private List<String> historyHtmlBlocks = new ArrayList<>();
     private boolean showOnlyClipped = false;
@@ -47,7 +43,7 @@ public class CohenSutherlandPanel extends JPanel {
 
     public CohenSutherlandPanel() {
         setLayout(new BorderLayout());
-        setBackground(COR_FUNDO);
+        setBackground(Color.decode("#F0F0F0")); // Fundo padronizado
 
         setupPainelEsquerdo();
         setupCanvas();
@@ -59,129 +55,221 @@ public class CohenSutherlandPanel extends JPanel {
     // PAINEL ESQUERDO
     // ==========================================
     private void setupPainelEsquerdo() {
-        JPanel painelEsq = new JPanel();
-        painelEsq.setLayout(new BoxLayout(painelEsq, BoxLayout.Y_AXIS));
-        painelEsq.setPreferredSize(new Dimension(220, 0));
-        painelEsq.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 0, 0, 1, Color.GRAY),
-                new EmptyBorder(15, 15, 15, 15)));
-        painelEsq.setBackground(COR_FUNDO);
+        JPanel painelEsquerdo = new JPanel(new BorderLayout());
+        painelEsquerdo.setBackground(Color.decode("#F0F0F0"));
+        painelEsquerdo.setPreferredSize(new Dimension(320, 0)); // Largura padronizada
+        painelEsquerdo.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 0, 0, 1, Color.LIGHT_GRAY),
+                new EmptyBorder(15, 15, 15, 15)
+        ));
 
-        JLabel tituloEsq = new JLabel("Coordenadas da Janela");
-        tituloEsq.setFont(new Font("Arial", Font.BOLD, 14));
-        painelEsq.add(tituloEsq);
-        painelEsq.add(Box.createVerticalStrut(5));
-        painelEsq.add(new JSeparator());
-        painelEsq.add(Box.createVerticalStrut(10));
+        // Container superior (Textos e Inputs)
+        JPanel containerNorte = new JPanel();
+        containerNorte.setLayout(new BoxLayout(containerNorte, BoxLayout.Y_AXIS));
+        containerNorte.setOpaque(false);
+
+        // Topo: Info
+        JLabel lblTituloEsq = new JLabel("INFORMAÇÕES DA JANELA");
+        lblTituloEsq.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblTituloEsq.setForeground(Color.decode("#213555"));
+        lblTituloEsq.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        containerNorte.add(lblTituloEsq);
+        containerNorte.add(Box.createVerticalStrut(5));
+
+        JSeparator sepEsq = new JSeparator(SwingConstants.HORIZONTAL);
+        sepEsq.setAlignmentX(Component.LEFT_ALIGNMENT);
+        containerNorte.add(sepEsq);
+
+        containerNorte.add(Box.createVerticalStrut(10));
 
         lblLiveCoords = new JLabel("X: 0, Y: 0");
-        painelEsq.add(lblLiveCoords);
+        lblLiveCoords.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        lblLiveCoords.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        painelEsq.add(Box.createVerticalGlue());
+        containerNorte.add(lblLiveCoords);
+        containerNorte.add(Box.createVerticalStrut(25));
 
-        painelEsq.add(criarLinhaForm("Xmax:", txtXMax = new JTextField(String.valueOf((int)xMax))));
-        painelEsq.add(Box.createVerticalStrut(10));
-        painelEsq.add(criarLinhaForm("Xmin:", txtXMin = new JTextField(String.valueOf((int)xMin))));
-        painelEsq.add(Box.createVerticalStrut(10));
-        painelEsq.add(criarLinhaForm("Ymax:", txtYMax = new JTextField(String.valueOf((int)yMax))));
-        painelEsq.add(Box.createVerticalStrut(10));
-        painelEsq.add(criarLinhaForm("Ymin:", txtYMin = new JTextField(String.valueOf((int)yMin))));
-        painelEsq.add(Box.createVerticalStrut(20));
+        // Controles com GridBagLayout
+        JPanel painelInputs = new JPanel(new GridBagLayout());
+        painelInputs.setOpaque(false);
+        painelInputs.setAlignmentX(Component.LEFT_ALIGNMENT);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(5, 0, 5, 10);
+        gbc.anchor = GridBagConstraints.WEST;
 
-        JButton btnDefinir = criarBotao("Definir Valores", COR_BOTAO_VERDE, e -> {
+        txtXMax = estilizarTextField(String.valueOf((int)xMax), 5);
+        txtXMin = estilizarTextField(String.valueOf((int)xMin), 5);
+        txtYMax = estilizarTextField(String.valueOf((int)yMax), 5);
+        txtYMin = estilizarTextField(String.valueOf((int)yMin), 5);
+
+        adicionarCampoGrid(painelInputs, "X Max:", txtXMax, gbc, 0);
+        adicionarCampoGrid(painelInputs, "X Min:", txtXMin, gbc, 1);
+        adicionarCampoGrid(painelInputs, "Y Max:", txtYMax, gbc, 2);
+        adicionarCampoGrid(painelInputs, "Y Min:", txtYMin, gbc, 3);
+
+        containerNorte.add(painelInputs);
+        painelEsquerdo.add(containerNorte, BorderLayout.NORTH);
+
+        // Botão (Rodapé)
+        JButton btnDefinir = estilizarBotao("DEFINIR VALORES");
+        btnDefinir.addActionListener(e -> {
             try {
                 xMax = Double.parseDouble(txtXMax.getText());
                 xMin = Double.parseDouble(txtXMin.getText());
                 yMax = Double.parseDouble(txtYMax.getText());
                 yMin = Double.parseDouble(txtYMin.getText());
                 canvas.repaint();
-            } catch (Exception ex) {}
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Valores inválidos.", "Erro", JOptionPane.ERROR_MESSAGE);
+            }
         });
-        JPanel pnlBtn = new JPanel(new FlowLayout(FlowLayout.CENTER)); pnlBtn.setOpaque(false);
-        pnlBtn.add(btnDefinir);
-        painelEsq.add(pnlBtn);
 
-        add(painelEsq, BorderLayout.WEST);
+        JPanel pnlBtn = new JPanel(new BorderLayout());
+        pnlBtn.setOpaque(false);
+        pnlBtn.setBorder(new EmptyBorder(15, 0, 0, 0));
+        pnlBtn.add(btnDefinir, BorderLayout.CENTER);
+
+        painelEsquerdo.add(pnlBtn, BorderLayout.SOUTH);
+
+        add(painelEsquerdo, BorderLayout.WEST);
+    }
+
+    private void adicionarCampoGrid(JPanel pnl, String labelText, JComponent comp, GridBagConstraints gbc, int y) {
+        gbc.gridx = 0; gbc.gridy = y; gbc.gridwidth = 1;
+        gbc.weightx = 0.0;
+        JLabel label = new JLabel(labelText);
+        label.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        label.setForeground(Color.DARK_GRAY);
+        pnl.add(label, gbc);
+
+        gbc.gridx = 1; gbc.weightx = 1.0;
+        pnl.add(comp, gbc);
     }
 
     // ==========================================
     // PAINEL DIREITO
     // ==========================================
     private void setupPainelDireito() {
-        JPanel painelDir = new JPanel();
-        painelDir.setLayout(new BoxLayout(painelDir, BoxLayout.Y_AXIS));
-        painelDir.setPreferredSize(new Dimension(300, 0));
-        painelDir.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 1, 0, 0, Color.GRAY),
-                new EmptyBorder(15, 15, 15, 15)));
-        painelDir.setBackground(COR_FUNDO);
+        JPanel painelDireito = new JPanel(new BorderLayout());
+        painelDireito.setBackground(Color.decode("#F0F0F0"));
+        painelDireito.setPreferredSize(new Dimension(320, 0)); // Largura padronizada
+        painelDireito.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 1, 0, 0, Color.LIGHT_GRAY),
+                new EmptyBorder(15, 15, 15, 15)
+        ));
 
-        JLabel tituloDir = new JLabel("Adicionar Linha");
-        tituloDir.setFont(new Font("Arial", Font.BOLD, 14));
-        painelDir.add(tituloDir);
-        painelDir.add(Box.createVerticalStrut(5));
-        painelDir.add(new JSeparator());
-        painelDir.add(Box.createVerticalStrut(10));
+        // Topo
+        JPanel pnlTopoDir = new JPanel();
+        pnlTopoDir.setLayout(new BoxLayout(pnlTopoDir, BoxLayout.Y_AXIS));
+        pnlTopoDir.setOpaque(false);
+
+        JLabel lblTituloDir = new JLabel("ADICIONAR LINHA E HISTÓRICO");
+        lblTituloDir.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblTituloDir.setForeground(Color.decode("#213555"));
+        lblTituloDir.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        pnlTopoDir.add(lblTituloDir);
+        pnlTopoDir.add(Box.createVerticalStrut(5));
+
+        JSeparator sepDir = new JSeparator(SwingConstants.HORIZONTAL);
+        sepDir.setAlignmentX(Component.LEFT_ALIGNMENT);
+        pnlTopoDir.add(sepDir);
+
+        pnlTopoDir.add(Box.createVerticalStrut(10));
 
         lblLastPoint = new JLabel("Último ponto: (-, -)");
-        painelDir.add(lblLastPoint);
-        painelDir.add(Box.createVerticalStrut(10));
+        lblLastPoint.setFont(new Font("Segoe UI", Font.ITALIC, 12));
+        lblLastPoint.setForeground(Color.GRAY);
+        lblLastPoint.setAlignmentX(Component.LEFT_ALIGNMENT);
+        pnlTopoDir.add(lblLastPoint);
+        pnlTopoDir.add(Box.createVerticalStrut(15));
+
+        // Inputs
+        JPanel painelInputsDir = new JPanel(new GridBagLayout());
+        painelInputsDir.setOpaque(false);
+        painelInputsDir.setAlignmentX(Component.LEFT_ALIGNMENT);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(5, 0, 5, 10);
+        gbc.anchor = GridBagConstraints.WEST;
+
+        txtX1 = estilizarTextField("", 4);
+        txtY1 = estilizarTextField("", 4);
+        txtX2 = estilizarTextField("", 4);
+        txtY2 = estilizarTextField("", 4);
+
+        adicionarCampoGrid(painelInputsDir, "X1:", txtX1, gbc, 0);
+        adicionarCampoGrid(painelInputsDir, "Y1:", txtY1, gbc, 1);
+        adicionarCampoGrid(painelInputsDir, "X2:", txtX2, gbc, 2);
+        adicionarCampoGrid(painelInputsDir, "Y2:", txtY2, gbc, 3);
+
+        pnlTopoDir.add(painelInputsDir);
+        pnlTopoDir.add(Box.createVerticalStrut(15));
+
+        painelDireito.add(pnlTopoDir, BorderLayout.NORTH);
 
         // Área HTML para histórico
         htmlHistoryPane = new JEditorPane();
         htmlHistoryPane.setContentType("text/html");
         htmlHistoryPane.setEditable(false);
-        htmlHistoryPane.setBackground(COR_FUNDO);
+        htmlHistoryPane.setBackground(Color.WHITE);
         JScrollPane scrollHistory = new JScrollPane(htmlHistoryPane);
-        scrollHistory.setBorder(null);
-        painelDir.add(scrollHistory);
-        painelDir.add(Box.createVerticalStrut(10));
+        scrollHistory.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
+        painelDireito.add(scrollHistory, BorderLayout.CENTER);
 
-        // Controles Adicionar Linha
-        painelDir.add(criarLinhaForm("X1:", txtX1 = new JTextField()));
-        painelDir.add(Box.createVerticalStrut(5));
-        painelDir.add(criarLinhaForm("Y1:", txtY1 = new JTextField()));
-        painelDir.add(Box.createVerticalStrut(5));
-        painelDir.add(criarLinhaForm("X2:", txtX2 = new JTextField()));
-        painelDir.add(Box.createVerticalStrut(5));
-        painelDir.add(criarLinhaForm("Y2:", txtY2 = new JTextField()));
-        painelDir.add(Box.createVerticalStrut(15));
-
-        JPanel pnlBotoes = new JPanel(new GridLayout(4, 1, 0, 5));
+        // Botões Padronizados e Empilhados
+        JPanel pnlBotoes = new JPanel(new GridLayout(4, 1, 0, 8));
         pnlBotoes.setOpaque(false);
-        pnlBotoes.add(criarBotao("Desenhar Linha", COR_BOTAO_VERDE, e -> adicionarLinhaManual()));
-        pnlBotoes.add(criarBotao("Animar Rotação", COR_BOTAO_AZUL, e -> alternarAnimacao()));
-        pnlBotoes.add(criarBotao("Resetar", COR_BOTAO_VERMELHO, e -> resetValues()));
-        pnlBotoes.add(criarBotao("Aplicar Recorte", COR_BOTAO_ESCURO, e -> {
+        pnlBotoes.setBorder(new EmptyBorder(15, 0, 0, 0));
+
+        JButton btnDesenhar = estilizarBotao("DESENHAR LINHA");
+        btnDesenhar.addActionListener(e -> adicionarLinhaManual());
+
+        JButton btnAnimar = estilizarBotao("ANIMAR ROTAÇÃO");
+        btnAnimar.addActionListener(e -> alternarAnimacao());
+
+        JButton btnRecorte = estilizarBotao("APLICAR RECORTE");
+        btnRecorte.addActionListener(e -> {
             showOnlyClipped = true;
             canvas.repaint();
-        }));
+        });
 
-        JPanel wrapperBotoes = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        wrapperBotoes.setOpaque(false);
-        wrapperBotoes.add(pnlBotoes);
-        painelDir.add(wrapperBotoes);
+        JButton btnLimpar = estilizarBotao("RESETAR TELA");
+        btnLimpar.addActionListener(e -> resetValues());
 
-        add(painelDir, BorderLayout.EAST);
+        pnlBotoes.add(btnDesenhar);
+        pnlBotoes.add(btnAnimar);
+        pnlBotoes.add(btnRecorte);
+        pnlBotoes.add(btnLimpar);
+
+        painelDireito.add(pnlBotoes, BorderLayout.SOUTH);
+
+        add(painelDireito, BorderLayout.EAST);
     }
 
-    private JPanel criarLinhaForm(String label, JTextField tf) {
-        JPanel pnl = new JPanel(new BorderLayout(5, 0));
-        pnl.setOpaque(false);
-        JLabel l = new JLabel(label);
-        l.setPreferredSize(new Dimension(40, 20));
-        pnl.add(l, BorderLayout.WEST);
-        pnl.add(tf, BorderLayout.CENTER);
-        pnl.setMaximumSize(new Dimension(Integer.MAX_VALUE, 25));
-        return pnl;
+    // ==========================================
+    // UTILITÁRIOS DE ESTILO
+    // ==========================================
+    private JTextField estilizarTextField(String textoInicial, int colunas) {
+        JTextField txt = new JTextField(textoInicial, colunas);
+        txt.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        txt.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Color.LIGHT_GRAY),
+                BorderFactory.createEmptyBorder(6, 6, 6, 6)
+        ));
+        return txt;
     }
 
-    private JButton criarBotao(String texto, Color cor, ActionListener acao) {
+    private JButton estilizarBotao(String texto) {
         JButton btn = new JButton(texto);
-        btn.setBackground(cor);
+        btn.setBackground(Color.decode("#213555"));
         btn.setForeground(Color.WHITE);
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 13));
         btn.setFocusPainted(false);
-        btn.addActionListener(acao);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btn.setPreferredSize(new Dimension(280, 40));
         return btn;
     }
 
@@ -189,28 +277,23 @@ public class CohenSutherlandPanel extends JPanel {
     // CANVAS
     // ==========================================
     private void setupCanvas() {
-        JPanel wrapper = new JPanel(new BorderLayout());
-        wrapper.setBackground(COR_FUNDO);
+        JPanel wrapper = new JPanel(new GridBagLayout());
+        wrapper.setBackground(Color.decode("#F0F0F0"));
 
-        JPanel pnlTopo = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        pnlTopo.setOpaque(false);
-        JButton btnVoltar = new JButton("Voltar ao Início");
-        btnVoltar.setBackground(COR_BOTAO_AZUL);
-        btnVoltar.setForeground(Color.WHITE);
-        btnVoltar.setFocusPainted(false);
-        btnVoltar.addActionListener(e -> resetValues());
+        JPanel centerPanel = new JPanel(new BorderLayout());
+        centerPanel.setOpaque(false);
 
-        pnlTopo.add(btnVoltar);
-
-        wrapper.add(pnlTopo, BorderLayout.SOUTH);
+        /*JLabel lblVoltar = new JLabel("Voltar ao Início", SwingConstants.CENTER);
+        lblVoltar.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblVoltar.setForeground(Color.GRAY);
+        lblVoltar.setBorder(new EmptyBorder(0, 0, 15, 0));
+        centerPanel.add(lblVoltar, BorderLayout.NORTH);*/
 
         canvas = new CanvasPanel();
-        canvas.setPreferredSize(new Dimension(1200, 700));
+        canvas.setPreferredSize(new Dimension(500, 500)); // Tamanho padronizado igual aos outros painéis
+        centerPanel.add(canvas, BorderLayout.CENTER);
 
-        JScrollPane scroll = new JScrollPane(canvas);
-        scroll.setBorder(null);
-
-        wrapper.add(scroll, BorderLayout.CENTER);
+        wrapper.add(centerPanel);
         add(wrapper, BorderLayout.CENTER);
     }
 
@@ -228,14 +311,17 @@ public class CohenSutherlandPanel extends JPanel {
         if (timerAnimacao != null) timerAnimacao.stop();
         isAnimando = false;
 
-        xMin = 150; xMax = 450; yMin = 100; yMax = 300;
-        txtXMin.setText("150"); txtXMax.setText("450");
-        txtYMin.setText("100"); txtYMax.setText("300");
+        // Reseta centralizado para 500x500
+        xMin = 150; xMax = 350; yMin = 150; yMax = 350;
+        txtXMin.setText("150"); txtXMax.setText("350");
+        txtYMin.setText("150"); txtYMax.setText("350");
+
         lines.clear();
         historyHtmlBlocks.clear();
         showOnlyClipped = false;
         clickCount = 0;
         lblLastPoint.setText("Último ponto: (-, -)");
+        txtX1.setText(""); txtY1.setText(""); txtX2.setText(""); txtY2.setText("");
         atualizarHistoricoUI();
         canvas.repaint();
     }
@@ -250,7 +336,7 @@ public class CohenSutherlandPanel extends JPanel {
             txtX1.setText(""); txtY1.setText(""); txtX2.setText(""); txtY2.setText("");
             processarNovaLinha(x1, y1, x2, y2);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Preencha todos os campos corretamente.");
+            JOptionPane.showMessageDialog(this, "Preencha todos os campos corretamente.", "Erro", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -268,7 +354,7 @@ public class CohenSutherlandPanel extends JPanel {
             isAnimando = false;
             canvas.repaint();
         } else {
-            lines.clear();  // apenas limpa linhas
+            lines.clear();
             historyHtmlBlocks.clear();
             atualizarHistoricoUI();
 
@@ -285,8 +371,8 @@ public class CohenSutherlandPanel extends JPanel {
 
     private void gerarBlocoHistoricoHTML(ClipResult res, int lineIndex) {
         StringBuilder sb = new StringBuilder();
-        sb.append("<div style='font-family: Arial; font-size: 10px; margin-bottom: 10px;'>");
-        sb.append("<strong>Linha ").append(lineIndex).append(":</strong><ul style='margin: 0; padding-left: 15px;'>");
+        sb.append("<div style='font-family: \"Segoe UI\", Arial; font-size: 11px; margin-bottom: 10px;'>");
+        sb.append("<strong style='color:#333;'>Linha ").append(lineIndex).append(":</strong><ul style='margin: 0; padding-left: 15px;'>");
 
         List<StepInfo> steps = res.steps;
         for (int i = 1; i < steps.size(); i++) {
@@ -301,11 +387,13 @@ public class CohenSutherlandPanel extends JPanel {
                 else if (curr.action.contains("LEFT")) math = "x = xMin = " + xMin;
 
                 if (curr.x1 != prev.x1 || curr.y1 != prev.y1) {
-                    sb.append(String.format(Locale.US, "<li style='color:#b00;'><b>Descartado</b> (%s):<br>P1=(%.1f, %.1f) [%s] &rarr; P2=(%.1f, %.1f) [%s]<br><i>%s</i></li>",
+                    // Cor vermelha para descartado no histórico
+                    sb.append(String.format(Locale.US, "<li style='color:red;'><b>Descartado</b> (%s):<br>P1=(%.1f, %.1f) [%s] &rarr; P2=(%.1f, %.1f) [%s]<br><i>%s</i></li>",
                             curr.action, prev.x1, prev.y1, prev.code1, curr.x1, curr.y1, curr.code1, math));
                 }
                 if (curr.x2 != prev.x2 || curr.y2 != prev.y2) {
-                    sb.append(String.format(Locale.US, "<li style='color:#b00;'><b>Descartado</b> (%s):<br>P1=(%.1f, %.1f) [%s] &rarr; P2=(%.1f, %.1f) [%s]<br><i>%s</i></li>",
+                    // Cor vermelha para descartado no histórico
+                    sb.append(String.format(Locale.US, "<li style='color:red;'><b>Descartado</b> (%s):<br>P1=(%.1f, %.1f) [%s] &rarr; P2=(%.1f, %.1f) [%s]<br><i>%s</i></li>",
                             curr.action, prev.x2, prev.y2, prev.code2, curr.x2, curr.y2, curr.code2, math));
                 }
             }
@@ -313,20 +401,22 @@ public class CohenSutherlandPanel extends JPanel {
 
         StepInfo finalStep = steps.get(steps.size() - 1);
         if (finalStep.action.startsWith("Aceita")) {
-            sb.append(String.format(Locale.US, "<li style='color:green;'><b>Aceito:</b><br>P1=(%.1f, %.1f) [%s] &rarr; P2=(%.1f, %.1f) [%s]</li>",
+            // Cor verde para aceito no histórico
+            sb.append(String.format(Locale.US, "<li style='color:#008000;'><b>Aceito:</b><br>P1=(%.1f, %.1f) [%s] &rarr; P2=(%.1f, %.1f) [%s]</li>",
                     finalStep.x1, finalStep.y1, finalStep.code1, finalStep.x2, finalStep.y2, finalStep.code2));
         } else {
-            sb.append("<li style='color:#b00;'><b>Rejeitada:</b> Nenhum segmento aceito</li>");
+            // Cor vermelha para rejeitado no histórico
+            sb.append("<li style='color:red;'><b>Rejeitada:</b> Nenhum segmento aceito</li>");
         }
-        sb.append("</ul></div>");
+        sb.append("</ul></div><hr style='border:0; border-top:1px solid #EEE;'>");
         historyHtmlBlocks.add(sb.toString());
     }
 
     private void atualizarHistoricoUI() {
         if (historyHtmlBlocks.isEmpty()) {
-            htmlHistoryPane.setText("<p style='font-family: Arial; font-size: 11px;'>Nenhum histórico de recorte.</p>");
+            htmlHistoryPane.setText("<div style='font-family: \"Segoe UI\", Arial; font-size: 12px; color: #888; padding: 10px;'>Nenhum histórico de recorte.</div>");
         } else {
-            StringBuilder allHtml = new StringBuilder("<html><body style='background-color: #E0E0E0;'>");
+            StringBuilder allHtml = new StringBuilder("<html><body style='background-color: #FFFFFF; padding: 5px;'>");
             for (String block : historyHtmlBlocks) allHtml.append(block);
             allHtml.append("</body></html>");
             htmlHistoryPane.setText(allHtml.toString());
@@ -339,7 +429,7 @@ public class CohenSutherlandPanel extends JPanel {
     private class CanvasPanel extends JPanel {
         public CanvasPanel() {
             setBackground(Color.WHITE);
-            setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 2));
+            setBorder(BorderFactory.createLineBorder(Color.decode("#CCCCCC"), 1));
 
             addMouseMotionListener(new MouseMotionAdapter() {
                 @Override
@@ -380,12 +470,12 @@ public class CohenSutherlandPanel extends JPanel {
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
 
-            // Desenha Título Fixo Simulado
-            g.setColor(Color.BLACK);
-            g.drawString(String.format(Locale.US, "Xmax: %.0f | Xmin: %.0f | Ymax: %.0f | Ymin: %.0f", xMax, xMin, yMax, yMin), getWidth()/2 - 120, 20);
+            // Desenha Título Fixo Simulado no topo do Canvas
+            g.setColor(Color.DARK_GRAY);
+            g.drawString(String.format(Locale.US, "Viewport atual: Xmin(%.0f) Xmax(%.0f) Ymin(%.0f) Ymax(%.0f)", xMin, xMax, yMin, yMax), 10, 20);
 
-            // Janela de Recorte (Azul)
-            g.setColor(Color.BLUE);
+            // Janela de Recorte combinando com os botões
+            g.setColor(Color.decode("#213555"));
             g.drawRect((int)xMin, (int)yMin, (int)(xMax - xMin), (int)(yMax - yMin));
 
             // Lógica de Animação
@@ -395,7 +485,7 @@ public class CohenSutherlandPanel extends JPanel {
 
                 // Comprimento maior que a diagonal da janela
                 double diagonal = Math.hypot(xMax - xMin, yMax - yMin);
-                double comprimento = diagonal * 1.3;
+                double comprimento = diagonal * 1.5; // Aumentado para vazar bem da tela
 
                 double lx1 = centroX + (comprimento / 2.0) * Math.cos(anguloAnimacao);
                 double ly1 = centroY + (comprimento / 2.0) * Math.sin(anguloAnimacao);
@@ -404,28 +494,28 @@ public class CohenSutherlandPanel extends JPanel {
 
                 ClipResult res = CohenSutherland.clipLine(lx1, ly1, lx2, ly2, xMin, xMax, yMin, yMax);
 
-                // Desenha a parte aceita da linha animada (Verde)
+                // Desenha a parte aceita da linha animada (VERDE)
                 if (res.accept) {
-                    g.setColor(new Color(0, 128, 0));
+                    g.setColor(new Color(0, 128, 0)); // Tom de verde
                     drawLineDDA(g, res.x1, res.y1, res.x2, res.y2);
                 }
 
-                // Desenha as partes rejeitadas (Vermelho) para visualizar o recorte acontecendo
+                // Desenha as partes rejeitadas (VERMELHO)
                 if (!showOnlyClipped) {
-                    g.setColor(new Color(187, 0, 0));
+                    g.setColor(Color.RED);
                     drawLineDDA(g, lx1, ly1, res.x1, res.y1);
                     drawLineDDA(g, lx2, ly2, res.x2, res.y2);
                 }
-                return; // Interrompe o desenho das outras linhas enquanto a animação ocorre
+                return;
             }
 
-            // Lógica de desenho de linhas estáticas (quando não está animando)
+            // Lógica de desenho de linhas estáticas
             for (LineDef l : lines) {
                 ClipResult res = CohenSutherland.clipLine(l.x1, l.y1, l.x2, l.y2, xMin, xMax, yMin, yMax);
 
                 if (!showOnlyClipped) {
-                    // Partes descartadas (Vermelho)
-                    g.setColor(new Color(187, 0, 0)); // #b00
+                    // Partes descartadas/recortadas (VERMELHO)
+                    g.setColor(Color.RED);
                     List<StepInfo> steps = res.steps;
                     for (int j = 1; j < steps.size(); j++) {
                         StepInfo prev = steps.get(j - 1);
@@ -438,8 +528,9 @@ public class CohenSutherlandPanel extends JPanel {
                     drawLineDDA(g, l.x1, l.y1, l.x2, l.y2);
                 }
 
+                // Parte Aceita (VERDE)
                 if (res.accept) {
-                    g.setColor(new Color(0, 128, 0)); // Verde
+                    g.setColor(new Color(0, 128, 0)); // Tom de verde
                     drawLineDDA(g, res.x1, res.y1, res.x2, res.y2);
                 }
             }

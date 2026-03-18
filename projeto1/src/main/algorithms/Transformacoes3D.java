@@ -3,7 +3,7 @@ package main.algorithms;
 public class Transformacoes3D {
 
     // ===============================
-    // Operações Básicas de Matrizes 4x4
+    // Operações Básicas (Idênticas ao JS Matrix3D.multiply)
     // ===============================
     public static double[][] multiplicarMatrizes(double[][] a, double[][] b) {
         double[][] result = new double[4][4];
@@ -19,17 +19,21 @@ public class Transformacoes3D {
 
     public static double[] multiplicarMatrizVetor(double[][] matrix, double[] vector) {
         double[] result = new double[4];
+        // Garante que o vetor de entrada tenha 4 elementos (x, y, z, w)
+        double[] v4 = {vector[0], vector[1], vector[2], (vector.length > 3 ? vector[3] : 1.0)};
+
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
-                result[i] += matrix[i][j] * vector[j];
+                result[i] += matrix[i][j] * v4[j];
             }
         }
         return result;
     }
 
     // ===============================
-    // Matrizes de Transformação 3D
+    // Matrizes de Transformação (Paridade Total com script.js)
     // ===============================
+
     public static double[][] translacao(double tx, double ty, double tz) {
         return new double[][]{
                 {1, 0, 0, tx},
@@ -84,6 +88,7 @@ public class Transformacoes3D {
         };
     }
 
+    // Ajustado para bater com Matrix3D.shear(shXY, shXZ, shYZ) do JS
     public static double[][] cisalhamento(double shXY, double shXZ, double shYZ) {
         return new double[][]{
                 {1, shXY, shXZ, 0},
@@ -93,18 +98,41 @@ public class Transformacoes3D {
         };
     }
 
+    // Ajustado para bater com Matrix3D.reflection(axis) do JS
     public static double[][] reflexao(String eixo) {
-        double[][] mat = {
+        switch (eixo.toLowerCase()) {
+            case "xy":
+                return new double[][]{
+                        {1, 0, 0, 0},
+                        {0, 1, 0, 0},
+                        {0, 0, -1, 0},
+                        {0, 0, 0, 1}
+                };
+            case "xz":
+                return new double[][]{
+                        {1, 0, 0, 0},
+                        {0, -1, 0, 0},
+                        {0, 0, 1, 0},
+                        {0, 0, 0, 1}
+                };
+            case "yz":
+                return new double[][]{
+                        {-1, 0, 0, 0},
+                        {0, 1, 0, 0},
+                        {0, 0, 1, 0},
+                        {0, 0, 0, 1}
+                };
+            default:
+                return Identidade();
+        }
+    }
+
+    public static double[][] Identidade() {
+        return new double[][]{
                 {1, 0, 0, 0},
                 {0, 1, 0, 0},
                 {0, 0, 1, 0},
                 {0, 0, 0, 1}
         };
-        switch (eixo.toLowerCase()) {
-            case "xy": mat[2][2] = -1; break; // Inverte Z
-            case "xz": mat[1][1] = -1; break; // Inverte Y
-            case "yz": mat[0][0] = -1; break; // Inverte X
-        }
-        return mat;
     }
 }
