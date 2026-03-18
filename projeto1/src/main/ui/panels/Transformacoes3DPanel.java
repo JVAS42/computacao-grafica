@@ -32,6 +32,7 @@ public class Transformacoes3DPanel extends JPanel {
     private List<String> historyLog = new ArrayList<>();
 
     // Inputs de Transformação
+    private JTextField txtTamanho; // Promovido a global para poder ser resetado
     private JTextField txtTx, txtTy, txtTz, txtRotAngle, txtSx, txtSy, txtSz;
     private JTextField txtShXY, txtShXZ, txtShYZ;
     private JComboBox<String> cbRotAxis, cbRefAxis, cbSeqType;
@@ -50,9 +51,9 @@ public class Transformacoes3DPanel extends JPanel {
 
         // 1. Painel Esquerdo (Controles)
         JScrollPane leftScroll = new JScrollPane(criarPainelEsquerdo());
-        leftScroll.setPreferredSize(new Dimension(500, 0)); // Espaço de sobra para evitar cortes
+        leftScroll.setPreferredSize(new Dimension(500, 0));
         leftScroll.getVerticalScrollBar().setUnitIncrement(16);
-        leftScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER); // Remove scroll horizontal
+        leftScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         leftScroll.setBorder(BorderFactory.createEmptyBorder());
         add(leftScroll, BorderLayout.WEST);
 
@@ -76,7 +77,7 @@ public class Transformacoes3DPanel extends JPanel {
 
         // --- Gerar Objeto ---
         JPanel pnlObj = criarSecao("Objeto 3D", new GridLayout(3, 1, 5, 8));
-        JTextField txtTamanho = estilizarInput(new JTextField("40"));
+        txtTamanho = estilizarInput(new JTextField("40")); // Agora é global
         JButton btnGerar = criarBotaoPrimario("Gerar Objeto");
         btnGerar.addActionListener(e -> gerarCubo(Double.parseDouble(txtTamanho.getText())));
 
@@ -218,7 +219,7 @@ public class Transformacoes3DPanel extends JPanel {
 
         JButton btnLimpar = criarBotaoPrimario("Limpar Tudo");
         btnLimpar.setBackground(new Color(180, 50, 50));
-        btnLimpar.addActionListener(e -> { gerarCubo(40); historyLog.clear(); btnResetVis.doClick(); });
+        btnLimpar.addActionListener(e -> limparTudo()); // <--- CHAMADA DO NOVO MÉTODO
         panel.add(Box.createVerticalStrut(15));
         panel.add(btnLimpar);
 
@@ -232,7 +233,6 @@ public class Transformacoes3DPanel extends JPanel {
         gbc.insets = new Insets(15, 15, 15, 15);
         gbc.gridy = 0;
 
-        // Instancia as telas base (brancas)
         canvasMundo = new JPanel() {
             @Override protected void paintComponent(Graphics g) {
                 super.paintComponent(g); desenharMundo((Graphics2D) g);
@@ -247,7 +247,6 @@ public class Transformacoes3DPanel extends JPanel {
         };
         canvasViewport.setBackground(Color.WHITE);
 
-        // Adiciona as telas usando o gerador de cabeçalho moderno e quadrado
         container.add(criarJanelaQuadrada("Mundo (500x500)", canvasMundo, 500), gbc);
         container.add(criarJanelaQuadrada("Viewport (300x300)", canvasViewport, 300), gbc);
 
@@ -258,13 +257,11 @@ public class Transformacoes3DPanel extends JPanel {
         return scroll;
     }
 
-    // Método para criar o aspecto moderno de "Janela"
     private JPanel criarJanelaQuadrada(String titulo, JPanel canvas, int size) {
         JPanel wrapper = new JPanel(new BorderLayout());
         wrapper.setBackground(Color.WHITE);
         wrapper.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
 
-        // Cabeçalho da janela
         JLabel lblHeader = new JLabel(titulo, SwingConstants.CENTER);
         lblHeader.setOpaque(true);
         lblHeader.setBackground(BG_BUTTON);
@@ -272,7 +269,6 @@ public class Transformacoes3DPanel extends JPanel {
         lblHeader.setFont(FONT_BOLD);
         lblHeader.setBorder(BorderFactory.createEmptyBorder(6, 0, 6, 0));
 
-        // O Canvas interno tem seu tamanho rígido
         canvas.setPreferredSize(new Dimension(size, size));
 
         wrapper.add(lblHeader, BorderLayout.NORTH);
@@ -372,6 +368,36 @@ public class Transformacoes3DPanel extends JPanel {
         sequence.clear();
         logHistory("Cubo gerado (Tamanho: " + size + ")");
         atualizarTelas();
+    }
+
+    // NOVO MÉTODO: Retorna absolutamente todos os campos visuais e lógicos para o estado padrão
+    private void limparTudo() {
+        // Reseta os campos de input de texto
+        if (txtTamanho != null) txtTamanho.setText("40");
+
+        txtTx.setText("0"); txtTy.setText("0"); txtTz.setText("0");
+        cbRotAxis.setSelectedIndex(0); txtRotAngle.setText("0");
+        txtSx.setText("1.5"); txtSy.setText("1.5"); txtSz.setText("1.5");
+        txtShXY.setText("0"); txtShXZ.setText("0"); txtShYZ.setText("0");
+        cbRefAxis.setSelectedIndex(0);
+        cbSeqType.setSelectedIndex(0);
+
+        // Reseta Viewport
+        chkViewPort.setSelected(true);
+        txtVpXMin.setText("-50"); txtVpYMin.setText("-50");
+        txtVpXMax.setText("50"); txtVpYMax.setText("50");
+
+        // Reseta os sliders e os valores lógicos de rotação visual
+        slRotX.setValue(0); slRotY.setValue(0); slRotZ.setValue(0); slZoom.setValue(100);
+        viewRotX = 0; viewRotY = 0; viewRotZ = 0; zoom = 100;
+
+        // Limpa o histórico completamente ANTES de gerar o cubo
+        historyLog.clear();
+        sequence.clear();
+        txtHistory.setText("");
+
+        // Gera o cubo inicial (a mensagem de cubo gerado será a primeira no histórico zerado)
+        gerarCubo(40);
     }
 
     private void aplicarTransformacaoDireta(double[][] matriz, String logMsg) {
