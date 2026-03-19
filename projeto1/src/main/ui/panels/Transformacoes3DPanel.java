@@ -32,7 +32,7 @@ public class Transformacoes3DPanel extends JPanel {
     private List<double[][]> sequence = new ArrayList<>();
     private DefaultListModel<String> listModelSeq = new DefaultListModel<>();
     private JList<String> listSequencia;
-
+    private List<String> historyLog = new ArrayList<>();
     // Controle do novo Histórico
     private StringBuilder historicoStr = new StringBuilder();
     private int historicoCount = 1;
@@ -147,7 +147,10 @@ public class Transformacoes3DPanel extends JPanel {
             double[][] mat = eixo.equals("X") ? Transformacoes3D.rotationX(ang) :
                     (eixo.equals("Y") ? Transformacoes3D.rotationY(ang) : Transformacoes3D.rotationZ(ang));
 
-            String descricao = "Rotação Eixo " + eixo + " (" + ang + "°)";
+            String descricao = "Rotação Eixo " + eixo + " (" + ang + "°)\n"
+                    + "Matriz Aplicada:\n" + formatarMatriz(mat)
+                    + "------------------------------------";
+
             aplicarEmTornoDoVertice1(mat, descricao);
         });
 
@@ -201,7 +204,10 @@ public class Transformacoes3DPanel extends JPanel {
             double shYZ = Double.parseDouble(txtShYZ.getText());
 
             double[][] matriz = Transformacoes3D.shear(shXY, shXZ, shYZ);
-            String descricao = "Cisalhamento (XY:" + shXY + ", XZ:" + shXZ + ", YZ:" + shYZ + ")";
+            String descricao = "Cisalhamento\n"
+                    + "Matriz Aplicada:\n" + formatarMatriz(matriz)
+                    + "------------------------------------";
+
             aplicarTransformacaoDireta(matriz, descricao);
         });
 
@@ -219,8 +225,12 @@ public class Transformacoes3DPanel extends JPanel {
 
         btnRef.addActionListener(e -> {
             String plano = (String) cbRefAxis.getSelectedItem();
+
             double[][] matriz = Transformacoes3D.reflection(plano);
-            String descricao = "Reflexão plano " + plano;
+            String descricao = "Reflexão plano " + plano + "\n"
+                    + "Matriz Aplicada:\n" + formatarMatriz(matriz)
+                    + "------------------------------------";
+
             aplicarTransformacaoDireta(matriz, descricao);
         });
 
@@ -284,8 +294,83 @@ public class Transformacoes3DPanel extends JPanel {
 
         JPanel pnlSeqBot = new JPanel(new GridLayout(1, 2, 5, 5));
         pnlSeqBot.setBackground(BG_PANEL);
-        JButton btnApplySeq = criarBotaoPrimario("Aplicar Tudo");
-        btnApplySeq.addActionListener(e -> aplicarSequencia());
+        JButton btnApplySeq = criarBotaoPrimario("Aplicar Sequência");
+        btnApplySeq.addActionListener(e -> {
+            if (sequence.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Nenhuma transformação na sequência.", "Aviso", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            // Pega as coordenadas iniciais do Vértice 1
+            double cx = vertices[0][0];
+            double cy = vertices[0][1];
+            double cz = vertices[0][2];
+
+            // Gera as matrizes globais de Ida e Volta
+            double[][] tIda = Transformacoes3D.translation(-cx, -cy, -cz);
+            double[][] tVolta = Transformacoes3D.translation(cx, cy, cz);
+
+            StringBuilder logSeq = new StringBuilder();
+            logSeq.append("=== SEQUÊNCIA DE ").append(sequence.size()).append(" TRANSFORMAÇÕES ===\n\n");
+
+            int passoAtual = 1;
+            
+            // Passo 1 sempre será a translação para a origem
+            logSeq.append("Passo ").append(passoAtual++).append(": Translação para a Origem (T -p):\n").append(formatarMatriz(tIda));
+
+            // A matriz final começa sendo a de Ida para irmos acumulando as próximas
+            double[][] matrizFinal = tIda;
+
+            // Percorre a fila e exibe CADA matriz individualmente como um novo passo
+            for (int i = 0; i < sequence.size(); i++) {
+                double[][] matrizPasso = sequence.get(i);
+                
+                String labelStr = listModelSeq.getElementAt(i);
+                String nomeTransformacao = labelStr.substring(labelStr.indexOf(' ') + 1);
+
+                logSeq.append("Passo ").append(passoAtual++).append(": Matriz Base - ").append(nomeTransformacao).append(":\n").append(formatarMatriz(matrizPasso));
+
+                // Multiplica acumulando na ordem correta
+                matrizFinal = Transformacoes3D.multiply(matrizPasso, matrizFinal);
+            }
+
+            // O Último passo é a translação de volta
+            logSeq.append("Passo ").append(passoAtual).append(": Translação de Volta (T p):\n").append(formatarMatriz(tVolta));
+            matrizFinal = Transformacoes3D.multiply(tVolta, matrizFinal);
+
+            logSeq.append("RESULTADO GERAL (Matriz Composta Final):\n").append(formatarMatriz(matrizFinal));
+            logSeq.append("------------------------------------\n");
+
+            // Aplica a Matriz Composta Final aos vértices do objeto
+            for (int i = 0; i < vertices.length; i++) {
+                vertices[i] = Transformacoes3D.multiplyVector(matrizFinal, vertices[i]);
+            }
+
+            // Constrói as Coordenadas Resultantes no topo
+            StringBuilder outputCompleto = new StringBuilder();
+            outputCompleto.append("Coordenadas Resultantes do Objeto:\n");
+            for (int i = 0; i < vertices.length; i++) {
+                outputCompleto.append(String.format(java.util.Locale.US, "   V%d: (%.2f, %.2f, %.2f)\n", 
+                                      (i + 1), vertices[i][0], vertices[i][1], vertices[i][2]));
+            }
+            outputCompleto.append("============================================================\n\n");
+
+            // Junta as Coordenadas com o Log da Sequência
+            outputCompleto.append(logSeq.toString());
+
+            // Atualiza Histórico e Tela
+            historyLog.add(outputCompleto.toString());
+            txtHistory.append(outputCompleto.toString());
+            txtHistory.setCaretPosition(txtHistory.getDocument().getLength());
+            
+            // Limpa as filas
+            sequence.clear();
+            if (listModelSeq != null) {
+                listModelSeq.clear();
+            }
+            
+            repaint();
+        });
         JButton btnClearSeq = criarBotaoPrimario("Limpar Fila");
         btnClearSeq.setBackground(new Color(180, 50, 50));
         btnClearSeq.addActionListener(e -> limparSequencia());
@@ -531,32 +616,52 @@ public class Transformacoes3DPanel extends JPanel {
         gerarCubo(40);
     }
 
-    private void aplicarTransformacaoDireta(double[][] matriz, String logMsg) {
+    private void aplicarTransformacaoDireta(double[][] matriz, String descricao) {
+        if (vertices == null || vertices.length == 0) return;
+
+        // Atualiza os vértices
         for (int i = 0; i < vertices.length; i++) {
-            double[] vTrans = Transformacoes3D.multiplyVector(matriz, new double[]{vertices[i][0], vertices[i][1], vertices[i][2], 1});
-            vertices[i][0] = vTrans[0];
-            vertices[i][1] = vTrans[1];
-            vertices[i][2] = vTrans[2];
+            vertices[i] = Transformacoes3D.multiplyVector(matriz, vertices[i]);
         }
-        addLog(logMsg, matriz);
-        atualizarTelas();
+
+        // Salva na sequência lógica
+        sequence.add(matriz);
+
+        // Atualiza a interface do Histórico
+        historyLog.add(descricao + "\n");
+        txtHistory.append(descricao + "\n");
+        txtHistory.setCaretPosition(txtHistory.getDocument().getLength()); // Desce a rolagem pro final
+
+        repaint();
     }
 
     private void aplicarEmTornoDoVertice1(double[][] matrizBase, String descricaoBase) {
         if (vertices == null || vertices.length == 0) return;
 
+        // Pega as coordenadas atuais do Vértice 1
         double cx = vertices[0][0];
         double cy = vertices[0][1];
         double cz = vertices[0][2];
 
+        // Gera as matrizes de Ida e Volta
         double[][] tIda = Transformacoes3D.translation(-cx, -cy, -cz);
         double[][] tVolta = Transformacoes3D.translation(cx, cy, cz);
 
+        // Multiplica as matrizes (Composição)
         double[][] passo1 = Transformacoes3D.multiply(matrizBase, tIda);
         double[][] matrizFinal = Transformacoes3D.multiply(tVolta, passo1);
 
-        String logFinal = descricaoBase + " (Em torno do Vértice 1)";
-        aplicarTransformacaoDireta(matrizFinal, logFinal);
+        // Monta o texto detalhado
+        StringBuilder sb = new StringBuilder();
+        sb.append(descricaoBase).append("\n");
+        sb.append("Passo 1: Translação para a Origem (T -p):\n").append(formatarMatriz(tIda));
+        sb.append("Passo 2: Matriz Base da Transformação:\n").append(formatarMatriz(matrizBase));
+        sb.append("Passo 3: Translação de Volta (T p):\n").append(formatarMatriz(tVolta));
+        sb.append("RESULTADO (Matriz Composta Final):\n").append(formatarMatriz(matrizFinal));
+        sb.append("------------------------------------");
+
+        // Envia para o método direto aplicar e registrar
+        aplicarTransformacaoDireta(matrizFinal, sb.toString());
     }
 
     private void adicionarASequencia() {
@@ -814,4 +919,20 @@ public class Transformacoes3DPanel extends JPanel {
             chkViewPort.setSelected(false);
         } catch(Exception ignored) {}
     }
+
+    // Método auxiliar para formatar a matriz em texto alinhado
+    private String formatarMatriz(double[][] matriz) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < matriz.length; i++) {
+            sb.append("  | ");
+            for (int j = 0; j < matriz[i].length; j++) {
+                // Formata com 2 casas decimais e espaçamento fixo para alinhar as colunas
+                sb.append(String.format("%6.2f ", matriz[i][j]));
+            }
+            sb.append("|\n");
+        }
+        return sb.toString();
+    }
+
+
 }
