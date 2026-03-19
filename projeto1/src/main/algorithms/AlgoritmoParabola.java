@@ -6,7 +6,7 @@ import java.util.List;
 
 public class AlgoritmoParabola {
 
-    // Desenha uma parábola do tipo y^2 = 4ax (eixo de simetria horizontal)
+    // Desenha uma parábola horizontal (y^2 = 4ax)
     public static List<Point> pontoMedio(int xc, int yc, int a, int limiteY) {
         List<Point> pontos = new ArrayList<>();
 
@@ -16,10 +16,7 @@ public class AlgoritmoParabola {
 
         adicionarSimetria(pontos, xc, yc, x, y);
 
-        // ============================================================
-        // Região 1: Inclinação dy/dx > 1 (Variação em Y é mais rápida)
-        // ============================================================
-        // f(x,y) = y^2 - 4ax. Ponto médio inicial (x+1/2, y+1)
+        // Região 1: Variação em Y é mais rápida
         p = 1.0 - 2.0 * a;
 
         while (y < 2 * a && y <= limiteY) {
@@ -33,11 +30,7 @@ public class AlgoritmoParabola {
             adicionarSimetria(pontos, xc, yc, x, y);
         }
 
-        // ============================================================
-        // Região 2: Inclinação dy/dx < 1 (Variação em X é mais rápida)
-        // ============================================================
-        // Substituindo Math.pow por cálculo direto para maior performance
-        // p = (y + 0.5)^2 - 4 * a * (x + 1)
+        // Região 2: Variação em X é mais rápida
         p = (y + 0.5) * (y + 0.5) - 4.0 * a * (x + 1);
 
         while (y <= limiteY) {
@@ -55,7 +48,7 @@ public class AlgoritmoParabola {
     }
 
     private static void adicionarSimetria(List<Point> pontos, int xc, int yc, int x, int y) {
-        pontos.add(new Point(xc + x, yc + y)); // Parte superior
-        pontos.add(new Point(xc + x, yc - y)); // Reflexo inferior
+        pontos.add(new Point(xc + x, yc + y));
+        pontos.add(new Point(xc + x, yc - y));
     }
 }

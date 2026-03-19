@@ -11,53 +11,47 @@ import java.util.List;
 
 public class CircunferenciaPanel extends JPanel {
 
-    // Painel Esquerdo
     private JLabel lblCoordenadaLive, lblQuadrante;
     private JComboBox<String> comboAlgoritmo;
     private JTextField txtX, txtY, txtRaio;
     private JButton btnDesenhar;
 
-    // Painel Direito
     private JLabel lblCurrentX, lblCurrentY, lblCurrentRaio;
     private JPanel scrollContainer;
     private JPanel painelClickCoords;
     private JLabel lblNoLineMessage;
 
-    // Canvas e Estado
     private CanvasPanel canvas;
     private int clickCount = 0;
-    private int cx, cy; // Centro da circunferência
+    private int cx, cy;
     private List<CirculoDef> circulos = new ArrayList<>();
 
     public CircunferenciaPanel() {
         setLayout(new BorderLayout());
-        setBackground(Color.decode("#F0F0F0")); // Fundo cinza claro
+        setBackground(Color.decode("#F0F0F0"));
 
         setupPainelEsquerdo();
         setupCanvas();
         setupPainelDireito();
     }
 
-    // PAINEL ESQUERDO ************************************************************
     private void setupPainelEsquerdo() {
         JPanel painelEsquerdo = new JPanel(new BorderLayout());
         painelEsquerdo.setBackground(Color.decode("#F0F0F0"));
-        painelEsquerdo.setPreferredSize(new Dimension(320, 0)); // Aumentado para evitar cortes
+        painelEsquerdo.setPreferredSize(new Dimension(320, 0));
         painelEsquerdo.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(0, 0, 0, 1, Color.LIGHT_GRAY),
                 new EmptyBorder(15, 15, 15, 15)
         ));
 
-        // Container superior (Textos e Inputs)
         JPanel containerNorte = new JPanel();
         containerNorte.setLayout(new BoxLayout(containerNorte, BoxLayout.Y_AXIS));
         containerNorte.setOpaque(false);
 
-        // Topo: Info
         JLabel lblTituloEsq = new JLabel("INFORMAÇÕES DO PLANO");
         lblTituloEsq.setFont(new Font("Segoe UI", Font.BOLD, 14));
         lblTituloEsq.setForeground(Color.decode("#213555"));
-        lblTituloEsq.setAlignmentX(Component.LEFT_ALIGNMENT); // Alinhado à esquerda
+        lblTituloEsq.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         containerNorte.add(lblTituloEsq);
         containerNorte.add(Box.createVerticalStrut(5));
@@ -65,7 +59,6 @@ public class CircunferenciaPanel extends JPanel {
         JSeparator sepEsq = new JSeparator(SwingConstants.HORIZONTAL);
         sepEsq.setAlignmentX(Component.LEFT_ALIGNMENT);
         containerNorte.add(sepEsq);
-
         containerNorte.add(Box.createVerticalStrut(10));
 
         lblCoordenadaLive = new JLabel("Coordenada: (0, 0)");
@@ -81,14 +74,13 @@ public class CircunferenciaPanel extends JPanel {
         containerNorte.add(lblQuadrante);
         containerNorte.add(Box.createVerticalStrut(25));
 
-        // Base: Controles (Usando GridBagLayout para alinhar rótulos à esquerda)
         JPanel painelInputs = new JPanel(new GridBagLayout());
         painelInputs.setOpaque(false);
         painelInputs.setAlignmentX(Component.LEFT_ALIGNMENT);
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.insets = new Insets(5, 0, 5, 10);
-        gbc.anchor = GridBagConstraints.WEST; // Força tudo para a esquerda
+        gbc.anchor = GridBagConstraints.WEST;
 
         String[] algs = {"Equação Explícita", "Trigonométrico", "Ponto Médio"};
         comboAlgoritmo = new JComboBox<>(algs);
@@ -101,7 +93,7 @@ public class CircunferenciaPanel extends JPanel {
         adicionarCampoGrid(painelInputs, "Algoritmo:", comboAlgoritmo, gbc, 0);
 
         gbc.gridx = 0; gbc.gridy = 1; gbc.gridwidth = 2;
-        painelInputs.add(Box.createVerticalStrut(10), gbc); // Espaço
+        painelInputs.add(Box.createVerticalStrut(10), gbc);
 
         adicionarCampoGrid(painelInputs, "X (Centro):", txtX, gbc, 2);
         adicionarCampoGrid(painelInputs, "Y (Centro):", txtY, gbc, 3);
@@ -110,7 +102,6 @@ public class CircunferenciaPanel extends JPanel {
         containerNorte.add(painelInputs);
         painelEsquerdo.add(containerNorte, BorderLayout.NORTH);
 
-        // Botão Desenhar (Rodapé)
         btnDesenhar = estilizarBotao("DESENHAR");
         btnDesenhar.addActionListener(e -> acaoDesenharBtn());
 
@@ -137,17 +128,15 @@ public class CircunferenciaPanel extends JPanel {
         pnl.add(comp, gbc);
     }
 
-    // PAINEL DIREITO ************************
     private void setupPainelDireito() {
         JPanel painelDireito = new JPanel(new BorderLayout());
         painelDireito.setBackground(Color.decode("#F0F0F0"));
-        painelDireito.setPreferredSize(new Dimension(320, 0)); // Aumentado para evitar cortes
+        painelDireito.setPreferredSize(new Dimension(320, 0));
         painelDireito.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(0, 1, 0, 0, Color.LIGHT_GRAY),
                 new EmptyBorder(15, 15, 15, 15)
         ));
 
-        // Topo
         JPanel pnlTopoDir = new JPanel();
         pnlTopoDir.setLayout(new BoxLayout(pnlTopoDir, BoxLayout.Y_AXIS));
         pnlTopoDir.setOpaque(false);
@@ -155,7 +144,7 @@ public class CircunferenciaPanel extends JPanel {
         JLabel lblTituloDir = new JLabel("INFORMAÇÕES DA CIRCUNFERÊNCIA");
         lblTituloDir.setFont(new Font("Segoe UI", Font.BOLD, 14));
         lblTituloDir.setForeground(Color.decode("#213555"));
-        lblTituloDir.setAlignmentX(Component.LEFT_ALIGNMENT); // Alinhado à esquerda
+        lblTituloDir.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         pnlTopoDir.add(lblTituloDir);
         pnlTopoDir.add(Box.createVerticalStrut(5));
@@ -163,7 +152,6 @@ public class CircunferenciaPanel extends JPanel {
         JSeparator sepDir = new JSeparator(SwingConstants.HORIZONTAL);
         sepDir.setAlignmentX(Component.LEFT_ALIGNMENT);
         pnlTopoDir.add(sepDir);
-
         pnlTopoDir.add(Box.createVerticalStrut(10));
 
         lblNoLineMessage = new JLabel("Nenhuma circunferência desenhada");
@@ -172,8 +160,7 @@ public class CircunferenciaPanel extends JPanel {
         lblNoLineMessage.setAlignmentX(Component.LEFT_ALIGNMENT);
         pnlTopoDir.add(lblNoLineMessage);
 
-        // Info do circulo atual
-        painelClickCoords = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0)); // Alinhado à esquerda
+        painelClickCoords = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         painelClickCoords.setOpaque(false);
         painelClickCoords.setAlignmentX(Component.LEFT_ALIGNMENT);
 
@@ -184,10 +171,8 @@ public class CircunferenciaPanel extends JPanel {
 
         pnlTopoDir.add(painelClickCoords);
         pnlTopoDir.add(Box.createVerticalStrut(15));
-
         painelDireito.add(pnlTopoDir, BorderLayout.NORTH);
 
-        // Centro (Scroll)
         scrollContainer = new JPanel();
         scrollContainer.setLayout(new BoxLayout(scrollContainer, BoxLayout.Y_AXIS));
         scrollContainer.setBackground(Color.WHITE);
@@ -197,7 +182,6 @@ public class CircunferenciaPanel extends JPanel {
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
         painelDireito.add(scrollPane, BorderLayout.CENTER);
 
-        // Base (Limpar)
         JButton btnLimpar = estilizarBotao("LIMPAR TELA");
         btnLimpar.addActionListener(e -> limparTudo());
 
@@ -207,7 +191,6 @@ public class CircunferenciaPanel extends JPanel {
         pnlBtnDir.add(btnLimpar, BorderLayout.CENTER);
 
         painelDireito.add(pnlBtnDir, BorderLayout.SOUTH);
-
         add(painelDireito, BorderLayout.EAST);
     }
 
@@ -223,8 +206,6 @@ public class CircunferenciaPanel extends JPanel {
         return pnl;
     }
 
-
-    // UTILITÁRIOS DE ESTILO ***************************
     private JTextField estilizarTextField(int colunas) {
         JTextField txt = new JTextField(colunas);
         txt.setFont(new Font("Segoe UI", Font.PLAIN, 13));
@@ -242,26 +223,16 @@ public class CircunferenciaPanel extends JPanel {
         btn.setFont(new Font("Segoe UI", Font.BOLD, 13));
         btn.setFocusPainted(false);
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        // Tamanho padronizado e preenchimento total do espaço
         btn.setPreferredSize(new Dimension(280, 40));
         return btn;
     }
 
-    // CANVAS *************************************
     private void setupCanvas() {
         JPanel wrapper = new JPanel(new GridBagLayout());
         wrapper.setBackground(Color.decode("#F0F0F0"));
 
-        // Título central
         JPanel centerPanel = new JPanel(new BorderLayout());
         centerPanel.setOpaque(false);
-
-        // Mantido o título original, apenas com fonte atualizada
-        /*JLabel lblVoltar = new JLabel("Voltar ao Início", SwingConstants.CENTER);
-        lblVoltar.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        lblVoltar.setForeground(Color.GRAY);
-        lblVoltar.setBorder(new EmptyBorder(0, 0, 15, 0));
-        centerPanel.add(lblVoltar, BorderLayout.NORTH);*/
 
         canvas = new CanvasPanel();
         canvas.setPreferredSize(new Dimension(500, 500));
@@ -271,7 +242,6 @@ public class CircunferenciaPanel extends JPanel {
         add(wrapper, BorderLayout.CENTER);
     }
 
-    // LÓGICA E EVENTOS ********************************8
     private void limparTudo() {
         circulos.clear();
         clickCount = 0;
@@ -282,7 +252,6 @@ public class CircunferenciaPanel extends JPanel {
         scrollContainer.removeAll();
         scrollContainer.revalidate();
         scrollContainer.repaint();
-
         canvas.repaint();
     }
 
@@ -300,6 +269,7 @@ public class CircunferenciaPanel extends JPanel {
         }
     }
 
+    // Atualiza o painel direito com os pontos gerados pela circunferência selecionada
     private void atualizarPainelDireito() {
         if (circulos.isEmpty()) return;
 
@@ -313,7 +283,6 @@ public class CircunferenciaPanel extends JPanel {
         lblCurrentRaio.setText(String.valueOf(ultimoCirculo.r));
 
         String alg = (String) comboAlgoritmo.getSelectedItem();
-        scrollContainer.removeAll(); // Limpa para mostrar os pontos atualizados
 
         for (CirculoDef c : circulos) {
             List<Point> pontos;
@@ -325,7 +294,6 @@ public class CircunferenciaPanel extends JPanel {
                 pontos = AlgoritmoCircunferencia.pontoMedio(c.x, c.y, c.r);
             }
 
-            // A lógica original limpava o painel no loop, mantive para exibir os pontos do último círculo.
             scrollContainer.removeAll();
 
             int count = 1;
@@ -376,10 +344,9 @@ public class CircunferenciaPanel extends JPanel {
         }
     }
 
-    // ÁREA DE DESENHO (Canvas) ****************************************
     private class CanvasPanel extends JPanel {
         public CanvasPanel() {
-            setBackground(Color.WHITE); // Tela permanece branca
+            setBackground(Color.WHITE);
             setBorder(BorderFactory.createLineBorder(Color.decode("#CCCCCC"), 1));
 
             addMouseMotionListener(new MouseMotionAdapter() {
@@ -406,7 +373,6 @@ public class CircunferenciaPanel extends JPanel {
                         txtY.setText(String.valueOf(cy));
                         clickCount = 1;
                     } else if (clickCount == 1) {
-                        // Calcula o raio usando a distância do centro (cx, cy) para o clique atual (x, y)
                         int r = (int) Math.round(Math.sqrt(Math.pow(x - cx, 2) + Math.pow(y - cy, 2)));
                         txtRaio.setText(String.valueOf(r));
 
@@ -419,18 +385,17 @@ public class CircunferenciaPanel extends JPanel {
             });
         }
 
+        // Renderiza as circunferências e eixos no Canvas
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
             int w = getWidth();
             int h = getHeight();
 
-            // Desenha os eixos
             g.setColor(new Color(220, 220, 220));
             g.drawLine(w / 2, 0, w / 2, h);
             g.drawLine(0, h / 2, w, h / 2);
 
-            // Cor do desenho alterada para RED
             g.setColor(Color.RED);
             String alg = (String) comboAlgoritmo.getSelectedItem();
 
@@ -447,7 +412,6 @@ public class CircunferenciaPanel extends JPanel {
                 for (Point p : pontos) {
                     int canvasX = p.x + w / 2;
                     int canvasY = h / 2 - p.y;
-                    // Desenha o Pixel exatamente com tamanho 1x1
                     g.fillRect(canvasX, canvasY, 1, 1);
                 }
             }

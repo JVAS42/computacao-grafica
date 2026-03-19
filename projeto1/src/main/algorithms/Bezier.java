@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Bezier {
+
+    // Gera pontos da curva de Bézier Cúbica usando a fórmula polinomial explícita
     public List<Point> generateBezier(List<Point> controlPoints, int segments) {
         List<Point> curvePoints = new ArrayList<>();
         if (controlPoints.size() < 4) return curvePoints;
@@ -17,7 +19,6 @@ public class Bezier {
         for (int i = 0; i <= segments; i++) {
             double u = (double) i / segments;
 
-            // Fórmula da Bézier Cúbica: (1-u)^3*P0 + 3u(1-u)^2*P1 + 3u^2(1-u)*P2 + u^3*P3
             double b0 = Math.pow(1 - u, 3);
             double b1 = 3 * u * Math.pow(1 - u, 2);
             double b2 = 3 * Math.pow(u, 2) * (1 - u);

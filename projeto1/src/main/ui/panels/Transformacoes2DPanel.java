@@ -17,21 +17,15 @@ public class Transformacoes2DPanel extends JPanel {
     private final int LARGURA_LATERAL_ESQ = 320;
     private final int LARGURA_LATERAL_DIR = 280;
 
-    // Controles Esq - Objeto
     private JTextField txtQuadTamanho, txtQuadPosX, txtQuadPosY;
-
-    // Controles Esq - Translação
-    private JTextField txtTransX, txtTransY;
-    private JTextField txtEscalaX, txtEscalaY;
+    private JTextField txtTransX, txtTransY, txtEscalaX, txtEscalaY;
     private JTextField txtRotX, txtRotY, txtRotAngulo;
     private JCheckBox chkRefX, chkRefY;
     private JTextField txtCisX, txtCisY;
 
-    // Controles Dir e Histórico
     private JTextArea txtVertices, txtHistorico;
     private JTextField txtCentro, txtDimensoes;
 
-    // Campos Sequência
     private JComboBox<String> comboSequencia;
     private JPanel panelSeqParams;
     private CardLayout cardSeqParams;
@@ -39,7 +33,6 @@ public class Transformacoes2DPanel extends JPanel {
     private JTextField seqEscalaX, seqEscalaY, seqCisX, seqCisY;
     private JCheckBox seqRefX, seqRefY;
 
-    // Estado
     private MundoCanvas canvasMundo;
     private ViewportCanvas canvasViewport;
     private List<Point2D.Double> quadradoAtual = new ArrayList<>();
@@ -47,7 +40,6 @@ public class Transformacoes2DPanel extends JPanel {
     private StringBuilder historicoStr = new StringBuilder();
     private int historicoCount = 1;
 
-    // Controles de Mapeamento (Window & Viewport)
     private JTextField txtWinMinX, txtWinMaxX, txtWinMinY, txtWinMaxY;
     private JTextField txtViewMinX, txtViewMaxX, txtViewMinY, txtViewMaxY;
     private JCheckBox chkAtivarMapeamento;
@@ -57,25 +49,21 @@ public class Transformacoes2DPanel extends JPanel {
         setBackground(COR_FUNDO);
         setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        // 1. Inicializa as seções independentes
         JScrollPane painelEsquerdo = setupPainelEsquerdo();
         JPanel painelCentral = setupPainelCentral();
         JScrollPane painelDireito = setupPainelDireito();
         JPanel painelHistorico = setupPainelHistorico();
 
-        // 2. Agrupa a área central superior (Mundo/Viewport + Informações Direitas)
         JPanel painelSuperior = new JPanel(new BorderLayout(10, 10));
         painelSuperior.setBackground(COR_FUNDO);
         painelSuperior.add(painelCentral, BorderLayout.CENTER);
         painelSuperior.add(painelDireito, BorderLayout.EAST);
 
-        // 3. Agrupa a área superior e o histórico embaixo
         JPanel painelConteudo = new JPanel(new BorderLayout(10, 10));
         painelConteudo.setBackground(COR_FUNDO);
         painelConteudo.add(painelSuperior, BorderLayout.CENTER);
         painelConteudo.add(painelHistorico, BorderLayout.SOUTH);
 
-        // 4. Adiciona tudo ao painel principal
         add(painelEsquerdo, BorderLayout.WEST);
         add(painelConteudo, BorderLayout.CENTER);
     }
@@ -85,7 +73,6 @@ public class Transformacoes2DPanel extends JPanel {
         containerEsq.setLayout(new BoxLayout(containerEsq, BoxLayout.Y_AXIS));
         containerEsq.setBackground(COR_FUNDO);
 
-        // 1. Objeto 2D
         JPanel pnlQuad = new JPanel(new GridBagLayout());
         pnlQuad.setBorder(BorderFactory.createTitledBorder("Objeto 2D"));
         pnlQuad.setBackground(COR_FUNDO);
@@ -96,7 +83,6 @@ public class Transformacoes2DPanel extends JPanel {
         containerEsq.add(pnlQuad);
         containerEsq.add(Box.createVerticalStrut(10));
 
-        // 2. Transformações
         JTabbedPane tabTransformacoes = new JTabbedPane();
         tabTransformacoes.addTab("Trans", criarPainelTranslacao());
         tabTransformacoes.addTab("Rot", criarPainelRotacao());
@@ -106,11 +92,8 @@ public class Transformacoes2DPanel extends JPanel {
         containerEsq.add(tabTransformacoes);
         containerEsq.add(Box.createVerticalStrut(10));
 
-        // 3. Sequência
         containerEsq.add(criarPainelSequencia());
         containerEsq.add(Box.createVerticalStrut(10));
-
-        // 4. Mapeamento (Window/Viewport)
         containerEsq.add(criarPainelMapeamento());
 
         JScrollPane scroll = new JScrollPane(containerEsq);
@@ -125,10 +108,8 @@ public class Transformacoes2DPanel extends JPanel {
         containerCentro.setBackground(COR_FUNDO);
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridy = 0;
-        gbc.insets = new Insets(0, 20, 0, 20);
+        gbc.gridy = 0; gbc.insets = new Insets(0, 20, 0, 20);
 
-        // --- Janela do Mundo ---
         JPanel wrapperMundo = new JPanel(new BorderLayout(0, 5));
         wrapperMundo.setBackground(COR_FUNDO);
         JLabel lblMundo = new JLabel("Mundo (500 x 500)", SwingConstants.CENTER);
@@ -143,7 +124,6 @@ public class Transformacoes2DPanel extends JPanel {
         wrapperMundo.add(lblMundo, BorderLayout.NORTH);
         wrapperMundo.add(boxMundo, BorderLayout.CENTER);
 
-        // --- Janela da Viewport ---
         JPanel wrapperViewport = new JPanel(new BorderLayout(0, 5));
         wrapperViewport.setBackground(COR_FUNDO);
         JLabel lblVp = new JLabel("Viewport (300 x 300)", SwingConstants.CENTER);
@@ -210,7 +190,6 @@ public class Transformacoes2DPanel extends JPanel {
 
         txtHistorico = new JTextArea(10, 20);
         txtHistorico.setEditable(false);
-        // Fonte Monospaced é essencial para as matrizes ficarem alinhadas perfeitamente
         txtHistorico.setFont(new Font("Monospaced", Font.PLAIN, 13));
 
         JScrollPane scrollHist = new JScrollPane(txtHistorico);
@@ -221,8 +200,6 @@ public class Transformacoes2DPanel extends JPanel {
 
         return pnlHist;
     }
-
-    // CRIAÇÃO DE PAINÉIS SECUNDÁRIOS **************************8
 
     private JPanel criarPainelTranslacao() {
         JPanel p = new JPanel(new GridBagLayout()); p.setBackground(COR_FUNDO);
@@ -268,11 +245,15 @@ public class Transformacoes2DPanel extends JPanel {
     }
 
     private JPanel criarPainelSequencia() {
-        JPanel pnlSeq = new JPanel(new GridBagLayout()); pnlSeq.setBorder(BorderFactory.createTitledBorder("Sequência")); pnlSeq.setBackground(COR_FUNDO);
+        JPanel pnlSeq = new JPanel(new GridBagLayout());
+        pnlSeq.setBorder(BorderFactory.createTitledBorder("Sequência")); pnlSeq.setBackground(COR_FUNDO);
         comboSequencia = new JComboBox<>(new String[]{"Translação", "Rotação", "Escala", "Cisalhamento", "Reflexão"});
+
         GridBagConstraints gbc = new GridBagConstraints(); gbc.fill = GridBagConstraints.HORIZONTAL; gbc.weightx = 1.0; gbc.gridwidth = 2; gbc.gridx = 0; gbc.gridy = 0; gbc.insets = new Insets(2, 5, 5, 5); pnlSeq.add(comboSequencia, gbc);
+
         cardSeqParams = new CardLayout(); panelSeqParams = new JPanel(cardSeqParams); panelSeqParams.setBackground(COR_FUNDO);
         panelSeqParams.add(criarPanelSeqTrans(), "Translação"); panelSeqParams.add(criarPanelSeqRot(), "Rotação"); panelSeqParams.add(criarPanelSeqEscala(), "Escala"); panelSeqParams.add(criarPanelSeqCis(), "Cisalhamento"); panelSeqParams.add(criarPanelSeqRef(), "Reflexão");
+
         gbc.gridy = 1; pnlSeq.add(panelSeqParams, gbc);
         adicionarBotaoGrid(pnlSeq, 2, "Adicionar à Sequência", e -> adicionarSequencia());
         adicionarBotaoGrid(pnlSeq, 3, "Aplicar Sequência", e -> aplicarSequencia());
@@ -284,18 +265,22 @@ public class Transformacoes2DPanel extends JPanel {
         JPanel p = new JPanel(new GridBagLayout()); p.setBackground(COR_FUNDO);
         adicionarComponenteGrid(p, 0, "X:", seqTransX = new JTextField("0")); adicionarComponenteGrid(p, 1, "Y:", seqTransY = new JTextField("0")); return p;
     }
+
     private JPanel criarPanelSeqRot() {
         JPanel p = new JPanel(new GridBagLayout()); p.setBackground(COR_FUNDO);
         adicionarComponenteGrid(p, 0, "Ang:", seqRotAng = new JTextField("0")); adicionarComponenteGrid(p, 1, "CX:", seqRotCX = new JTextField("0")); adicionarComponenteGrid(p, 2, "CY:", seqRotCY = new JTextField("0")); return p;
     }
+
     private JPanel criarPanelSeqEscala() {
         JPanel p = new JPanel(new GridBagLayout()); p.setBackground(COR_FUNDO);
         adicionarComponenteGrid(p, 0, "X:", seqEscalaX = new JTextField("1")); adicionarComponenteGrid(p, 1, "Y:", seqEscalaY = new JTextField("1")); return p;
     }
+
     private JPanel criarPanelSeqCis() {
         JPanel p = new JPanel(new GridBagLayout()); p.setBackground(COR_FUNDO);
         adicionarComponenteGrid(p, 0, "X:", seqCisX = new JTextField("0")); adicionarComponenteGrid(p, 1, "Y:", seqCisY = new JTextField("0")); return p;
     }
+
     private JPanel criarPanelSeqRef() {
         JPanel p = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0)); p.setBackground(COR_FUNDO);
         p.add(seqRefX = new JCheckBox("X")); p.add(seqRefY = new JCheckBox("Y")); seqRefX.setBackground(COR_FUNDO); seqRefY.setBackground(COR_FUNDO); return p;
@@ -391,15 +376,8 @@ public class Transformacoes2DPanel extends JPanel {
                 return;
             }
 
-            if (vp.minX < 0 || vp.minY < 0 ||
-                    vp.minX >= vp.maxX || vp.minY >= vp.maxY ||
-                    vp.maxX > getWidth() || vp.maxY > getHeight()) {
-
-                JOptionPane.showMessageDialog(this,
-                        "Valores inválidos para a Viewport.\n" +
-                                "Eles devem estar dentro do canvas (0 a " + getWidth() + ") e Min menor que Max.",
-                        "Erro de Validação",
-                        JOptionPane.ERROR_MESSAGE);
+            if (vp.minX < 0 || vp.minY < 0 || vp.minX >= vp.maxX || vp.minY >= vp.maxY || vp.maxX > getWidth() || vp.maxY > getHeight()) {
+                JOptionPane.showMessageDialog(this, "Valores inválidos para a Viewport.\nEles devem estar dentro do canvas (0 a " + getWidth() + ") e Min menor que Max.", "Erro de Validação", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
@@ -410,7 +388,7 @@ public class Transformacoes2DPanel extends JPanel {
         }
     }
 
-    // Lógica de Transformações **********************************
+    // Processamento Lógico
     private void gerarQuadrado() {
         try {
             double size = Double.parseDouble(txtQuadTamanho.getText());
@@ -436,14 +414,9 @@ public class Transformacoes2DPanel extends JPanel {
             double[][] matriz = Transformacoes2D.criarMatrizTranslacao(dx, dy);
             addLogComposto(
                     "Translação (dx=" + dx + ", dy=" + dy + ")",
-                    new String[]{
-                            "Matriz de Translação"
-                    },
-                    new double[][][]{
-                            matriz
-                    }
+                    new String[]{"Matriz de Translação"},
+                    new double[][][]{matriz}
             );
-
             aplicarMatrizEmTodos(matriz, "Resultado da Translação");
         } catch (NumberFormatException e) { JOptionPane.showMessageDialog(this, "Valores numéricos inválidos.", "Erro", JOptionPane.ERROR_MESSAGE); }
     }
@@ -458,20 +431,11 @@ public class Transformacoes2DPanel extends JPanel {
             double[][] s = Transformacoes2D.criarMatrizEscala(sx, sy);
             double[][] t2 = Transformacoes2D.criarMatrizTranslacao(origem.x, origem.y);
             double[][] matrizFinal = Transformacoes2D.multiplicarMatrizes(t2, Transformacoes2D.multiplicarMatrizes(s, t1));
+
             addLogComposto(
                     "Escala em relação ao ponto (" + origem.x + "," + origem.y + ")",
-                    new String[]{
-                            "1) Translação para origem",
-                            "2) Matriz de Escala",
-                            "3) Translação de volta",
-                            "4) Matriz Final (T2 × S × T1)"
-                    },
-                    new double[][][]{
-                            t1,
-                            s,
-                            t2,
-                            matrizFinal
-                    }
+                    new String[]{"1) Translação para origem", "2) Matriz de Escala", "3) Translação de volta", "4) Matriz Final (T2 × S × T1)"},
+                    new double[][][]{t1, s, t2, matrizFinal}
             );
 
             aplicarMatrizEmTodos(matrizFinal, "Resultado da Escala");
@@ -488,24 +452,12 @@ public class Transformacoes2DPanel extends JPanel {
             double[][] r = Transformacoes2D.criarMatrizRotacao(ang, 0, 0);
             double[][] t2 = Transformacoes2D.criarMatrizTranslacao(cx, cy);
 
-            double[][] matrizFinal =
-                    Transformacoes2D.multiplicarMatrizes(t2,
-                            Transformacoes2D.multiplicarMatrizes(r, t1));
+            double[][] matrizFinal = Transformacoes2D.multiplicarMatrizes(t2, Transformacoes2D.multiplicarMatrizes(r, t1));
 
             addLogComposto(
                     "Rotação de " + ang + "° em (" + cx + "," + cy + ")",
-                    new String[]{
-                            "1) Translação para origem",
-                            "2) Matriz de Rotação",
-                            "3) Translação de volta",
-                            "4) Matriz Final (T2 × R × T1)"
-                    },
-                    new double[][][]{
-                            t1,
-                            r,
-                            t2,
-                            matrizFinal
-                    }
+                    new String[]{"1) Translação para origem", "2) Matriz de Rotação", "3) Translação de volta", "4) Matriz Final (T2 × R × T1)"},
+                    new double[][][]{t1, r, t2, matrizFinal}
             );
 
             aplicarMatrizEmTodos(matrizFinal, "Resultado da Rotação");
@@ -520,44 +472,20 @@ public class Transformacoes2DPanel extends JPanel {
 
         if (!rx && !ry) return;
 
-        // 🔹 Ponto de referência (mesmo padrão da escala)
         Point2D.Double origem = quadradoAtual.get(0);
-
-        // 🔹 Matrizes
         double[][] t1 = Transformacoes2D.criarMatrizTranslacao(-origem.x, -origem.y);
         double[][] r  = Transformacoes2D.criarMatrizReflexao(rx, ry);
         double[][] t2 = Transformacoes2D.criarMatrizTranslacao(origem.x, origem.y);
 
-        // 🔹 Matriz composta
-        double[][] matrizFinal =
-                Transformacoes2D.multiplicarMatrizes(
-                        t2,
-                        Transformacoes2D.multiplicarMatrizes(r, t1)
-                );
+        double[][] matrizFinal = Transformacoes2D.multiplicarMatrizes(t2, Transformacoes2D.multiplicarMatrizes(r, t1));
 
-        // 🔹 Log completo (igual à escala)
         addLogComposto(
                 "Reflexão em relação ao ponto (" + origem.x + "," + origem.y + ")",
-                new String[]{
-                        "1) Translação para origem",
-                        "2) Matriz de Reflexão",
-                        "3) Translação de volta",
-                        "4) Matriz Final (T2 × R × T1)"
-                },
-                new double[][][]{
-                        t1,
-                        r,
-                        t2,
-                        matrizFinal
-                }
+                new String[]{"1) Translação para origem", "2) Matriz de Reflexão", "3) Translação de volta", "4) Matriz Final (T2 × R × T1)"},
+                new double[][][]{t1, r, t2, matrizFinal}
         );
 
-        // 🔹 Aplicar transformação
-        aplicarMatrizEmTodos(matrizFinal,
-                "Resultado da Reflexão: " +
-                        (rx ? "X " : "") +
-                        (ry ? "Y" : "")
-        );
+        aplicarMatrizEmTodos(matrizFinal, "Resultado da Reflexão: " + (rx ? "X " : "") + (ry ? "Y" : ""));
     }
 
     private void aplicarCisalhamento() {
@@ -567,49 +495,23 @@ public class Transformacoes2DPanel extends JPanel {
             double shx = Double.parseDouble(txtCisX.getText());
             double shy = Double.parseDouble(txtCisY.getText());
 
-            // 🔹 Ponto de referência (mesmo padrão usado na escala/reflexão)
             Point2D.Double origem = quadradoAtual.get(0);
-
-            // 🔹 Matrizes
             double[][] t1 = Transformacoes2D.criarMatrizTranslacao(-origem.x, -origem.y);
             double[][] sh = Transformacoes2D.criarMatrizCisalhamento(shx, shy);
             double[][] t2 = Transformacoes2D.criarMatrizTranslacao(origem.x, origem.y);
 
-            // 🔹 Matriz composta
-            double[][] matrizFinal =
-                    Transformacoes2D.multiplicarMatrizes(
-                            t2,
-                            Transformacoes2D.multiplicarMatrizes(sh, t1)
-                    );
+            double[][] matrizFinal = Transformacoes2D.multiplicarMatrizes(t2, Transformacoes2D.multiplicarMatrizes(sh, t1));
 
-            // 🔹 Log composto (igual escala e reflexão)
             addLogComposto(
                     "Cisalhamento em relação ao ponto (" + origem.x + "," + origem.y + ")",
-                    new String[]{
-                            "1) Translação para origem",
-                            "2) Matriz de Cisalhamento",
-                            "3) Translação de volta",
-                            "4) Matriz Final (T2 × Sh × T1)"
-                    },
-                    new double[][][]{
-                            t1,
-                            sh,
-                            t2,
-                            matrizFinal
-                    }
+                    new String[]{"1) Translação para origem", "2) Matriz de Cisalhamento", "3) Translação de volta", "4) Matriz Final (T2 × Sh × T1)"},
+                    new double[][][]{t1, sh, t2, matrizFinal}
             );
 
-            // 🔹 Aplicar transformação
-            aplicarMatrizEmTodos(
-                    matrizFinal,
-                    "Resultado do Cisalhamento (Shx=" + shx + ", Shy=" + shy + ")"
-            );
+            aplicarMatrizEmTodos(matrizFinal, "Resultado do Cisalhamento (Shx=" + shx + ", Shy=" + shy + ")");
 
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this,
-                    "Valores numéricos inválidos.",
-                    "Erro",
-                    JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Valores numéricos inválidos.", "Erro", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -632,7 +534,6 @@ public class Transformacoes2DPanel extends JPanel {
                     log = "Seq: Translação";
                     break;
                 case "Rotação":
-                    // Forçamos 0, 0 para gerar uma matriz base pura. O T-p e Tp cuidarão do pivô no final da sequência.
                     m = Transformacoes2D.criarMatrizRotacao(Double.parseDouble(seqRotAng.getText()), 0, 0);
                     log = "Seq: Rotação";
                     break;
@@ -651,7 +552,6 @@ public class Transformacoes2DPanel extends JPanel {
             }
             if (m != null) {
                 sequenciaAtual.add(new TransformacaoConfig(tipo, m, log));
-                // Já mostra no histórico a matriz pura adicionada à fila
                 historicoStr.append("============================================================\n");
                 historicoStr.append(String.format("Fila Atualizada: Adicionado %s\n", tipo));
                 historicoStr.append(formatarMatriz(m));
@@ -667,10 +567,7 @@ public class Transformacoes2DPanel extends JPanel {
     private void aplicarSequencia() {
         if (quadradoAtual.isEmpty() || sequenciaAtual.isEmpty()) return;
 
-        // Ponto de referência global da sequência (Origem do objeto - Vértice 1)
         Point2D.Double o = quadradoAtual.get(0);
-
-        // Cria as matrizes globais de Ida e Volta (3x3)
         double[][] tIda = Transformacoes2D.criarMatrizTranslacao(-o.x, -o.y);
         double[][] tVolta = Transformacoes2D.criarMatrizTranslacao(o.x, o.y);
 
@@ -679,32 +576,24 @@ public class Transformacoes2DPanel extends JPanel {
         logSeq.append(String.format("Operação %d: === SEQUÊNCIA DE %d TRANSFORMAÇÕES ===\n\n", historicoCount++, sequenciaAtual.size()));
 
         int passoAtual = 1;
-
-        // 1. Passo Inicial: Translação para a Origem (T -p)
         logSeq.append("Passo ").append(passoAtual++).append(": Translação para a Origem (T -p):\n").append(formatarMatriz(tIda)).append("\n");
 
         double[][] matrizFinal = tIda;
 
-        // 2. Loop acumulando e exibindo cada Matriz Base armazenada na fila
         for (TransformacaoConfig config : sequenciaAtual) {
             logSeq.append("Passo ").append(passoAtual++).append(": Matriz Base - ").append(config.tipo).append(":\n").append(formatarMatriz(config.matriz)).append("\n");
-            // Multiplica acumulando (Nova * Antiga)
             matrizFinal = Transformacoes2D.multiplicarMatrizes(config.matriz, matrizFinal);
         }
 
-        // 3. Último Passo: Translação de Volta (T p)
         logSeq.append("Passo ").append(passoAtual).append(": Translação de Volta (T p):\n").append(formatarMatriz(tVolta)).append("\n");
         matrizFinal = Transformacoes2D.multiplicarMatrizes(tVolta, matrizFinal);
 
-        // 4. Resultado Geral Composto
         logSeq.append("RESULTADO GERAL (Matriz Composta Final):\n").append(formatarMatriz(matrizFinal)).append("\n");
 
-        // Aplica a matriz composta aos vértices do objeto
         for (int i = 0; i < quadradoAtual.size(); i++) {
             quadradoAtual.set(i, Transformacoes2D.aplicarTransformacao(quadradoAtual.get(i), matrizFinal));
         }
 
-        // 5. Constrói Coordenadas Resultantes do objeto
         logSeq.append("Coordenadas Resultantes do Objeto:\n");
         for (int i = 0; i < quadradoAtual.size(); i++) {
             Point2D.Double p = quadradoAtual.get(i);
@@ -712,12 +601,10 @@ public class Transformacoes2DPanel extends JPanel {
         }
         logSeq.append("============================================================\n\n");
 
-        // Exibe no campo de texto e faz scroll para o fim
         historicoStr.append(logSeq.toString());
         txtHistorico.setText(historicoStr.toString());
         txtHistorico.setCaretPosition(txtHistorico.getDocument().getLength());
 
-        // Limpa a fila e atualiza os desenhos na tela
         sequenciaAtual.clear();
         atualizarInfoObjeto();
         canvasMundo.repaint();
@@ -741,12 +628,10 @@ public class Transformacoes2DPanel extends JPanel {
         txtDimensoes.setText(String.format(Locale.US, "%.1f x %.1f", (maxX - minX), (maxY - minY)));
     }
 
-    // GERENCIAMENTO DE LOG E MATRIZES ********************8
     private void addLog(String text, double[][] matriz) {
         historicoStr.append("============================================================\n");
         historicoStr.append(String.format("Operação %d: %s\n", historicoCount++, text));
 
-        // 1. Primeiro, imprime a matriz (se houver alguma)
         if (matriz != null) {
             historicoStr.append("\nMatriz de Transformação:\n");
             for (double[] linha : matriz) {
@@ -758,7 +643,6 @@ public class Transformacoes2DPanel extends JPanel {
             }
         }
 
-        // 2. Depois (sem o 'else'), SEMPRE imprime as coordenadas atuais do objeto
         if (quadradoAtual != null && !quadradoAtual.isEmpty()) {
             historicoStr.append("\nCoordenadas Resultantes do Objeto:\n");
             for (int i = 0; i < quadradoAtual.size(); i++) {
@@ -769,8 +653,6 @@ public class Transformacoes2DPanel extends JPanel {
 
         historicoStr.append("============================================================\n\n");
         txtHistorico.setText(historicoStr.toString());
-
-        // Garante que o painel role automaticamente para o final
         txtHistorico.setCaretPosition(txtHistorico.getDocument().getLength());
     }
 
@@ -798,62 +680,34 @@ public class Transformacoes2DPanel extends JPanel {
     }
 
     private void limparTudo() {
-        // 1. Limpa os dados internos
         quadradoAtual.clear();
         sequenciaAtual.clear();
         historicoStr.setLength(0);
         historicoCount = 1;
 
-        // 2. Limpa o histórico da interface
         txtHistorico.setText("");
-
-        // 3. Reseta campos do objeto 2D
         txtQuadTamanho.setText("50");
         txtQuadPosX.setText("0");
         txtQuadPosY.setText("0");
 
-        // 4. Reseta campos de Transformações
-        txtTransX.setText("0");
-        txtTransY.setText("0");
-        txtEscalaX.setText("1");
-        txtEscalaY.setText("1");
-        txtRotX.setText("0");
-        txtRotY.setText("0");
-        txtRotAngulo.setText("0");
-        chkRefX.setSelected(false);
-        chkRefY.setSelected(false);
-        txtCisX.setText("0");
-        txtCisY.setText("0");
+        txtTransX.setText("0"); txtTransY.setText("0");
+        txtEscalaX.setText("1"); txtEscalaY.setText("1");
+        txtRotX.setText("0"); txtRotY.setText("0"); txtRotAngulo.setText("0");
+        chkRefX.setSelected(false); chkRefY.setSelected(false);
+        txtCisX.setText("0"); txtCisY.setText("0");
 
-        // 5. Reseta campos da Sequência
-        seqTransX.setText("0");
-        seqTransY.setText("0");
-        seqRotAng.setText("0");
-        seqRotCX.setText("0");
-        seqRotCY.setText("0");
-        seqEscalaX.setText("1");
-        seqEscalaY.setText("1");
-        seqCisX.setText("0");
-        seqCisY.setText("0");
-        seqRefX.setSelected(false);
-        seqRefY.setSelected(false);
+        seqTransX.setText("0"); seqTransY.setText("0");
+        seqRotAng.setText("0"); seqRotCX.setText("0"); seqRotCY.setText("0");
+        seqEscalaX.setText("1"); seqEscalaY.setText("1");
+        seqCisX.setText("0"); seqCisY.setText("0");
+        seqRefX.setSelected(false); seqRefY.setSelected(false);
 
-        // 6. Reseta campos de Mapeamento
-        txtWinMinX.setText("");
-        txtWinMaxX.setText("");
-        txtWinMinY.setText("");
-        txtWinMaxY.setText("");
-        txtViewMinX.setText("");
-        txtViewMaxX.setText("");
-        txtViewMinY.setText("");
-        txtViewMaxY.setText("");
+        txtWinMinX.setText(""); txtWinMaxX.setText(""); txtWinMinY.setText(""); txtWinMaxY.setText("");
+        txtViewMinX.setText(""); txtViewMaxX.setText(""); txtViewMinY.setText(""); txtViewMaxY.setText("");
         chkAtivarMapeamento.setSelected(false);
         setCamposMapeamentoEnabled(false);
 
-        // 7. Atualiza informações do objeto (centro, dimensões, etc.)
         atualizarInfoObjeto();
-
-        // 8. Repaint dos canvases
         canvasMundo.repaint();
         canvasViewport.repaint();
     }
@@ -870,7 +724,6 @@ public class Transformacoes2DPanel extends JPanel {
         return sb.toString();
     }
 
-    // Classes Auxiliares *************
     private class TransformacaoConfig {
         String tipo; double[][] matriz; String log;
         public TransformacaoConfig(String t, double[][] m, String l) { tipo = t; matriz = m; log = l; }
@@ -896,10 +749,6 @@ public class Transformacoes2DPanel extends JPanel {
                 Double.parseDouble(txtViewMinY.getText()), Double.parseDouble(txtViewMaxY.getText())
         );
     }
-
-    // ===============================
-    // Classes de Desenho
-    // ===============================
 
     private class MundoCanvas extends JPanel {
         public MundoCanvas() { setBackground(Color.WHITE); }
@@ -955,10 +804,8 @@ public class Transformacoes2DPanel extends JPanel {
                 g2.setStroke(new BasicStroke(2));
 
                 double[][] matrizWV = Transformacoes2D.criarMatrizMundoParaViewport(
-                        win.minX, win.maxX,
-                        win.minY, win.maxY,
-                        vp.minX, vp.maxX,
-                        vp.minY, vp.maxY
+                        win.minX, win.maxX, win.minY, win.maxY,
+                        vp.minX, vp.maxX, vp.minY, vp.maxY
                 );
 
                 for (int i = 0; i < quadradoAtual.size(); i++) {

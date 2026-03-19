@@ -11,53 +11,47 @@ import java.util.List;
 
 public class ElipsePanel extends JPanel {
 
-    // Painel Esquerdo
     private JLabel lblCoordenadaLive, lblQuadrante;
     private JComboBox<String> comboAlgoritmo;
     private JTextField txtX, txtY, txtRaioX, txtRaioY;
     private JButton btnDesenhar;
 
-    // Painel Direito
     private JLabel lblCurrentX, lblCurrentY, lblCurrentRaioX, lblCurrentRaioY;
     private JPanel scrollContainer;
     private JPanel painelClickCoords;
     private JLabel lblNoLineMessage;
 
-    // Canvas e Estado
     private CanvasPanel canvas;
     private int clickCount = 0;
-    private int cx, cy; // Centro da elipse
+    private int cx, cy;
     private List<ElipseDef> elipses = new ArrayList<>();
 
     public ElipsePanel() {
         setLayout(new BorderLayout());
-        setBackground(Color.decode("#F0F0F0")); // Fundo cinza claro
+        setBackground(Color.decode("#F0F0F0"));
 
         setupPainelEsquerdo();
         setupCanvas();
         setupPainelDireito();
     }
 
-    // PAINEL ESQUERDO************************************
     private void setupPainelEsquerdo() {
         JPanel painelEsquerdo = new JPanel(new BorderLayout());
         painelEsquerdo.setBackground(Color.decode("#F0F0F0"));
-        painelEsquerdo.setPreferredSize(new Dimension(320, 0)); // Aumentado para evitar cortes
+        painelEsquerdo.setPreferredSize(new Dimension(320, 0));
         painelEsquerdo.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(0, 0, 0, 1, Color.LIGHT_GRAY),
                 new EmptyBorder(15, 15, 15, 15)
         ));
 
-        // Container superior (Textos e Inputs)
         JPanel containerNorte = new JPanel();
         containerNorte.setLayout(new BoxLayout(containerNorte, BoxLayout.Y_AXIS));
         containerNorte.setOpaque(false);
 
-        // Topo: Info
         JLabel lblTituloEsq = new JLabel("INFORMAÇÕES DO PLANO");
         lblTituloEsq.setFont(new Font("Segoe UI", Font.BOLD, 14));
         lblTituloEsq.setForeground(Color.decode("#213555"));
-        lblTituloEsq.setAlignmentX(Component.LEFT_ALIGNMENT); // Alinhado à esquerda
+        lblTituloEsq.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         containerNorte.add(lblTituloEsq);
         containerNorte.add(Box.createVerticalStrut(5));
@@ -65,7 +59,6 @@ public class ElipsePanel extends JPanel {
         JSeparator sepEsq = new JSeparator(SwingConstants.HORIZONTAL);
         sepEsq.setAlignmentX(Component.LEFT_ALIGNMENT);
         containerNorte.add(sepEsq);
-
         containerNorte.add(Box.createVerticalStrut(10));
 
         lblCoordenadaLive = new JLabel("Coordenada: (0, 0)");
@@ -81,17 +74,15 @@ public class ElipsePanel extends JPanel {
         containerNorte.add(lblQuadrante);
         containerNorte.add(Box.createVerticalStrut(25));
 
-        // Base: Controles (Usando GridBagLayout para alinhar rótulos à esquerda)
         JPanel painelInputs = new JPanel(new GridBagLayout());
         painelInputs.setOpaque(false);
         painelInputs.setAlignmentX(Component.LEFT_ALIGNMENT);
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.insets = new Insets(5, 0, 5, 10);
-        gbc.anchor = GridBagConstraints.WEST; // Força tudo para a esquerda
+        gbc.anchor = GridBagConstraints.WEST;
 
-        String[] algs = {"Ponto Médio"};
-        comboAlgoritmo = new JComboBox<>(algs);
+        comboAlgoritmo = new JComboBox<>(new String[]{"Ponto Médio"});
         comboAlgoritmo.setFont(new Font("Segoe UI", Font.PLAIN, 13));
 
         txtX = estilizarTextField(5);
@@ -102,7 +93,7 @@ public class ElipsePanel extends JPanel {
         adicionarCampoGrid(painelInputs, "Algoritmo:", comboAlgoritmo, gbc, 0);
 
         gbc.gridx = 0; gbc.gridy = 1; gbc.gridwidth = 2;
-        painelInputs.add(Box.createVerticalStrut(10), gbc); // Espaço visual
+        painelInputs.add(Box.createVerticalStrut(10), gbc);
 
         adicionarCampoGrid(painelInputs, "Centro X:", txtX, gbc, 2);
         adicionarCampoGrid(painelInputs, "Centro Y:", txtY, gbc, 3);
@@ -112,7 +103,6 @@ public class ElipsePanel extends JPanel {
         containerNorte.add(painelInputs);
         painelEsquerdo.add(containerNorte, BorderLayout.NORTH);
 
-        // Botão Desenhar (Rodapé)
         btnDesenhar = estilizarBotao("DESENHAR");
         btnDesenhar.addActionListener(e -> acaoDesenharBtn());
 
@@ -139,17 +129,15 @@ public class ElipsePanel extends JPanel {
         pnl.add(comp, gbc);
     }
 
-    // PAINEL DIREITO ***********************************
     private void setupPainelDireito() {
         JPanel painelDireito = new JPanel(new BorderLayout());
         painelDireito.setBackground(Color.decode("#F0F0F0"));
-        painelDireito.setPreferredSize(new Dimension(320, 0)); // Aumentado para evitar cortes
+        painelDireito.setPreferredSize(new Dimension(320, 0));
         painelDireito.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(0, 1, 0, 0, Color.LIGHT_GRAY),
                 new EmptyBorder(15, 15, 15, 15)
         ));
 
-        // Topo
         JPanel pnlTopoDir = new JPanel();
         pnlTopoDir.setLayout(new BoxLayout(pnlTopoDir, BoxLayout.Y_AXIS));
         pnlTopoDir.setOpaque(false);
@@ -157,7 +145,7 @@ public class ElipsePanel extends JPanel {
         JLabel lblTituloDir = new JLabel("INFORMAÇÕES DA ELIPSE");
         lblTituloDir.setFont(new Font("Segoe UI", Font.BOLD, 14));
         lblTituloDir.setForeground(Color.decode("#213555"));
-        lblTituloDir.setAlignmentX(Component.LEFT_ALIGNMENT); // Alinhado à esquerda
+        lblTituloDir.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         pnlTopoDir.add(lblTituloDir);
         pnlTopoDir.add(Box.createVerticalStrut(5));
@@ -165,7 +153,6 @@ public class ElipsePanel extends JPanel {
         JSeparator sepDir = new JSeparator(SwingConstants.HORIZONTAL);
         sepDir.setAlignmentX(Component.LEFT_ALIGNMENT);
         pnlTopoDir.add(sepDir);
-
         pnlTopoDir.add(Box.createVerticalStrut(10));
 
         lblNoLineMessage = new JLabel("Nenhuma elipse desenhada");
@@ -174,7 +161,6 @@ public class ElipsePanel extends JPanel {
         lblNoLineMessage.setAlignmentX(Component.LEFT_ALIGNMENT);
         pnlTopoDir.add(lblNoLineMessage);
 
-        // Info da elipse atual em Grid 2x2 para melhor encaixe
         painelClickCoords = new JPanel(new GridLayout(2, 2, 10, 5));
         painelClickCoords.setOpaque(false);
         painelClickCoords.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -187,10 +173,8 @@ public class ElipsePanel extends JPanel {
 
         pnlTopoDir.add(painelClickCoords);
         pnlTopoDir.add(Box.createVerticalStrut(15));
-
         painelDireito.add(pnlTopoDir, BorderLayout.NORTH);
 
-        // Centro (Scroll)
         scrollContainer = new JPanel();
         scrollContainer.setLayout(new BoxLayout(scrollContainer, BoxLayout.Y_AXIS));
         scrollContainer.setBackground(Color.WHITE);
@@ -200,7 +184,6 @@ public class ElipsePanel extends JPanel {
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
         painelDireito.add(scrollPane, BorderLayout.CENTER);
 
-        // Base (Limpar)
         JButton btnLimpar = estilizarBotao("LIMPAR TELA");
         btnLimpar.addActionListener(e -> limparTudo());
 
@@ -210,7 +193,6 @@ public class ElipsePanel extends JPanel {
         pnlBtnDir.add(btnLimpar, BorderLayout.CENTER);
 
         painelDireito.add(pnlBtnDir, BorderLayout.SOUTH);
-
         add(painelDireito, BorderLayout.EAST);
     }
 
@@ -226,7 +208,6 @@ public class ElipsePanel extends JPanel {
         return pnl;
     }
 
-    // UTILITÁRIOS DE ESTILO **************************
     private JTextField estilizarTextField(int colunas) {
         JTextField txt = new JTextField(colunas);
         txt.setFont(new Font("Segoe UI", Font.PLAIN, 13));
@@ -244,24 +225,16 @@ public class ElipsePanel extends JPanel {
         btn.setFont(new Font("Segoe UI", Font.BOLD, 13));
         btn.setFocusPainted(false);
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        // Tamanho padronizado e preenchimento total do espaço
         btn.setPreferredSize(new Dimension(280, 40));
         return btn;
     }
 
-    // CANVAS ******************************
     private void setupCanvas() {
         JPanel wrapper = new JPanel(new GridBagLayout());
         wrapper.setBackground(Color.decode("#F0F0F0"));
 
         JPanel centerPanel = new JPanel(new BorderLayout());
         centerPanel.setOpaque(false);
-
-        /*JLabel lblVoltar = new JLabel("Voltar ao Início", SwingConstants.CENTER);
-        lblVoltar.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        lblVoltar.setForeground(Color.GRAY);
-        lblVoltar.setBorder(new EmptyBorder(0, 0, 15, 0));
-        centerPanel.add(lblVoltar, BorderLayout.NORTH);*/
 
         canvas = new CanvasPanel();
         canvas.setPreferredSize(new Dimension(500, 500));
@@ -271,7 +244,6 @@ public class ElipsePanel extends JPanel {
         add(wrapper, BorderLayout.CENTER);
     }
 
-    // LÓGICA E EVENTOS ****************************************************
     private void limparTudo() {
         elipses.clear();
         clickCount = 0;
@@ -282,7 +254,6 @@ public class ElipsePanel extends JPanel {
         scrollContainer.removeAll();
         scrollContainer.revalidate();
         scrollContainer.repaint();
-
         canvas.repaint();
     }
 
@@ -301,6 +272,7 @@ public class ElipsePanel extends JPanel {
         }
     }
 
+    // Atualiza o painel lateral com a lista de pontos processados
     private void atualizarPainelDireito() {
         if (elipses.isEmpty()) return;
 
@@ -318,8 +290,7 @@ public class ElipsePanel extends JPanel {
 
         for (ElipseDef elipse : elipses) {
             List<Point> pontos = AlgoritmoElipse.pontoMedio(elipse.x, elipse.y, elipse.rx, elipse.ry);
-
-            scrollContainer.removeAll(); // Limpa para focar nos pontos da última renderizada
+            scrollContainer.removeAll();
 
             int count = 1;
             for (Point p : pontos) {
@@ -369,10 +340,9 @@ public class ElipsePanel extends JPanel {
         }
     }
 
-    // ÁREA DE DESENHO (Canvas) **************************
     private class CanvasPanel extends JPanel {
         public CanvasPanel() {
-            setBackground(Color.WHITE); // Tela permanece branca
+            setBackground(Color.WHITE);
             setBorder(BorderFactory.createLineBorder(Color.decode("#CCCCCC"), 1));
 
             addMouseMotionListener(new MouseMotionAdapter() {
@@ -399,7 +369,6 @@ public class ElipsePanel extends JPanel {
                         txtY.setText(String.valueOf(cy));
                         clickCount = 1;
                     } else if (clickCount == 1) {
-                        // Calcula o RaioX e RaioY baseado na distância do centro até o clique atual
                         int rx = Math.abs(x - cx);
                         int ry = Math.abs(y - cy);
 
@@ -415,18 +384,17 @@ public class ElipsePanel extends JPanel {
             });
         }
 
+        // Renderiza os eixos e as elipses geradas
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
             int w = getWidth();
             int h = getHeight();
 
-            // Eixos (Cinza claro)
             g.setColor(new Color(220, 220, 220));
             g.drawLine(w / 2, 0, w / 2, h);
             g.drawLine(0, h / 2, w, h / 2);
 
-            // Elipses alteradas para RED
             g.setColor(Color.RED);
 
             for (ElipseDef elipse : elipses) {
@@ -435,8 +403,6 @@ public class ElipsePanel extends JPanel {
                 for (Point p : pontos) {
                     int canvasX = p.x + w / 2;
                     int canvasY = h / 2 - p.y;
-
-                    // Desenha o Pixel exatamente com tamanho 1x1
                     g.fillRect(canvasX, canvasY, 1, 1);
                 }
             }

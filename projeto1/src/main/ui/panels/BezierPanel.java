@@ -11,31 +11,25 @@ import java.util.List;
 
 public class BezierPanel extends JPanel {
 
-    // Lógica e Estado
     private List<Point> controlPoints;
     private Bezier bezierAlgo;
-    private int clickIndex = 0; // Controla qual ponto (0 a 3) será atualizado ao clicar
+    private int clickIndex = 0;
 
-    // Painel Esquerdo
     private JLabel lblCoordenadaLive, lblQuadrante;
     private JTextField[] fieldsX = new JTextField[4];
     private JTextField[] fieldsY = new JTextField[4];
     private JButton btnDesenhar;
 
-    // Painel Direito
     private JPanel painelListaPontos;
     private JButton btnLimpar;
-
-    // Canvas
     private CanvasPanel canvas;
 
     public BezierPanel() {
         this.bezierAlgo = new Bezier();
         this.controlPoints = new ArrayList<>();
         setLayout(new BorderLayout());
-        setBackground(Color.decode("#F0F0F0")); // Fundo padronizado
+        setBackground(Color.decode("#F0F0F0"));
 
-        // Inicializa pontos padrão
         int[][] defaults = {{0, 0}, {0, 0}, {0, 0}, {0, 0}};
         for (int[] p : defaults) {
             controlPoints.add(new Point(p[0], p[1]));
@@ -45,26 +39,22 @@ public class BezierPanel extends JPanel {
         setupCanvas();
         setupPainelDireito();
 
-        // Renderiza o estado inicial na direita
         atualizarPainelDireito();
     }
 
-    // PAINEL ESQUERDO ***********************************
     private void setupPainelEsquerdo() {
         JPanel painelEsquerdo = new JPanel(new BorderLayout());
         painelEsquerdo.setBackground(Color.decode("#F0F0F0"));
-        painelEsquerdo.setPreferredSize(new Dimension(320, 0)); // Largura padronizada
+        painelEsquerdo.setPreferredSize(new Dimension(320, 0));
         painelEsquerdo.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(0, 0, 0, 1, Color.LIGHT_GRAY),
                 new EmptyBorder(15, 15, 15, 15)
         ));
 
-        // Container superior (Textos e Inputs)
         JPanel containerNorte = new JPanel();
         containerNorte.setLayout(new BoxLayout(containerNorte, BoxLayout.Y_AXIS));
         containerNorte.setOpaque(false);
 
-        // Topo: Info
         JLabel lblTituloEsq = new JLabel("INFORMAÇÕES DO PLANO");
         lblTituloEsq.setFont(new Font("Segoe UI", Font.BOLD, 14));
         lblTituloEsq.setForeground(Color.decode("#213555"));
@@ -76,7 +66,6 @@ public class BezierPanel extends JPanel {
         JSeparator sepEsq = new JSeparator(SwingConstants.HORIZONTAL);
         sepEsq.setAlignmentX(Component.LEFT_ALIGNMENT);
         containerNorte.add(sepEsq);
-
         containerNorte.add(Box.createVerticalStrut(10));
 
         lblCoordenadaLive = new JLabel("Coordenada: (0, 0)");
@@ -92,7 +81,6 @@ public class BezierPanel extends JPanel {
         containerNorte.add(lblQuadrante);
         containerNorte.add(Box.createVerticalStrut(25));
 
-        // Controles de Entrada (GridBagLayout)
         JPanel painelInputs = new JPanel(new GridBagLayout());
         painelInputs.setOpaque(false);
         painelInputs.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -111,7 +99,6 @@ public class BezierPanel extends JPanel {
             painelInputs.add(lblTituloPonto, gbc);
 
             gbc.gridwidth = 1;
-
             fieldsX[i] = estilizarTextField(String.valueOf(controlPoints.get(i).x), 4);
             fieldsY[i] = estilizarTextField(String.valueOf(controlPoints.get(i).y), 4);
 
@@ -120,22 +107,19 @@ public class BezierPanel extends JPanel {
             gridY++;
 
             gbc.gridx = 0; gbc.gridy = gridY++; gbc.gridwidth = 4;
-            painelInputs.add(Box.createVerticalStrut(5), gbc); // Espaço entre pontos
+            painelInputs.add(Box.createVerticalStrut(5), gbc);
         }
 
         containerNorte.add(painelInputs);
         painelEsquerdo.add(containerNorte, BorderLayout.NORTH);
 
-        // Botão Desenhar (Rodapé)
         btnDesenhar = estilizarBotao("DESENHAR CURVA");
         btnDesenhar.addActionListener(e -> atualizarCurvaViaInputs());
 
-        // NOVO BOTÃO DE LIMPEZA
         JButton btnLimparTela = estilizarBotao("LIMPAR TELA");
-        btnLimparTela.setBackground(new Color(180, 50, 50)); // Vermelho padrão que usamos no 3D
+        btnLimparTela.setBackground(new Color(180, 50, 50));
         btnLimparTela.addActionListener(e -> limparTela());
 
-        // Colocando os dois botões no rodapé com um espacinho entre eles
         JPanel pnlBtn = new JPanel(new GridLayout(2, 1, 0, 10));
         pnlBtn.setOpaque(false);
         pnlBtn.setBorder(new EmptyBorder(15, 0, 0, 0));
@@ -143,7 +127,6 @@ public class BezierPanel extends JPanel {
         pnlBtn.add(btnLimparTela);
 
         painelEsquerdo.add(pnlBtn, BorderLayout.SOUTH);
-
         add(painelEsquerdo, BorderLayout.WEST);
     }
 
@@ -158,19 +141,15 @@ public class BezierPanel extends JPanel {
         pnl.add(comp, gbc);
     }
 
-
-    // PAINEL DIREITO *****************************************
-    //
     private void setupPainelDireito() {
         JPanel painelDireito = new JPanel(new BorderLayout());
         painelDireito.setBackground(Color.decode("#F0F0F0"));
-        painelDireito.setPreferredSize(new Dimension(320, 0)); // Largura padronizada
+        painelDireito.setPreferredSize(new Dimension(320, 0));
         painelDireito.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(0, 1, 0, 0, Color.LIGHT_GRAY),
                 new EmptyBorder(15, 15, 15, 15)
         ));
 
-        // Topo
         JPanel pnlTopoDir = new JPanel();
         pnlTopoDir.setLayout(new BoxLayout(pnlTopoDir, BoxLayout.Y_AXIS));
         pnlTopoDir.setOpaque(false);
@@ -190,7 +169,6 @@ public class BezierPanel extends JPanel {
         pnlTopoDir.add(Box.createVerticalStrut(15));
         painelDireito.add(pnlTopoDir, BorderLayout.NORTH);
 
-        // Centro (Scroll com os 4 pontos)
         painelListaPontos = new JPanel();
         painelListaPontos.setLayout(new BoxLayout(painelListaPontos, BoxLayout.Y_AXIS));
         painelListaPontos.setBackground(Color.WHITE);
@@ -200,7 +178,6 @@ public class BezierPanel extends JPanel {
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
         painelDireito.add(scrollPane, BorderLayout.CENTER);
 
-        // Base (Limpar)
         btnLimpar = estilizarBotao("RESTAURAR PADRÕES");
         btnLimpar.addActionListener(e -> restaurarPadroes());
 
@@ -210,11 +187,9 @@ public class BezierPanel extends JPanel {
         pnlBtnDir.add(btnLimpar, BorderLayout.CENTER);
 
         painelDireito.add(pnlBtnDir, BorderLayout.SOUTH);
-
         add(painelDireito, BorderLayout.EAST);
     }
 
-    // ESTILIZAÇÃO ****************************************
     private JTextField estilizarTextField(String textoInicial, int colunas) {
         JTextField txt = new JTextField(textoInicial, colunas);
         txt.setFont(new Font("Segoe UI", Font.PLAIN, 13));
@@ -236,7 +211,6 @@ public class BezierPanel extends JPanel {
         return btn;
     }
 
-    // CANVAS ***************************
     private void setupCanvas() {
         JPanel wrapper = new JPanel(new GridBagLayout());
         wrapper.setBackground(Color.decode("#F0F0F0"));
@@ -251,14 +225,13 @@ public class BezierPanel extends JPanel {
         centerPanel.add(lblVoltar, BorderLayout.NORTH);
 
         canvas = new CanvasPanel();
-        canvas.setPreferredSize(new Dimension(500, 500)); // Tamanho padronizado 500x500
+        canvas.setPreferredSize(new Dimension(500, 500));
         centerPanel.add(canvas, BorderLayout.CENTER);
 
         wrapper.add(centerPanel);
         add(wrapper, BorderLayout.CENTER);
     }
 
-    // LÓGICA E EVENTOS **********************************************
     private void restaurarPadroes() {
         int[][] defaults = {{0, 0}, {0, 0}, {0, 0}, {0, 0}};
         controlPoints.clear();
@@ -273,16 +246,11 @@ public class BezierPanel extends JPanel {
     }
 
     private void limparTela() {
-        // Zera todos os inputs textuais
         for (int i = 0; i < 4; i++) {
             fieldsX[i].setText("0");
             fieldsY[i].setText("0");
         }
-
-        // Reinicia a contagem de cliques na tela para o Ponto 0
         clickIndex = 0;
-
-        // Força a atualização (todos os pontos vão para o centro, ocultando a curva)
         atualizarCurvaViaInputs();
     }
 
@@ -301,6 +269,7 @@ public class BezierPanel extends JPanel {
         }
     }
 
+    // Atualiza a visualização dos pontos na lista lateral
     private void atualizarPainelDireito() {
         painelListaPontos.removeAll();
 
@@ -330,7 +299,6 @@ public class BezierPanel extends JPanel {
             painelListaPontos.add(sep);
         }
 
-        // Adiciona um aviso sobre os segmentos
         JLabel info = new JLabel("<html><div style='text-align: center; padding: 15px; color: #888888;'>"
                 + "A curva de Bézier é renderizada interpolando <strong>500 segmentos</strong> "
                 + "entre os pontos de controle acima.</div></html>");
@@ -350,13 +318,11 @@ public class BezierPanel extends JPanel {
         return "Origem";
     }
 
-    // ÁREA DE DESENHO (Canvas) ******************************************************
     private class CanvasPanel extends JPanel {
         public CanvasPanel() {
             setBackground(Color.WHITE);
             setBorder(BorderFactory.createLineBorder(Color.decode("#CCCCCC"), 1));
 
-            // Hover (MouseMotion)
             addMouseMotionListener(new MouseMotionAdapter() {
                 @Override
                 public void mouseMoved(MouseEvent e) {
@@ -367,21 +333,16 @@ public class BezierPanel extends JPanel {
                 }
             });
 
-            // Clique na Tela (Adiciona/Altera pontos em sequência)
             addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
                     int x = e.getX() - getWidth() / 2;
                     int y = getHeight() / 2 - e.getY();
 
-                    // Atualiza os inputs correspondentes
                     fieldsX[clickIndex].setText(String.valueOf(x));
                     fieldsY[clickIndex].setText(String.valueOf(y));
 
-                    // Avança para o próximo ponto (loop de 0 a 3)
                     clickIndex = (clickIndex + 1) % 4;
-
-                    // Atualiza a curva automaticamente
                     atualizarCurvaViaInputs();
                 }
             });
@@ -393,7 +354,6 @@ public class BezierPanel extends JPanel {
             int cx = getWidth() / 2;
             int cy = getHeight() / 2;
 
-            // Eixos (Cinza claro)
             g.setColor(new Color(220, 220, 220));
             g.drawLine(cx, 0, cx, getHeight());
             g.drawLine(0, cy, getWidth(), cy);
@@ -401,7 +361,6 @@ public class BezierPanel extends JPanel {
             Graphics2D g2d = (Graphics2D) g;
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-            // Desenha as linhas guia pontilhadas (Polígono de Controle) para melhor visualização (Opcional, mas padrão na CG)
             g2d.setColor(new Color(200, 200, 200));
             Stroke dashed = new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{5}, 0);
             g2d.setStroke(dashed);
@@ -409,9 +368,8 @@ public class BezierPanel extends JPanel {
                 g2d.drawLine(cx + controlPoints.get(i).x, cy - controlPoints.get(i).y,
                         cx + controlPoints.get(i+1).x, cy - controlPoints.get(i+1).y);
             }
-            g2d.setStroke(new BasicStroke()); // Reseta o stroke
+            g2d.setStroke(new BasicStroke());
 
-            // Desenha a Curva (RED)
             g2d.setColor(Color.RED);
             List<Point> curve = bezierAlgo.generateBezier(controlPoints, 500);
             for (int i = 0; i < curve.size() - 1; i++) {
@@ -419,7 +377,6 @@ public class BezierPanel extends JPanel {
                         cx + curve.get(i+1).x, cy - curve.get(i+1).y);
             }
 
-            // Desenha os Pontos de Controle (Azul Destacado)
             g2d.setColor(Color.decode("#213555"));
             for (int i = 0; i < controlPoints.size(); i++) {
                 Point p = controlPoints.get(i);
@@ -428,11 +385,10 @@ public class BezierPanel extends JPanel {
 
                 g2d.fillOval(drawX - 4, drawY - 4, 8, 8);
 
-                // Desenha a numeração do ponto (P0, P1...)
                 g2d.setColor(Color.DARK_GRAY);
                 g2d.setFont(new Font("Segoe UI", Font.BOLD, 12));
                 g2d.drawString("P" + i, drawX + 8, drawY - 8);
-                g2d.setColor(Color.decode("#213555")); // Retorna para a cor do ponto
+                g2d.setColor(Color.decode("#213555"));
             }
         }
     }

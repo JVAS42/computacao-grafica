@@ -10,27 +10,20 @@ import java.util.Locale;
 
 public class CoordenadasPanel extends JPanel {
 
-    // Limites do Mundo (Padrão inicial baseado no seu JS)
     private double xMax = 100.3, xMin = 10.5, yMax = 100.4, yMin = 15.2;
 
-    // Elementos da Interface Topo
     private JLabel lblLimitesAtuais;
-
-    // Elementos da Interface Esquerda (Live)
     private JLabel lblLiveMundo, lblLiveNDC, lblLiveNDCCentral, lblLiveDisp;
     private JTextField txtSetXMax, txtSetXMin, txtSetYMax, txtSetYMin;
-
-    // Elementos da Interface Direita (Click)
     private JLabel lblClickMundo, lblClickNDC, lblClickNDCCentral, lblClickDisp;
     private JTextField txtAtivarX, txtAtivarY;
 
-    // Canvas e estado
     private CanvasPanel canvas;
-    private Point pixelAtivado = null; // Armazena a coordenada do pixel clicado (no sistema do dispositivo)
+    private Point pixelAtivado = null;
 
     public CoordenadasPanel() {
         setLayout(new BorderLayout(15, 15));
-        setBackground(Color.decode("#F0F0F0")); // Fundo do painel atualizado
+        setBackground(Color.decode("#F0F0F0"));
 
         setupPainelTopo();
         setupPainelEsquerdo();
@@ -48,14 +41,13 @@ public class CoordenadasPanel extends JPanel {
 
     private void setupPainelEsquerdo() {
         JPanel painelEsq = new JPanel(new BorderLayout());
-        painelEsq.setPreferredSize(new Dimension(320, 0)); // Aumentado para evitar cortes
+        painelEsq.setPreferredSize(new Dimension(320, 0));
         painelEsq.setBackground(Color.decode("#F0F0F0"));
         painelEsq.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(0, 0, 0, 1, Color.LIGHT_GRAY),
                 new EmptyBorder(10, 15, 10, 15)
         ));
 
-        // Título e Textos (Cima)
         JPanel pnlTextos = new JPanel();
         pnlTextos.setLayout(new BoxLayout(pnlTextos, BoxLayout.Y_AXIS));
         pnlTextos.setOpaque(false);
@@ -81,7 +73,6 @@ public class CoordenadasPanel extends JPanel {
 
         painelEsq.add(pnlTextos, BorderLayout.NORTH);
 
-        // Inputs e Botão (Baixo)
         JPanel pnlControles = new JPanel(new GridBagLayout());
         pnlControles.setOpaque(false);
         GridBagConstraints gbc = new GridBagConstraints();
@@ -111,14 +102,13 @@ public class CoordenadasPanel extends JPanel {
 
     private void setupPainelDireito() {
         JPanel painelDir = new JPanel(new BorderLayout());
-        painelDir.setPreferredSize(new Dimension(320, 0)); // Aumentado para evitar cortes
+        painelDir.setPreferredSize(new Dimension(320, 0));
         painelDir.setBackground(Color.decode("#F0F0F0"));
         painelDir.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(0, 1, 0, 0, Color.LIGHT_GRAY),
                 new EmptyBorder(10, 15, 10, 15)
         ));
 
-        // Título e Textos (Cima)
         JPanel pnlTextos = new JPanel();
         pnlTextos.setLayout(new BoxLayout(pnlTextos, BoxLayout.Y_AXIS));
         pnlTextos.setOpaque(false);
@@ -144,7 +134,6 @@ public class CoordenadasPanel extends JPanel {
 
         painelDir.add(pnlTextos, BorderLayout.NORTH);
 
-        // Inputs e Botão (Baixo)
         JPanel pnlControles = new JPanel(new GridBagLayout());
         pnlControles.setOpaque(false);
         GridBagConstraints gbc = new GridBagConstraints();
@@ -169,18 +158,17 @@ public class CoordenadasPanel extends JPanel {
     }
 
     private void setupCanvas() {
-        // Envolve o canvas com um painel para dar padding e centralizar
         JPanel wrapperCanvas = new JPanel(new GridBagLayout());
         wrapperCanvas.setOpaque(false);
 
         canvas = new CanvasPanel();
-        canvas.setPreferredSize(new Dimension(601, 401)); // Tamanho aproximado da imagem
+        canvas.setPreferredSize(new Dimension(601, 401));
 
         wrapperCanvas.add(canvas);
         add(wrapperCanvas, BorderLayout.CENTER);
     }
 
-    // Lógica de Atualização e Botões *********************************
+    // Gerencia o reajuste das dimensões de exibição baseadas na interface
     private void definirValoresMundo() {
         try {
             xMax = Double.parseDouble(txtSetXMax.getText());
@@ -203,7 +191,6 @@ public class CoordenadasPanel extends JPanel {
                 return;
             }
 
-            // Conversão inversa (Mundo -> NDC -> Dispositivo) igual ao seu JS
             double ndcx = (inputX - xMin) / (xMax - xMin);
             double ndcy = (inputY - yMin) / (yMax - yMin);
 
@@ -212,7 +199,6 @@ public class CoordenadasPanel extends JPanel {
 
             pixelAtivado = new Point(pixelX, pixelY);
 
-            // Atualiza o painel de clique simulando um clique real
             atualizarLabels(lblClickMundo, lblClickNDC, lblClickNDCCentral, lblClickDisp, pixelX, pixelY);
             canvas.repaint();
 
@@ -221,6 +207,7 @@ public class CoordenadasPanel extends JPanel {
         }
     }
 
+    // Converte os pontos físicos de tela para as medidas relativas e matemáticas requisitadas
     private void atualizarLabels(JLabel lblMundo, JLabel lblNDC, JLabel lblNDCCent, JLabel lblDisp, int pixelX, int pixelY) {
         int w = canvas.getWidth();
         int h = canvas.getHeight();
@@ -229,14 +216,12 @@ public class CoordenadasPanel extends JPanel {
         double[] world = ConversorCoordenadas.ndcToWd(ndc[0], ndc[1], xMax, xMin, yMax, yMin);
         double[] ndcCentral = ConversorCoordenadas.wdToNdcCentral(world[0], world[1], xMax, xMin, yMax, yMin);
 
-        // Formatação Locale.US para usar Ponto ao invés de Vírgula, como no JS
         lblMundo.setText(formatLabel("Coordenadas de Mundo:", world[0], world[1], 3));
         lblNDC.setText(formatLabel("Coordenadas NDC:", ndc[0], ndc[1], 3));
         lblNDCCent.setText(formatLabel("Coordenadas NDC Centralizada:", ndcCentral[0], ndcCentral[1], 3));
         lblDisp.setText(formatLabel("Coordenadas de Dispositivo:", pixelX, pixelY, 0));
     }
 
-    // Funções Utilitárias de UI *****************************************
     private String getLimitesText() {
         return String.format(Locale.US, "Xmax: %.1f   |   Xmin: %.1f   |   Ymax: %.1f   |   Ymin: %.1f", xMax, xMin, yMax, yMin);
     }
@@ -285,17 +270,14 @@ public class CoordenadasPanel extends JPanel {
         pnl.add(txt, gbc);
     }
 
-    // ÁREA DE DESENHO*************************
     private class CanvasPanel extends JPanel {
         public CanvasPanel() {
-            setBackground(Color.WHITE); // Mantém a tela principal branca
-            setBorder(BorderFactory.createLineBorder(Color.decode("#CCCCCC"), 1)); // Borda sutil
+            setBackground(Color.WHITE);
+            setBorder(BorderFactory.createLineBorder(Color.decode("#CCCCCC"), 1));
 
             addMouseMotionListener(new MouseMotionAdapter() {
                 @Override
                 public void mouseMoved(MouseEvent e) {
-                    // No JS: y = Math.round(canvas.height - event.clientY)
-                    // No Java Swing, o Y=0 é no topo, então invertemos.
                     int dispX = e.getX();
                     int dispY = getHeight() - 1 - e.getY();
                     atualizarLabels(lblLiveMundo, lblLiveNDC, lblLiveNDCCentral, lblLiveDisp, dispX, dispY);
@@ -310,7 +292,7 @@ public class CoordenadasPanel extends JPanel {
                     pixelAtivado = new Point(dispX, dispY);
 
                     atualizarLabels(lblClickMundo, lblClickNDC, lblClickNDCCentral, lblClickDisp, dispX, dispY);
-                    repaint(); // Força o redesenho do canvas
+                    repaint();
                 }
             });
         }
@@ -320,10 +302,8 @@ public class CoordenadasPanel extends JPanel {
             super.paintComponent(g);
 
             if (pixelAtivado != null) {
-                g.setColor(Color.RED); // Cor do pixel alterada para vermelho
-                // Inverte o Y novamente na hora de desenhar no Swing
+                g.setColor(Color.RED);
                 int drawY = getHeight() - 1 - pixelAtivado.y;
-                // Desenha o "pixel" exatamente com 1x1
                 g.fillRect(pixelAtivado.x, drawY, 1, 1);
             }
         }

@@ -23,7 +23,6 @@ public class AlgoritmoCircunferencia {
             return pontos;
         }
 
-        // Passo dinâmico: garante precisão sem cálculos excessivos
         double step = 1.0 / r;
 
         for (double theta = 0; theta < 2 * Math.PI; theta += step) {
@@ -38,7 +37,7 @@ public class AlgoritmoCircunferencia {
         List<Point> pontos = new ArrayList<>();
         int x = 0;
         int y = r;
-        int p = 1 - r; // Valor inicial conforme imagem image_f753be.png
+        int p = 1 - r;
 
         adicionarPontosCirculo(xc, yc, x, y, pontos);
 
@@ -55,7 +54,7 @@ public class AlgoritmoCircunferencia {
         return pontos;
     }
 
-    // Simetria de 8 octantes conforme imagem image_f753b6.png
+    // Aplica simetria aos 8 octantes
     private static void adicionarPontosCirculo(int xc, int yc, int x, int y, List<Point> pontos) {
         pontos.add(new Point(xc + x, yc + y));
         pontos.add(new Point(xc - x, yc + y));

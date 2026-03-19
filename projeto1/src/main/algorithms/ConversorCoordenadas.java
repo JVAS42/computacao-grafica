@@ -2,7 +2,7 @@ package main.algorithms;
 
 public class ConversorCoordenadas {
 
-    // Retorna [ndcX, ndcY]
+    // Converte de Dispositivo (Pixels) para NDC [0, 1]
     public static double[] inpToNdc(int x, int y, int width, int height) {
         return new double[]{
                 (double) x / (width - 1),
@@ -10,7 +10,7 @@ public class ConversorCoordenadas {
         };
     }
 
-    // Retorna [worldX, worldY]
+    // Converte de NDC para Coordenadas de Mundo
     public static double[] ndcToWd(double ndcx, double ndcy, double xMax, double xMin, double yMax, double yMin) {
         return new double[]{
                 ndcx * (xMax - xMin) + xMin,
@@ -18,7 +18,7 @@ public class ConversorCoordenadas {
         };
     }
 
-    // Retorna [ndccX, ndccY]
+    // Converte de Coordenadas de Mundo para NDC Centralizada [-1, 1]
     public static double[] wdToNdcCentral(double x, double y, double xMax, double xMin, double yMax, double yMin) {
         return new double[]{
                 2 * ((x - xMin) / (xMax - xMin)) - 1,

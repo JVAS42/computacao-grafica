@@ -5,13 +5,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AlgoritmoRetas {
+
     // Algoritmo DDA
     public static List<Point> dda(int x1, int y1, int x2, int y2) {
         List<Point> pontos = new ArrayList<>();
 
         int length = Math.max(Math.abs(x2 - x1), Math.abs(y2 - y1));
 
-        // Evita divisão por zero se os pontos forem iguais
         if (length == 0) {
             pontos.add(new Point(x1, y1));
             return pontos;
@@ -34,10 +34,7 @@ public class AlgoritmoRetas {
         return pontos;
     }
 
-    // ===============================
-    // Algoritmo do Ponto Médio (Bresenham) - 8 oitantes
-    // ===============================
-    
+    // Algoritmo do Ponto Médio (Bresenham) - 8 octantes
     public static List<Point> pontoMedio(int x1, int y1, int x2, int y2) {
         List<Point> pontos = new ArrayList<>();
 

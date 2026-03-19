@@ -15,9 +15,6 @@ public class Transformacoes2D {
         System.out.println();
     }
 
-    // ===============================
-    // Operações Básicas de Matrizes
-    // ===============================
     public static double[] multiplicarMatrizVetor(double[][] matriz, double[] vetor) {
         return new double[]{
                 matriz[0][0] * vetor[0] + matriz[0][1] * vetor[1] + matriz[0][2] * vetor[2],
@@ -38,9 +35,6 @@ public class Transformacoes2D {
         return result;
     }
 
-    // ===============================
-    // Matrizes de Transformação
-    // ===============================
     public static double[][] criarMatrizTranslacao(double dx, double dy) {
         return new double[][]{
                 {1, 0, dx},
@@ -93,25 +87,17 @@ public class Transformacoes2D {
         };
     }
 
-    // ===============================
-    // Matrizes de Normalização e Viewport
-    // ===============================
-
+    // Calcula a matriz de mapeamento Window-to-Viewport combinando translação e escala
     public static double[][] criarMatrizMundoParaViewport(
-            double xwMin, double xwMax,
-            double ywMin, double ywMax,
-            double xvMin, double xvMax,
-            double yvMin, double yvMax) {
+            double xwMin, double xwMax, double ywMin, double ywMax,
+            double xvMin, double xvMax, double yvMin, double yvMax) {
 
-        // Calcula a escala
         double Sx = (xvMax - xvMin) / (xwMax - xwMin);
         double Sy = (yvMax - yvMin) / (ywMax - ywMin);
 
-        // Calcula a translação
         double Tx = xvMin - Sx * xwMin;
         double Ty = yvMin - Sy * ywMin;
 
-        // Matriz final (ESCALA X TRANSLAÇÃO)
         double[][] M = {
                 {Sx, 0,  Tx},
                 {0,  Sy, Ty},
@@ -125,27 +111,22 @@ public class Transformacoes2D {
     }
 
     public static Point2D.Double aplicarMatriz(double[][] M, double x, double y) {
-        // 1. Extrai os valores da matriz para facilitar a leitura no print
         double Sx = M[0][0];
         double Tx = M[0][2];
         double Sy = M[1][1];
         double Ty = M[1][2];
 
-        // 2. Realiza os cálculos
         double xv = Sx * x + Tx;
         double yv = Sy * y + Ty;
 
-        // 3. Print Detalhado e Didático
         System.out.printf("PONTO MUNDO: (%.2f, %.2f)  =>  RESULTADO VIEWPORT: (%.2f, %.2f)\n", x, y, xv, yv);
         System.out.println("-".repeat(60));
 
-        // Exibição da Matriz e Equações em blocos compactos
         System.out.printf("MATRIZ USADA:                EQUAÇÕES:\n");
         System.out.printf("| %5.2f  0.00  %6.2f |    Xv = %.2f * Xw + %.2f\n", Sx, Tx, Sx, Tx);
         System.out.printf("|  0.00  %5.2f  %6.2f |    Yv = %.2f * Yw + %.2f\n", Sy, Ty, Sy, Ty);
         System.out.printf("|  0.00   0.00    1.00 |\n\n");
 
-        // Cálculos lado a lado
         System.out.println("CÁLCULO DE X:                        CÁLCULO DE Y:");
         System.out.printf("Xv = %.2f * (%.2f) + %.2f          Yv = %.2f * (%.2f) + %.2f\n", Sx, x, Tx, Sy, y, Ty);
         System.out.printf("Xv = %.2f + %.2f                 Yv = %.2f + %.2f\n", (Sx * x), Tx, (Sy * y), Ty);
@@ -155,24 +136,18 @@ public class Transformacoes2D {
         return new Point2D.Double(xv, yv);
     }
 
-    // Função para imprimir a matriz na formatação
     public static void imprimirMatriz(double[][] M) {
         for (int i = 0; i < 3; i++) {
-            System.out.printf("| %8.3f %8.3f %8.3f |\n",
-                    M[i][0], M[i][1], M[i][2]);
+            System.out.printf("| %8.3f %8.3f %8.3f |\n", M[i][0], M[i][1], M[i][2]);
         }
         System.out.println("====================================\n");
     }
 
-    // ===============================
-    // Algoritmo de Clipping (Cohen-Sutherland)
-    // ===============================
-
-    private static final int INSIDE = 0; // 0000
-    private static final int LEFT   = 1; // 0001
-    private static final int RIGHT  = 2; // 0010
-    private static final int BOTTOM = 4; // 0100
-    private static final int TOP    = 8; // 1000
+    private static final int INSIDE = 0;
+    private static final int LEFT   = 1;
+    private static final int RIGHT  = 2;
+    private static final int BOTTOM = 4;
+    private static final int TOP    = 8;
 
     private static int computarOutCode(double x, double y, double xMin, double xMax, double yMin, double yMax) {
         int code = INSIDE;
@@ -201,7 +176,6 @@ public class Transformacoes2D {
                 double x = 0, y = 0;
                 int outcodeFora = (outcode0 != 0) ? outcode0 : outcode1;
 
-                // Proteção contra divisão por zero adicionada
                 if ((outcodeFora & TOP) != 0) {
                     if (y1 != y0) x = x0 + (x1 - x0) * (yMax - y0) / (y1 - y0);
                     else x = x0;
@@ -237,9 +211,6 @@ public class Transformacoes2D {
         return null;
     }
 
-    // ===============================
-    // Aplicação em um Ponto
-    // ===============================
     public static Point2D.Double aplicarTransformacao(Point2D.Double ponto, double[][] matriz) {
         double[] vetor = {ponto.x, ponto.y, 1};
         double[] resultado = multiplicarMatrizVetor(matriz, vetor);

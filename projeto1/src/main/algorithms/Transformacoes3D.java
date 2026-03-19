@@ -79,12 +79,9 @@ public class Transformacoes3D {
         return mat;
     }
 
-    // =========================================================================
-    // LÓGICA ATUALIZADA: PROJEÇÃO PARALELA ISOMÉTRICA (TEORIA CLÁSSICA)
-    // =========================================================================
+    // Projeta coordenadas 3D para 2D usando projeção paralela isométrica
+    // Rotaciona 45° em Y e o arco-seno da tg de 30° (~35.264°) em X
     public static double[] projectIsometric(double[] vertex3D, double viewRotX, double viewRotY, double viewRotZ, double zoom) {
-
-        // 1. Aplica as transformações da câmera (sliders da visualização interativa) e o zoom
         double[][] camRotX = rotationX(viewRotX);
         double[][] camRotY = rotationY(viewRotY);
         double[][] camRotZ = rotationZ(viewRotZ);
@@ -92,27 +89,17 @@ public class Transformacoes3D {
         double f = zoom / 100.0;
         double[][] zoomMat = scaling(f, f, f);
 
-        // Multiplica a matriz da câmera: Zoom * RotZ * RotY * RotX
         double[][] viewMat = multiply(camRotZ, multiply(camRotY, camRotX));
         viewMat = multiply(zoomMat, viewMat);
 
-        // Vértice local com as rotações da câmera interativa aplicadas
         double[] v = multiplyVector(viewMat, new double[]{vertex3D[0], vertex3D[1], vertex3D[2], 1});
 
-        // ---------------------------------------------------------------------
-        // 2. MATRIZ DE PROJEÇÃO ISOMÉTRICA
-        // Conforme a literatura, rotaciona 45° em Y e ~35.264° em X
-        // ---------------------------------------------------------------------
         double[][] isoRotY = rotationY(45.0);
-        double[][] isoRotX = rotationX(35.26438968); // Este valor é o arco-seno da tangente de 30°
+        double[][] isoRotX = rotationX(35.26438968);
 
-        // Composição isométrica: Rotação X * Rotação Y
         double[][] matrizIsometrica = multiply(isoRotX, isoRotY);
-
-        // Aplica a matriz de projeção isométrica ao vértice final
         double[] vProjetado = multiplyVector(matrizIsometrica, v);
 
-        // Retorna as coordenadas X e Y projetadas ortogonalmente no plano (descartando Z)
         return new double[]{vProjetado[0], vProjetado[1]};
     }
 
@@ -121,8 +108,6 @@ public class Transformacoes3D {
                                          double vpXMin, double vpYMin, double vpXMax, double vpYMax) {
 
         double xVp = ((xWorld - wXMin) / (wXMax - wXMin)) * (vpXMax - vpXMin) + vpXMin;
-
-        // Inversão do eixo Y: subtraímos de vpYMax para que o Y do mundo suba e o da tela desça
         double yVp = vpYMax - ((yWorld - wYMin) / (wYMax - wYMin)) * (vpYMax - vpYMin);
 
         return new double[]{xVp, yVp};

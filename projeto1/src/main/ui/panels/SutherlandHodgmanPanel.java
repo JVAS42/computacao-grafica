@@ -13,31 +13,23 @@ import java.util.Locale;
 
 public class SutherlandHodgmanPanel extends JPanel {
 
-    // Cores da interface
     private final Color COR_FUNDO = Color.decode("#F0F0F0");
     private final Color COR_BOTAO = Color.decode("#213555");
-
-    // Cores do desenho (Novas)
     private final Color RED_SOLIDO = Color.RED;
-    // Vermelho com 100 de Alpha (transparência vai de 0 a 255)
     private final Color RED_PREENCHIMENTO = new Color(255, 0, 0, 100);
 
-    // Estado Global
     private double xMin = 150, yMin = 100, xMax = 450, yMax = 300;
     private List<Ponto> poligonoOriginal = new ArrayList<>();
     private List<Ponto> poligonoRecortado = new ArrayList<>();
     private boolean isFechado = false;
     private boolean mostrarRecortado = false;
 
-    // Componentes Esquerdos
     private JLabel lblLiveCoords;
     private JTextField txtXMax, txtXMin, txtYMax, txtYMin;
 
-    // Componentes Direitos
     private JLabel lblLastPoint;
     private JLabel lblStatus;
 
-    // Canvas
     private CanvasPanel canvas;
 
     public SutherlandHodgmanPanel() {
@@ -49,8 +41,6 @@ public class SutherlandHodgmanPanel extends JPanel {
         setupPainelDireito();
     }
 
-
-    // PAINEL ESQUERDO *******************
     private void setupPainelEsquerdo() {
         JPanel painelEsq = new JPanel();
         painelEsq.setLayout(new BoxLayout(painelEsq, BoxLayout.Y_AXIS));
@@ -115,8 +105,6 @@ public class SutherlandHodgmanPanel extends JPanel {
         return pnl;
     }
 
-
-    // PAINEL DIREITO *************************************
     private void setupPainelDireito() {
         JPanel painelDir = new JPanel();
         painelDir.setLayout(new BoxLayout(painelDir, BoxLayout.Y_AXIS));
@@ -157,6 +145,7 @@ public class SutherlandHodgmanPanel extends JPanel {
                 canvas.repaint();
             }
         }));
+
         pnlBotoes.add(criarBotao("Aplicar Recorte", e -> {
             if (isFechado) {
                 poligonoRecortado = SutherlandHodgman.clipPolygon(poligonoOriginal, xMin, xMax, yMin, yMax);
@@ -165,6 +154,7 @@ public class SutherlandHodgmanPanel extends JPanel {
                 canvas.repaint();
             }
         }));
+
         pnlBotoes.add(criarBotao("Resetar", e -> resetValues()));
 
         JPanel wrapperBotoes = new JPanel(new FlowLayout(FlowLayout.CENTER));
@@ -202,7 +192,6 @@ public class SutherlandHodgmanPanel extends JPanel {
         canvas.repaint();
     }
 
-    // CANVAS *********************************
     private void setupCanvas() {
         JPanel wrapper = new JPanel(new BorderLayout());
         wrapper.setBackground(COR_FUNDO);
@@ -269,20 +258,17 @@ public class SutherlandHodgmanPanel extends JPanel {
             Graphics2D g2d = (Graphics2D) g;
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-            // Título Fixo Simulado
             g2d.setColor(Color.DARK_GRAY);
             g2d.setFont(new Font("SansSerif", Font.PLAIN, 12));
             g2d.drawString(String.format(Locale.US, "Xmax: %.0f | Xmin: %.0f | Ymax: %.0f | Ymin: %.0f", xMax, xMin, yMax, yMin), getWidth()/2 - 140, 20);
 
-            // Janela de Recorte (Preta, 1px)
             g2d.setColor(Color.BLACK);
             g2d.setStroke(new BasicStroke(1));
             g2d.drawRect((int)xMin, (int)yMin, (int)(xMax - xMin), (int)(yMax - yMin));
 
-            // Configuração padrão de desenho do polígono (RED, 1px)
             g2d.setStroke(new BasicStroke(1));
 
-            // --- DESENHO DO POLÍGONO ORIGINAL (Antes do recorte) ---
+            // Renderiza polígono original antes do recorte
             if (!mostrarRecortado && !poligonoOriginal.isEmpty()) {
                 g2d.setColor(RED_SOLIDO);
                 for (int i = 0; i < poligonoOriginal.size() - 1; i++) {
@@ -297,24 +283,19 @@ public class SutherlandHodgmanPanel extends JPanel {
                     g2d.drawLine((int)pLast.x, (int)pLast.y, (int)pFirst.x, (int)pFirst.y);
                 }
 
-                // Vértices originais
                 for (Ponto p : poligonoOriginal) {
                     g2d.fillOval((int)p.x - 3, (int)p.y - 3, 6, 6);
                 }
             }
 
-            // DESENHO DO POLÍGONO RECORTADO (AQUI ESTÁ A MUDANÇA)
+            // Renderiza polígono final recortado
             if (mostrarRecortado && !poligonoRecortado.isEmpty()) {
+                g2d.setColor(RED_PREENCHIMENTO);
+                drawPolygon(g2d, poligonoRecortado, true);
 
-                // 1. Pinta o interior (o que está dentro do recorte)
-                g2d.setColor(RED_PREENCHIMENTO); // Vermelho transparente
-                drawPolygon(g2d, poligonoRecortado, true); // true = PREENCHER
-
-                // 2. Desenha a borda sólida por cima
                 g2d.setColor(RED_SOLIDO);
-                drawPolygon(g2d, poligonoRecortado, false); // false = SÓ BORDA
+                drawPolygon(g2d, poligonoRecortado, false);
 
-                // 3. Desenha bolinhas nos novos vértices recortados
                 for (Ponto p : poligonoRecortado) {
                     g2d.fillOval((int)p.x - 3, (int)p.y - 3, 6, 6);
                 }

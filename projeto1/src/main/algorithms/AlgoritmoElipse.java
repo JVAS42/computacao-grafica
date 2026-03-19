@@ -6,7 +6,6 @@ import java.util.List;
 
 public class AlgoritmoElipse {
 
-    // Algoritmo do Ponto Médio para Elipse
     public static List<Point> pontoMedio(int xc, int yc, int rx, int ry) {
         List<Point> pontos = new ArrayList<>();
 
@@ -22,7 +21,7 @@ public class AlgoritmoElipse {
 
         adicionarSimetria(pontos, xc, yc, x, y);
 
-        // Região 1 (Inclinação menor que 1)
+        // Região 1 (Inclinação < 1)
         double p1 = ry2 - (rx2 * ry) + (0.25 * rx2);
         while (px < py) {
             x++;
@@ -37,7 +36,7 @@ public class AlgoritmoElipse {
             adicionarSimetria(pontos, xc, yc, x, y);
         }
 
-        // Região 2 (Inclinação maior que 1)
+        // Região 2 (Inclinação >= 1)
         double p2 = (double)ry2 * (x + 0.5) * (x + 0.5) + (double)rx2 * (y - 1) * (y - 1) - (double)rx2 * ry2;
         while (y > 0) {
             y--;
