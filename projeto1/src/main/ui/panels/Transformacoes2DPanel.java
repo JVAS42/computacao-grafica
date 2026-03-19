@@ -222,9 +222,7 @@ public class Transformacoes2DPanel extends JPanel {
         return pnlHist;
     }
 
-    // ==========================================
-    // CRIAÇÃO DE PAINÉIS SECUNDÁRIOS
-    // ==========================================
+    // CRIAÇÃO DE PAINÉIS SECUNDÁRIOS **************************8
 
     private JPanel criarPainelTranslacao() {
         JPanel p = new JPanel(new GridBagLayout()); p.setBackground(COR_FUNDO);
@@ -412,9 +410,7 @@ public class Transformacoes2DPanel extends JPanel {
         }
     }
 
-    // ===============================
-    // Lógica de Transformações
-    // ===============================
+    // Lógica de Transformações **********************************
     private void gerarQuadrado() {
         try {
             double size = Double.parseDouble(txtQuadTamanho.getText());
@@ -438,7 +434,17 @@ public class Transformacoes2DPanel extends JPanel {
             double dx = Double.parseDouble(txtTransX.getText());
             double dy = Double.parseDouble(txtTransY.getText());
             double[][] matriz = Transformacoes2D.criarMatrizTranslacao(dx, dy);
-            aplicarMatrizEmTodos(matriz, "Translação: Δx=" + dx + ", Δy=" + dy);
+            addLogComposto(
+                    "Translação (dx=" + dx + ", dy=" + dy + ")",
+                    new String[]{
+                            "Matriz de Translação"
+                    },
+                    new double[][][]{
+                            matriz
+                    }
+            );
+
+            aplicarMatrizEmTodos(matriz, "Resultado da Translação");
         } catch (NumberFormatException e) { JOptionPane.showMessageDialog(this, "Valores numéricos inválidos.", "Erro", JOptionPane.ERROR_MESSAGE); }
     }
 
@@ -452,7 +458,23 @@ public class Transformacoes2DPanel extends JPanel {
             double[][] s = Transformacoes2D.criarMatrizEscala(sx, sy);
             double[][] t2 = Transformacoes2D.criarMatrizTranslacao(origem.x, origem.y);
             double[][] matrizFinal = Transformacoes2D.multiplicarMatrizes(t2, Transformacoes2D.multiplicarMatrizes(s, t1));
-            aplicarMatrizEmTodos(matrizFinal, "Escala: Sx=" + sx + ", Sy=" + sy);
+            addLogComposto(
+                    "Escala em relação ao ponto (" + origem.x + "," + origem.y + ")",
+                    new String[]{
+                            "1) Translação para origem",
+                            "2) Matriz de Escala",
+                            "3) Translação de volta",
+                            "4) Matriz Final (T2 × S × T1)"
+                    },
+                    new double[][][]{
+                            t1,
+                            s,
+                            t2,
+                            matrizFinal
+                    }
+            );
+
+            aplicarMatrizEmTodos(matrizFinal, "Resultado da Escala");
         } catch (NumberFormatException e) { JOptionPane.showMessageDialog(this, "Valores numéricos inválidos.", "Erro", JOptionPane.ERROR_MESSAGE); }
     }
 
@@ -462,27 +484,133 @@ public class Transformacoes2DPanel extends JPanel {
             double ang = Double.parseDouble(txtRotAngulo.getText());
             double cx = Double.parseDouble(txtRotX.getText());
             double cy = Double.parseDouble(txtRotY.getText());
-            double[][] matriz = Transformacoes2D.criarMatrizRotacao(ang, cx, cy);
-            aplicarMatrizEmTodos(matriz, "Rotação: " + ang + "° em (" + cx + "," + cy + ")");
+            double[][] t1 = Transformacoes2D.criarMatrizTranslacao(-cx, -cy);
+            double[][] r = Transformacoes2D.criarMatrizRotacao(ang, 0, 0);
+            double[][] t2 = Transformacoes2D.criarMatrizTranslacao(cx, cy);
+
+            double[][] matrizFinal =
+                    Transformacoes2D.multiplicarMatrizes(t2,
+                            Transformacoes2D.multiplicarMatrizes(r, t1));
+
+            addLogComposto(
+                    "Rotação de " + ang + "° em (" + cx + "," + cy + ")",
+                    new String[]{
+                            "1) Translação para origem",
+                            "2) Matriz de Rotação",
+                            "3) Translação de volta",
+                            "4) Matriz Final (T2 × R × T1)"
+                    },
+                    new double[][][]{
+                            t1,
+                            r,
+                            t2,
+                            matrizFinal
+                    }
+            );
+
+            aplicarMatrizEmTodos(matrizFinal, "Resultado da Rotação");
         } catch (NumberFormatException e) { JOptionPane.showMessageDialog(this, "Valores numéricos inválidos.", "Erro", JOptionPane.ERROR_MESSAGE); }
     }
 
     private void aplicarReflexao() {
         if (quadradoAtual.isEmpty()) return;
-        boolean rx = chkRefX.isSelected(); boolean ry = chkRefY.isSelected();
+
+        boolean rx = chkRefX.isSelected();
+        boolean ry = chkRefY.isSelected();
+
         if (!rx && !ry) return;
-        double[][] matriz = Transformacoes2D.criarMatrizReflexao(rx, ry);
-        aplicarMatrizEmTodos(matriz, "Reflexão: " + (rx ? "X " : "") + (ry ? "Y" : ""));
+
+        // 🔹 Ponto de referência (mesmo padrão da escala)
+        Point2D.Double origem = quadradoAtual.get(0);
+
+        // 🔹 Matrizes
+        double[][] t1 = Transformacoes2D.criarMatrizTranslacao(-origem.x, -origem.y);
+        double[][] r  = Transformacoes2D.criarMatrizReflexao(rx, ry);
+        double[][] t2 = Transformacoes2D.criarMatrizTranslacao(origem.x, origem.y);
+
+        // 🔹 Matriz composta
+        double[][] matrizFinal =
+                Transformacoes2D.multiplicarMatrizes(
+                        t2,
+                        Transformacoes2D.multiplicarMatrizes(r, t1)
+                );
+
+        // 🔹 Log completo (igual à escala)
+        addLogComposto(
+                "Reflexão em relação ao ponto (" + origem.x + "," + origem.y + ")",
+                new String[]{
+                        "1) Translação para origem",
+                        "2) Matriz de Reflexão",
+                        "3) Translação de volta",
+                        "4) Matriz Final (T2 × R × T1)"
+                },
+                new double[][][]{
+                        t1,
+                        r,
+                        t2,
+                        matrizFinal
+                }
+        );
+
+        // 🔹 Aplicar transformação
+        aplicarMatrizEmTodos(matrizFinal,
+                "Resultado da Reflexão: " +
+                        (rx ? "X " : "") +
+                        (ry ? "Y" : "")
+        );
     }
 
     private void aplicarCisalhamento() {
         if (quadradoAtual.isEmpty()) return;
+
         try {
             double shx = Double.parseDouble(txtCisX.getText());
             double shy = Double.parseDouble(txtCisY.getText());
-            double[][] matriz = Transformacoes2D.criarMatrizCisalhamento(shx, shy);
-            aplicarMatrizEmTodos(matriz, "Cisalhamento: Shx=" + shx + ", Shy=" + shy);
-        } catch (NumberFormatException e) { JOptionPane.showMessageDialog(this, "Valores numéricos inválidos.", "Erro", JOptionPane.ERROR_MESSAGE); }
+
+            // 🔹 Ponto de referência (mesmo padrão usado na escala/reflexão)
+            Point2D.Double origem = quadradoAtual.get(0);
+
+            // 🔹 Matrizes
+            double[][] t1 = Transformacoes2D.criarMatrizTranslacao(-origem.x, -origem.y);
+            double[][] sh = Transformacoes2D.criarMatrizCisalhamento(shx, shy);
+            double[][] t2 = Transformacoes2D.criarMatrizTranslacao(origem.x, origem.y);
+
+            // 🔹 Matriz composta
+            double[][] matrizFinal =
+                    Transformacoes2D.multiplicarMatrizes(
+                            t2,
+                            Transformacoes2D.multiplicarMatrizes(sh, t1)
+                    );
+
+            // 🔹 Log composto (igual escala e reflexão)
+            addLogComposto(
+                    "Cisalhamento em relação ao ponto (" + origem.x + "," + origem.y + ")",
+                    new String[]{
+                            "1) Translação para origem",
+                            "2) Matriz de Cisalhamento",
+                            "3) Translação de volta",
+                            "4) Matriz Final (T2 × Sh × T1)"
+                    },
+                    new double[][][]{
+                            t1,
+                            sh,
+                            t2,
+                            matrizFinal
+                    }
+            );
+
+            // 🔹 Aplicar transformação
+            aplicarMatrizEmTodos(
+                    matrizFinal,
+                    "Resultado do Cisalhamento (Shx=" + shx + ", Shy=" + shy + ")"
+            );
+
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this,
+                    "Valores numéricos inválidos.",
+                    "Erro",
+                    JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void aplicarMatrizEmTodos(double[][] matriz, String logText) {
@@ -499,33 +627,101 @@ public class Transformacoes2DPanel extends JPanel {
         try {
             double[][] m = null; String log = "";
             switch (tipo) {
-                case "Translação": m = Transformacoes2D.criarMatrizTranslacao(Double.parseDouble(seqTransX.getText()), Double.parseDouble(seqTransY.getText())); log = "Seq: Translação"; break;
-                case "Rotação": m = Transformacoes2D.criarMatrizRotacao(Double.parseDouble(seqRotAng.getText()), Double.parseDouble(seqRotCX.getText()), Double.parseDouble(seqRotCY.getText())); log = "Seq: Rotação"; break;
-                case "Escala": m = Transformacoes2D.criarMatrizEscala(Double.parseDouble(seqEscalaX.getText()), Double.parseDouble(seqEscalaY.getText())); log = "Seq: Escala"; break;
-                case "Cisalhamento": m = Transformacoes2D.criarMatrizCisalhamento(Double.parseDouble(seqCisX.getText()), Double.parseDouble(seqCisY.getText())); log = "Seq: Cisalhamento"; break;
-                case "Reflexão": m = Transformacoes2D.criarMatrizReflexao(seqRefX.isSelected(), seqRefY.isSelected()); log = "Seq: Reflexão"; break;
+                case "Translação":
+                    m = Transformacoes2D.criarMatrizTranslacao(Double.parseDouble(seqTransX.getText()), Double.parseDouble(seqTransY.getText()));
+                    log = "Seq: Translação";
+                    break;
+                case "Rotação":
+                    // Forçamos 0, 0 para gerar uma matriz base pura. O T-p e Tp cuidarão do pivô no final da sequência.
+                    m = Transformacoes2D.criarMatrizRotacao(Double.parseDouble(seqRotAng.getText()), 0, 0);
+                    log = "Seq: Rotação";
+                    break;
+                case "Escala":
+                    m = Transformacoes2D.criarMatrizEscala(Double.parseDouble(seqEscalaX.getText()), Double.parseDouble(seqEscalaY.getText()));
+                    log = "Seq: Escala";
+                    break;
+                case "Cisalhamento":
+                    m = Transformacoes2D.criarMatrizCisalhamento(Double.parseDouble(seqCisX.getText()), Double.parseDouble(seqCisY.getText()));
+                    log = "Seq: Cisalhamento";
+                    break;
+                case "Reflexão":
+                    m = Transformacoes2D.criarMatrizReflexao(seqRefX.isSelected(), seqRefY.isSelected());
+                    log = "Seq: Reflexão";
+                    break;
             }
             if (m != null) {
                 sequenciaAtual.add(new TransformacaoConfig(tipo, m, log));
-                addLog("Adicionado à sequência: " + tipo, m);
+                // Já mostra no histórico a matriz pura adicionada à fila
+                historicoStr.append("============================================================\n");
+                historicoStr.append(String.format("Fila Atualizada: Adicionado %s\n", tipo));
+                historicoStr.append(formatarMatriz(m));
+                historicoStr.append("============================================================\n\n");
+                txtHistorico.setText(historicoStr.toString());
+                txtHistorico.setCaretPosition(txtHistorico.getDocument().getLength());
             }
-        } catch (NumberFormatException e) { JOptionPane.showMessageDialog(this, "Erro numérico nos parâmetros da sequência.", "Erro", JOptionPane.ERROR_MESSAGE); }
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Erro numérico nos parâmetros da sequência.", "Erro", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void aplicarSequencia() {
-        if (quadradoAtual.isEmpty()) return;
-        addLog("--- INICIANDO APLICAÇÃO DA SEQUÊNCIA ---", null);
+        if (quadradoAtual.isEmpty() || sequenciaAtual.isEmpty()) return;
+
+        // Ponto de referência global da sequência (Origem do objeto - Vértice 1)
+        Point2D.Double o = quadradoAtual.get(0);
+
+        // Cria as matrizes globais de Ida e Volta (3x3)
+        double[][] tIda = Transformacoes2D.criarMatrizTranslacao(-o.x, -o.y);
+        double[][] tVolta = Transformacoes2D.criarMatrizTranslacao(o.x, o.y);
+
+        StringBuilder logSeq = new StringBuilder();
+        logSeq.append("============================================================\n");
+        logSeq.append(String.format("Operação %d: === SEQUÊNCIA DE %d TRANSFORMAÇÕES ===\n\n", historicoCount++, sequenciaAtual.size()));
+
+        int passoAtual = 1;
+
+        // 1. Passo Inicial: Translação para a Origem (T -p)
+        logSeq.append("Passo ").append(passoAtual++).append(": Translação para a Origem (T -p):\n").append(formatarMatriz(tIda)).append("\n");
+
+        double[][] matrizFinal = tIda;
+
+        // 2. Loop acumulando e exibindo cada Matriz Base armazenada na fila
         for (TransformacaoConfig config : sequenciaAtual) {
-            if (config.tipo.equals("Escala")) {
-                Point2D.Double o = quadradoAtual.get(0);
-                double[][] t1 = Transformacoes2D.criarMatrizTranslacao(-o.x, -o.y);
-                double[][] t2 = Transformacoes2D.criarMatrizTranslacao(o.x, o.y);
-                double[][] mFinal = Transformacoes2D.multiplicarMatrizes(t2, Transformacoes2D.multiplicarMatrizes(config.matriz, t1));
-                aplicarMatrizEmTodos(mFinal, config.log + " (Com relação à origem do objeto)");
-            } else { aplicarMatrizEmTodos(config.matriz, config.log); }
+            logSeq.append("Passo ").append(passoAtual++).append(": Matriz Base - ").append(config.tipo).append(":\n").append(formatarMatriz(config.matriz)).append("\n");
+            // Multiplica acumulando (Nova * Antiga)
+            matrizFinal = Transformacoes2D.multiplicarMatrizes(config.matriz, matrizFinal);
         }
-        addLog("--- FIM DA SEQUÊNCIA ---", null);
+
+        // 3. Último Passo: Translação de Volta (T p)
+        logSeq.append("Passo ").append(passoAtual).append(": Translação de Volta (T p):\n").append(formatarMatriz(tVolta)).append("\n");
+        matrizFinal = Transformacoes2D.multiplicarMatrizes(tVolta, matrizFinal);
+
+        // 4. Resultado Geral Composto
+        logSeq.append("RESULTADO GERAL (Matriz Composta Final):\n").append(formatarMatriz(matrizFinal)).append("\n");
+
+        // Aplica a matriz composta aos vértices do objeto
+        for (int i = 0; i < quadradoAtual.size(); i++) {
+            quadradoAtual.set(i, Transformacoes2D.aplicarTransformacao(quadradoAtual.get(i), matrizFinal));
+        }
+
+        // 5. Constrói Coordenadas Resultantes do objeto
+        logSeq.append("Coordenadas Resultantes do Objeto:\n");
+        for (int i = 0; i < quadradoAtual.size(); i++) {
+            Point2D.Double p = quadradoAtual.get(i);
+            logSeq.append(String.format(Locale.US, "   V%d: (%.2f, %.2f)\n", i + 1, p.x, p.y));
+        }
+        logSeq.append("============================================================\n\n");
+
+        // Exibe no campo de texto e faz scroll para o fim
+        historicoStr.append(logSeq.toString());
+        txtHistorico.setText(historicoStr.toString());
+        txtHistorico.setCaretPosition(txtHistorico.getDocument().getLength());
+
+        // Limpa a fila e atualiza os desenhos na tela
         sequenciaAtual.clear();
+        atualizarInfoObjeto();
+        canvasMundo.repaint();
+        canvasViewport.repaint();
     }
 
     private void atualizarInfoObjeto() {
@@ -545,9 +741,7 @@ public class Transformacoes2DPanel extends JPanel {
         txtDimensoes.setText(String.format(Locale.US, "%.1f x %.1f", (maxX - minX), (maxY - minY)));
     }
 
-    // ===============================
-    // GERENCIAMENTO DE LOG E MATRIZES
-    // ===============================
+    // GERENCIAMENTO DE LOG E MATRIZES ********************8
     private void addLog(String text, double[][] matriz) {
         historicoStr.append("============================================================\n");
         historicoStr.append(String.format("Operação %d: %s\n", historicoCount++, text));
@@ -580,16 +774,103 @@ public class Transformacoes2DPanel extends JPanel {
         txtHistorico.setCaretPosition(txtHistorico.getDocument().getLength());
     }
 
-    private void limparTudo() {
-        quadradoAtual.clear(); sequenciaAtual.clear();
-        historicoStr.setLength(0); historicoCount = 1;
-        txtHistorico.setText(""); atualizarInfoObjeto();
-        canvasMundo.repaint(); canvasViewport.repaint();
+    private void addLogComposto(String titulo, String[] descricoes, double[][][] matrizes) {
+        historicoStr.append("============================================================\n");
+        historicoStr.append(String.format("Operação %d: %s\n\n", historicoCount++, titulo));
+
+        for (int i = 0; i < matrizes.length; i++) {
+            historicoStr.append(descricoes[i]).append("\n");
+
+            for (double[] linha : matrizes[i]) {
+                historicoStr.append("   | ");
+                for (double valor : linha) {
+                    historicoStr.append(String.format(Locale.US, "%8.2f ", valor));
+                }
+                historicoStr.append("|\n");
+            }
+            historicoStr.append("\n");
+        }
+
+        historicoStr.append("============================================================\n\n");
+
+        txtHistorico.setText(historicoStr.toString());
+        txtHistorico.setCaretPosition(txtHistorico.getDocument().getLength());
     }
 
-    // ===============================
-    // Classes Auxiliares
-    // ===============================
+    private void limparTudo() {
+        // 1. Limpa os dados internos
+        quadradoAtual.clear();
+        sequenciaAtual.clear();
+        historicoStr.setLength(0);
+        historicoCount = 1;
+
+        // 2. Limpa o histórico da interface
+        txtHistorico.setText("");
+
+        // 3. Reseta campos do objeto 2D
+        txtQuadTamanho.setText("50");
+        txtQuadPosX.setText("0");
+        txtQuadPosY.setText("0");
+
+        // 4. Reseta campos de Transformações
+        txtTransX.setText("0");
+        txtTransY.setText("0");
+        txtEscalaX.setText("1");
+        txtEscalaY.setText("1");
+        txtRotX.setText("0");
+        txtRotY.setText("0");
+        txtRotAngulo.setText("0");
+        chkRefX.setSelected(false);
+        chkRefY.setSelected(false);
+        txtCisX.setText("0");
+        txtCisY.setText("0");
+
+        // 5. Reseta campos da Sequência
+        seqTransX.setText("0");
+        seqTransY.setText("0");
+        seqRotAng.setText("0");
+        seqRotCX.setText("0");
+        seqRotCY.setText("0");
+        seqEscalaX.setText("1");
+        seqEscalaY.setText("1");
+        seqCisX.setText("0");
+        seqCisY.setText("0");
+        seqRefX.setSelected(false);
+        seqRefY.setSelected(false);
+
+        // 6. Reseta campos de Mapeamento
+        txtWinMinX.setText("");
+        txtWinMaxX.setText("");
+        txtWinMinY.setText("");
+        txtWinMaxY.setText("");
+        txtViewMinX.setText("");
+        txtViewMaxX.setText("");
+        txtViewMinY.setText("");
+        txtViewMaxY.setText("");
+        chkAtivarMapeamento.setSelected(false);
+        setCamposMapeamentoEnabled(false);
+
+        // 7. Atualiza informações do objeto (centro, dimensões, etc.)
+        atualizarInfoObjeto();
+
+        // 8. Repaint dos canvases
+        canvasMundo.repaint();
+        canvasViewport.repaint();
+    }
+
+    private String formatarMatriz(double[][] matriz) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < matriz.length; i++) {
+            sb.append("  | ");
+            for (int j = 0; j < matriz[i].length; j++) {
+                sb.append(String.format(Locale.US, "%8.2f ", matriz[i][j]));
+            }
+            sb.append("|\n");
+        }
+        return sb.toString();
+    }
+
+    // Classes Auxiliares *************
     private class TransformacaoConfig {
         String tipo; double[][] matriz; String log;
         public TransformacaoConfig(String t, double[][] m, String l) { tipo = t; matriz = m; log = l; }
