@@ -384,7 +384,7 @@ public class Transformacoes3DPanel extends JPanel {
         panel.add(pnlSeq);
         panel.add(Box.createVerticalStrut(15));
 
-        // --- Viewport ---
+        // Viewport
         JPanel pnlVp = criarSecao("Viewport 3D", new GridLayout(5, 2, 8, 8));
         chkViewPort = new JCheckBox("Ativar Viewport", true);
         chkViewPort.setBackground(BG_PANEL);
@@ -516,7 +516,7 @@ public class Transformacoes3DPanel extends JPanel {
         return pnlHist;
     }
 
-    // --- Métodos de UI / Componentes Padronizados ---
+    // Métodos de UI / Componentes Padronizados
 
     private JPanel criarSecao(String titulo, LayoutManager layout) {
         JPanel p = new JPanel(layout);
@@ -569,7 +569,7 @@ public class Transformacoes3DPanel extends JPanel {
         return lbl;
     }
 
-    // --- Lógica Principal ---
+    // Lógica Principal
 
     private void gerarCubo(double tamanho) {
         double startX = 15.0;
@@ -734,9 +734,8 @@ public class Transformacoes3DPanel extends JPanel {
         if (listModelSeq != null) listModelSeq.clear();
     }
 
-    // ===============================
-    // GERENCIAMENTO DE LOG E MATRIZES
-    // ===============================
+
+    // GERENCIAMENTO DE LOG E MATRIZES *********************
     private void addLog(String text, double[][] matriz) {
         historicoStr.append("============================================================\n");
         historicoStr.append(String.format("Operação %d: %s\n", historicoCount++, text));
@@ -819,7 +818,7 @@ public class Transformacoes3DPanel extends JPanel {
         if (canvasViewport != null) canvasViewport.repaint();
     }
 
-    // --- Rendering em "Tamanho de Pixel" ---
+    // Rendering em "Tamanho de Pixel"
 
     private void configurarGraficos(Graphics2D g) {
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);

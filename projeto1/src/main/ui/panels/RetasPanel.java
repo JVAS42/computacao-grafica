@@ -58,9 +58,8 @@ public class RetasPanel extends JPanel {
         comboAlgoritmo.addActionListener(e -> limparCanvas());
     }
 
-    // ===============================
-    // Configuração do Layout Esquerdo
-    // ===============================
+
+    // Configuração do Layout Esquerdo *************************
     private void setupPainelEsquerdo() {
         JPanel painelEsquerdo = new JPanel(new BorderLayout());
         painelEsquerdo.setPreferredSize(new Dimension(320, 0)); // Aumentado para evitar cortes
@@ -70,7 +69,7 @@ public class RetasPanel extends JPanel {
                 new EmptyBorder(15, 15, 15, 15)
         ));
 
-        // --- TOPO: Informações do Plano ---
+        // TOPO: Informações do Plano
         JPanel topoInfo = new JPanel();
         topoInfo.setLayout(new BoxLayout(topoInfo, BoxLayout.Y_AXIS));
         topoInfo.setOpaque(false);
@@ -95,7 +94,7 @@ public class RetasPanel extends JPanel {
         topoInfo.add(lblQuadrante);
         topoInfo.add(Box.createVerticalStrut(25));
 
-        // --- MEIO: Controles de Entrada (Grid) ---
+        // MEIO: Controles de Entrada (Grid)
         JPanel painelInputs = new JPanel(new GridBagLayout());
         painelInputs.setOpaque(false);
         GridBagConstraints gbc = new GridBagConstraints();
@@ -131,7 +130,7 @@ public class RetasPanel extends JPanel {
         addInputRow(painelInputs, "X Final:", txtX2, 4);
         addInputRow(painelInputs, "Y Final:", txtY2, 5);
 
-        // --- BAIXO: Botão Desenhar ---
+        // BAIXO: Botão Desenhar
         JPanel painelBotao = new JPanel(new BorderLayout());
         painelBotao.setOpaque(false);
         painelBotao.setBorder(new EmptyBorder(20, 0, 0, 0));
@@ -169,9 +168,8 @@ public class RetasPanel extends JPanel {
         panel.add(field, gbc);
     }
 
-    // ===============================
-    // Configuração do Layout Direito
-    // ===============================
+
+    // Configuração do Layout Direito *******************
     private void setupPainelDireito() {
         JPanel painelDireito = new JPanel(new BorderLayout());
         painelDireito.setPreferredSize(new Dimension(320, 0)); // Aumentado para evitar cortes
@@ -181,7 +179,7 @@ public class RetasPanel extends JPanel {
                 new EmptyBorder(15, 15, 15, 15)
         ));
 
-        // --- CABEÇALHO ---
+        // CABEÇALHO
         JPanel headerPanel = new JPanel();
         headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.Y_AXIS));
         headerPanel.setOpaque(false);
@@ -203,7 +201,7 @@ public class RetasPanel extends JPanel {
 
         painelDireito.add(headerPanel, BorderLayout.NORTH);
 
-        // --- ÁREA DE PONTOS (HISTÓRICO) ---
+        // ÁREA DE PONTOS (HISTÓRICO)
         // Usamos um painel com BoxLayout para empilhar os pontos
         JPanel listaPontosContainer = new JPanel();
         listaPontosContainer.setLayout(new BoxLayout(listaPontosContainer, BoxLayout.Y_AXIS));
@@ -219,7 +217,7 @@ public class RetasPanel extends JPanel {
 
         painelDireito.add(scrollPane, BorderLayout.CENTER);
 
-        // --- RODAPÉ (BOTÃO LIMPAR) ---
+        // RODAPÉ (BOTÃO LIMPAR)
         btnLimpar = estilizarBotao("LIMPAR TELA");
         btnLimpar.addActionListener(e -> limparCanvas());
 
@@ -233,9 +231,7 @@ public class RetasPanel extends JPanel {
         add(painelDireito, BorderLayout.EAST);
     }
 
-    // ===============================
-    // Utilitários Visuais
-    // ===============================
+    // Utilitários Visuais ****************************
     private JTextField estilizarTextField(int columns) {
         JTextField txt = new JTextField(columns);
         txt.setFont(new Font("Segoe UI", Font.PLAIN, 13));
@@ -257,9 +253,7 @@ public class RetasPanel extends JPanel {
         return btn;
     }
 
-    // ===============================
-    // Lógica de Interação
-    // ===============================
+    // Lógica de Interação *********************
     private void limparCanvas() {
         linhas.clear();
         clickCount = 0;
@@ -347,9 +341,8 @@ public class RetasPanel extends JPanel {
         }
     }
 
-    // ===============================
-    // Área de Desenho Customizada
-    // ===============================
+
+    // Área de Desenho Customizada **********************
     private class CanvasPanel extends JPanel {
 
         public CanvasPanel() {

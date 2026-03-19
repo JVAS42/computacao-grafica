@@ -38,9 +38,7 @@ public class ElipsePanel extends JPanel {
         setupPainelDireito();
     }
 
-    // ==========================================
-    // PAINEL ESQUERDO
-    // ==========================================
+    // PAINEL ESQUERDO************************************
     private void setupPainelEsquerdo() {
         JPanel painelEsquerdo = new JPanel(new BorderLayout());
         painelEsquerdo.setBackground(Color.decode("#F0F0F0"));
@@ -141,9 +139,7 @@ public class ElipsePanel extends JPanel {
         pnl.add(comp, gbc);
     }
 
-    // ==========================================
-    // PAINEL DIREITO
-    // ==========================================
+    // PAINEL DIREITO ***********************************
     private void setupPainelDireito() {
         JPanel painelDireito = new JPanel(new BorderLayout());
         painelDireito.setBackground(Color.decode("#F0F0F0"));
@@ -230,9 +226,7 @@ public class ElipsePanel extends JPanel {
         return pnl;
     }
 
-    // ==========================================
-    // UTILITÁRIOS DE ESTILO
-    // ==========================================
+    // UTILITÁRIOS DE ESTILO **************************
     private JTextField estilizarTextField(int colunas) {
         JTextField txt = new JTextField(colunas);
         txt.setFont(new Font("Segoe UI", Font.PLAIN, 13));
@@ -255,9 +249,7 @@ public class ElipsePanel extends JPanel {
         return btn;
     }
 
-    // ==========================================
-    // CANVAS
-    // ==========================================
+    // CANVAS ******************************
     private void setupCanvas() {
         JPanel wrapper = new JPanel(new GridBagLayout());
         wrapper.setBackground(Color.decode("#F0F0F0"));
@@ -279,9 +271,7 @@ public class ElipsePanel extends JPanel {
         add(wrapper, BorderLayout.CENTER);
     }
 
-    // ==========================================
-    // LÓGICA E EVENTOS
-    // ==========================================
+    // LÓGICA E EVENTOS ****************************************************
     private void limparTudo() {
         elipses.clear();
         clickCount = 0;
@@ -379,9 +369,7 @@ public class ElipsePanel extends JPanel {
         }
     }
 
-    // ==========================================
-    // ÁREA DE DESENHO (Canvas)
-    // ==========================================
+    // ÁREA DE DESENHO (Canvas) **************************
     private class CanvasPanel extends JPanel {
         public CanvasPanel() {
             setBackground(Color.WHITE); // Tela permanece branca

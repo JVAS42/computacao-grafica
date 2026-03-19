@@ -180,9 +180,7 @@ public class CoordenadasPanel extends JPanel {
         add(wrapperCanvas, BorderLayout.CENTER);
     }
 
-    // ==========================================
-    // Lógica de Atualização e Botões
-    // ==========================================
+    // Lógica de Atualização e Botões *********************************
     private void definirValoresMundo() {
         try {
             xMax = Double.parseDouble(txtSetXMax.getText());
@@ -238,9 +236,7 @@ public class CoordenadasPanel extends JPanel {
         lblDisp.setText(formatLabel("Coordenadas de Dispositivo:", pixelX, pixelY, 0));
     }
 
-    // ==========================================
-    // Funções Utilitárias de UI
-    // ==========================================
+    // Funções Utilitárias de UI *****************************************
     private String getLimitesText() {
         return String.format(Locale.US, "Xmax: %.1f   |   Xmin: %.1f   |   Ymax: %.1f   |   Ymin: %.1f", xMax, xMin, yMax, yMin);
     }
@@ -289,9 +285,7 @@ public class CoordenadasPanel extends JPanel {
         pnl.add(txt, gbc);
     }
 
-    // ==========================================
-    // ÁREA DE DESENHO
-    // ==========================================
+    // ÁREA DE DESENHO*************************
     private class CanvasPanel extends JPanel {
         public CanvasPanel() {
             setBackground(Color.WHITE); // Mantém a tela principal branca

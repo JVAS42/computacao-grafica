@@ -49,9 +49,8 @@ public class SutherlandHodgmanPanel extends JPanel {
         setupPainelDireito();
     }
 
-    // ==========================================
-    // PAINEL ESQUERDO
-    // ==========================================
+
+    // PAINEL ESQUERDO *******************
     private void setupPainelEsquerdo() {
         JPanel painelEsq = new JPanel();
         painelEsq.setLayout(new BoxLayout(painelEsq, BoxLayout.Y_AXIS));
@@ -116,9 +115,8 @@ public class SutherlandHodgmanPanel extends JPanel {
         return pnl;
     }
 
-    // ==========================================
-    // PAINEL DIREITO
-    // ==========================================
+
+    // PAINEL DIREITO *************************************
     private void setupPainelDireito() {
         JPanel painelDir = new JPanel();
         painelDir.setLayout(new BoxLayout(painelDir, BoxLayout.Y_AXIS));
@@ -204,9 +202,7 @@ public class SutherlandHodgmanPanel extends JPanel {
         canvas.repaint();
     }
 
-    // ==========================================
-    // CANVAS
-    // ==========================================
+    // CANVAS *********************************
     private void setupCanvas() {
         JPanel wrapper = new JPanel(new BorderLayout());
         wrapper.setBackground(COR_FUNDO);
@@ -307,7 +303,7 @@ public class SutherlandHodgmanPanel extends JPanel {
                 }
             }
 
-            // --- DESENHO DO POLÍGONO RECORTADO (AQUI ESTÁ A MUDANÇA) ---
+            // DESENHO DO POLÍGONO RECORTADO (AQUI ESTÁ A MUDANÇA)
             if (mostrarRecortado && !poligonoRecortado.isEmpty()) {
 
                 // 1. Pinta o interior (o que está dentro do recorte)

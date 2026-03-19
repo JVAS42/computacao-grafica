@@ -49,9 +49,7 @@ public class BezierPanel extends JPanel {
         atualizarPainelDireito();
     }
 
-    // ==========================================
-    // PAINEL ESQUERDO
-    // ==========================================
+    // PAINEL ESQUERDO ***********************************
     private void setupPainelEsquerdo() {
         JPanel painelEsquerdo = new JPanel(new BorderLayout());
         painelEsquerdo.setBackground(Color.decode("#F0F0F0"));
@@ -132,7 +130,7 @@ public class BezierPanel extends JPanel {
         btnDesenhar = estilizarBotao("DESENHAR CURVA");
         btnDesenhar.addActionListener(e -> atualizarCurvaViaInputs());
 
-        // --- NOVO BOTÃO DE LIMPEZA ---
+        // NOVO BOTÃO DE LIMPEZA
         JButton btnLimparTela = estilizarBotao("LIMPAR TELA");
         btnLimparTela.setBackground(new Color(180, 50, 50)); // Vermelho padrão que usamos no 3D
         btnLimparTela.addActionListener(e -> limparTela());
@@ -160,9 +158,9 @@ public class BezierPanel extends JPanel {
         pnl.add(comp, gbc);
     }
 
-    // ==========================================
-    // PAINEL DIREITO
-    // ==========================================
+
+    // PAINEL DIREITO *****************************************
+    //
     private void setupPainelDireito() {
         JPanel painelDireito = new JPanel(new BorderLayout());
         painelDireito.setBackground(Color.decode("#F0F0F0"));
@@ -216,9 +214,7 @@ public class BezierPanel extends JPanel {
         add(painelDireito, BorderLayout.EAST);
     }
 
-    // ==========================================
-    // UTILITÁRIOS DE ESTILO
-    // ==========================================
+    // ESTILIZAÇÃO ****************************************
     private JTextField estilizarTextField(String textoInicial, int colunas) {
         JTextField txt = new JTextField(textoInicial, colunas);
         txt.setFont(new Font("Segoe UI", Font.PLAIN, 13));
@@ -240,9 +236,7 @@ public class BezierPanel extends JPanel {
         return btn;
     }
 
-    // ==========================================
-    // CANVAS
-    // ==========================================
+    // CANVAS ***************************
     private void setupCanvas() {
         JPanel wrapper = new JPanel(new GridBagLayout());
         wrapper.setBackground(Color.decode("#F0F0F0"));
@@ -264,9 +258,7 @@ public class BezierPanel extends JPanel {
         add(wrapper, BorderLayout.CENTER);
     }
 
-    // ==========================================
-    // LÓGICA E EVENTOS
-    // ==========================================
+    // LÓGICA E EVENTOS **********************************************
     private void restaurarPadroes() {
         int[][] defaults = {{0, 0}, {0, 0}, {0, 0}, {0, 0}};
         controlPoints.clear();
@@ -358,9 +350,7 @@ public class BezierPanel extends JPanel {
         return "Origem";
     }
 
-    // ==========================================
-    // ÁREA DE DESENHO (Canvas)
-    // ==========================================
+    // ÁREA DE DESENHO (Canvas) ******************************************************
     private class CanvasPanel extends JPanel {
         public CanvasPanel() {
             setBackground(Color.WHITE);

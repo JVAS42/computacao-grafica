@@ -14,7 +14,7 @@ import java.util.Locale;
 
 public class CohenSutherlandPanel extends JPanel {
 
-    // Viewport perfeitamente centralizada em um Canvas de 500x500 (Tamanho 200x200)
+    // Viewport centralizada em um Canvas de 500x500 (Tamanho 200x200)
     private double xMin = 150, yMin = 150, xMax = 350, yMax = 350;
 
     // Estado Global
@@ -51,9 +51,7 @@ public class CohenSutherlandPanel extends JPanel {
         atualizarHistoricoUI(); // Inicia o histórico vazio
     }
 
-    // ==========================================
-    // PAINEL ESQUERDO
-    // ==========================================
+    // PAINEL ESQUERDO ***************************
     private void setupPainelEsquerdo() {
         JPanel painelEsquerdo = new JPanel(new BorderLayout());
         painelEsquerdo.setBackground(Color.decode("#F0F0F0"));
@@ -148,9 +146,7 @@ public class CohenSutherlandPanel extends JPanel {
         pnl.add(comp, gbc);
     }
 
-    // ==========================================
-    // PAINEL DIREITO
-    // ==========================================
+    // PAINEL DIREITO *********************************
     private void setupPainelDireito() {
         JPanel painelDireito = new JPanel(new BorderLayout());
         painelDireito.setBackground(Color.decode("#F0F0F0"));
@@ -249,9 +245,7 @@ public class CohenSutherlandPanel extends JPanel {
         add(painelDireito, BorderLayout.EAST);
     }
 
-    // ==========================================
-    // UTILITÁRIOS DE ESTILO
-    // ==========================================
+    // UTILITÁRIOS DE ESTILO *****************************
     private JTextField estilizarTextField(String textoInicial, int colunas) {
         JTextField txt = new JTextField(textoInicial, colunas);
         txt.setFont(new Font("Segoe UI", Font.PLAIN, 13));
@@ -273,9 +267,7 @@ public class CohenSutherlandPanel extends JPanel {
         return btn;
     }
 
-    // ==========================================
-    // CANVAS
-    // ==========================================
+    // CANVAS **************************
     private void setupCanvas() {
         JPanel wrapper = new JPanel(new GridBagLayout());
         wrapper.setBackground(Color.decode("#F0F0F0"));
@@ -297,9 +289,7 @@ public class CohenSutherlandPanel extends JPanel {
         add(wrapper, BorderLayout.CENTER);
     }
 
-    // ==========================================
-    // LÓGICA E ESTADO
-    // ==========================================
+    // LÓGICA E ESTADO *******************************
     private class LineDef {
         double x1, y1, x2, y2;
         public LineDef(double x1, double y1, double x2, double y2) {
@@ -423,9 +413,7 @@ public class CohenSutherlandPanel extends JPanel {
         }
     }
 
-    // ==========================================
-    // ÁREA DE DESENHO
-    // ==========================================
+    // ÁREA DE DESENHO *************************************
     private class CanvasPanel extends JPanel {
         public CanvasPanel() {
             setBackground(Color.WHITE);
