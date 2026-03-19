@@ -6,6 +6,7 @@ import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class Transformacoes3DPanel extends JPanel {
 
@@ -29,19 +30,22 @@ public class Transformacoes3DPanel extends JPanel {
 
     // Sequência e Histórico
     private List<double[][]> sequence = new ArrayList<>();
-    private DefaultListModel<String> listModelSeq = new DefaultListModel<>(); // <--- NOVO
-    private JList<String> listSequencia; // <--- NOVO
-    private List<String> historyLog = new ArrayList<>();
+    private DefaultListModel<String> listModelSeq = new DefaultListModel<>();
+    private JList<String> listSequencia;
+
+    // Controle do novo Histórico
+    private StringBuilder historicoStr = new StringBuilder();
+    private int historicoCount = 1;
 
     // Inputs de Transformação
-    private JTextField txtTamanho; // Promovido a global para poder ser resetado
+    private JTextField txtTamanho;
     private JTextField txtTx, txtTy, txtTz, txtRotAngle, txtSx, txtSy, txtSz;
     private JTextField txtShXY, txtShXZ, txtShYZ;
     private JComboBox<String> cbRotAxis, cbRefAxis, cbSeqType;
 
     // --- Cores e Estilos Modernos ---
-    private final Color BG_PANEL = new Color(240, 240, 240); // #F0F0F0
-    private final Color BG_BUTTON = new Color(33, 53, 85);   // #213555
+    private final Color BG_PANEL = new Color(240, 240, 240);
+    private final Color BG_BUTTON = new Color(33, 53, 85);
     private final Color FG_BUTTON = Color.WHITE;
     private final Font FONT_DEFAULT = new Font("Segoe UI", Font.PLAIN, 13);
     private final Font FONT_BOLD = new Font("Segoe UI", Font.BOLD, 13);
@@ -51,27 +55,32 @@ public class Transformacoes3DPanel extends JPanel {
         setBackground(BG_PANEL);
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // 1. Painel Esquerdo (Controles)
-        JScrollPane leftScroll = new JScrollPane(criarPainelEsquerdo());
-        leftScroll.setPreferredSize(new Dimension(500, 0));
-        leftScroll.getVerticalScrollBar().setUnitIncrement(16);
-        leftScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        leftScroll.setBorder(BorderFactory.createEmptyBorder());
-        add(leftScroll, BorderLayout.WEST);
+        // 1. Inicializa as seções
+        JScrollPane painelEsquerdo = criarPainelEsquerdo();
+        Component painelCentral = criarPainelCentral();
+        JScrollPane painelDireito = criarPainelDireito();
+        JPanel painelHistorico = setupPainelHistorico();
 
-        // 2. Painel Central (Telas Quadradas Modernas)
-        add(criarPainelCentral(), BorderLayout.CENTER);
+        // 2. Agrupa a área central superior (Mundo/Viewport + Informações Direitas)
+        JPanel painelSuperior = new JPanel(new BorderLayout(10, 10));
+        painelSuperior.setBackground(BG_PANEL);
+        painelSuperior.add(painelCentral, BorderLayout.CENTER);
+        painelSuperior.add(painelDireito, BorderLayout.EAST);
 
-        // 3. Painel Direito (Informações)
-        JScrollPane rightScroll = new JScrollPane(criarPainelDireito());
-        rightScroll.setPreferredSize(new Dimension(280, 0));
-        rightScroll.setBorder(BorderFactory.createEmptyBorder());
-        add(rightScroll, BorderLayout.EAST);
+        // 3. Agrupa a área superior e o histórico embaixo
+        JPanel painelConteudo = new JPanel(new BorderLayout(10, 10));
+        painelConteudo.setBackground(BG_PANEL);
+        painelConteudo.add(painelSuperior, BorderLayout.CENTER);
+        painelConteudo.add(painelHistorico, BorderLayout.SOUTH);
+
+        // 4. Adiciona tudo ao painel principal
+        add(painelEsquerdo, BorderLayout.WEST);
+        add(painelConteudo, BorderLayout.CENTER);
 
         gerarCubo(40);
     }
 
-    private JPanel criarPainelEsquerdo() {
+    private JScrollPane criarPainelEsquerdo() {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBackground(BG_PANEL);
@@ -79,7 +88,7 @@ public class Transformacoes3DPanel extends JPanel {
 
         // --- Gerar Objeto ---
         JPanel pnlObj = criarSecao("Objeto 3D", new GridLayout(3, 1, 5, 8));
-        txtTamanho = estilizarInput(new JTextField("40")); // Agora é global
+        txtTamanho = estilizarInput(new JTextField("40"));
         JButton btnGerar = criarBotaoPrimario("Gerar Objeto");
         btnGerar.addActionListener(e -> gerarCubo(Double.parseDouble(txtTamanho.getText())));
 
@@ -112,10 +121,7 @@ public class Transformacoes3DPanel extends JPanel {
             double tz = Double.parseDouble(txtTz.getText());
 
             double[][] matriz = Transformacoes3D.translation(tx, ty, tz);
-            String descricao = "Translação (" + tx + ", " + ty + ", " + tz + ")\n"
-                    + "Matriz Aplicada:\n" + formatarMatriz(matriz)
-                    + "------------------------------------";
-
+            String descricao = "Translação (" + tx + ", " + ty + ", " + tz + ")";
             aplicarTransformacaoDireta(matriz, descricao);
         });
 
@@ -141,10 +147,7 @@ public class Transformacoes3DPanel extends JPanel {
             double[][] mat = eixo.equals("X") ? Transformacoes3D.rotationX(ang) :
                     (eixo.equals("Y") ? Transformacoes3D.rotationY(ang) : Transformacoes3D.rotationZ(ang));
 
-            String descricao = "Rotação Eixo " + eixo + " (" + ang + "°)\n"
-                    + "Matriz Aplicada:\n" + formatarMatriz(mat)
-                    + "------------------------------------";
-
+            String descricao = "Rotação Eixo " + eixo + " (" + ang + "°)";
             aplicarEmTornoDoVertice1(mat, descricao);
         });
 
@@ -171,10 +174,7 @@ public class Transformacoes3DPanel extends JPanel {
             double sz = Double.parseDouble(txtSz.getText());
 
             double[][] matriz = Transformacoes3D.scaling(sx, sy, sz);
-            String descricao = "Escala (" + sx + ", " + sy + ", " + sz + ")\n"
-                    + "Matriz Aplicada:\n" + formatarMatriz(matriz)
-                    + "------------------------------------";
-
+            String descricao = "Escala (" + sx + ", " + sy + ", " + sz + ")";
             aplicarEmTornoDoVertice1(matriz, descricao);
         });
 
@@ -201,10 +201,7 @@ public class Transformacoes3DPanel extends JPanel {
             double shYZ = Double.parseDouble(txtShYZ.getText());
 
             double[][] matriz = Transformacoes3D.shear(shXY, shXZ, shYZ);
-            String descricao = "Cisalhamento\n"
-                    + "Matriz Aplicada:\n" + formatarMatriz(matriz)
-                    + "------------------------------------";
-
+            String descricao = "Cisalhamento (XY:" + shXY + ", XZ:" + shXZ + ", YZ:" + shYZ + ")";
             aplicarTransformacaoDireta(matriz, descricao);
         });
 
@@ -222,12 +219,8 @@ public class Transformacoes3DPanel extends JPanel {
 
         btnRef.addActionListener(e -> {
             String plano = (String) cbRefAxis.getSelectedItem();
-
             double[][] matriz = Transformacoes3D.reflection(plano);
-            String descricao = "Reflexão plano " + plano + "\n"
-                    + "Matriz Aplicada:\n" + formatarMatriz(matriz)
-                    + "------------------------------------";
-
+            String descricao = "Reflexão plano " + plano;
             aplicarTransformacaoDireta(matriz, descricao);
         });
 
@@ -249,22 +242,10 @@ public class Transformacoes3DPanel extends JPanel {
         slRotZ.setBackground(BG_PANEL);
         slZoom.setBackground(BG_PANEL);
 
-        slRotX.addChangeListener(e -> {
-            viewRotX = slRotX.getValue();
-            atualizarTelas();
-        });
-        slRotY.addChangeListener(e -> {
-            viewRotY = slRotY.getValue();
-            atualizarTelas();
-        });
-        slRotZ.addChangeListener(e -> {
-            viewRotZ = slRotZ.getValue();
-            atualizarTelas();
-        });
-        slZoom.addChangeListener(e -> {
-            zoom = slZoom.getValue();
-            atualizarTelas();
-        });
+        slRotX.addChangeListener(e -> { viewRotX = slRotX.getValue(); atualizarTelas(); });
+        slRotY.addChangeListener(e -> { viewRotY = slRotY.getValue(); atualizarTelas(); });
+        slRotZ.addChangeListener(e -> { viewRotZ = slRotZ.getValue(); atualizarTelas(); });
+        slZoom.addChangeListener(e -> { zoom = slZoom.getValue(); atualizarTelas(); });
 
         pnlVis.add(criarLabelCor("X (Red):", Color.RED));
         pnlVis.add(slRotX);
@@ -277,10 +258,7 @@ public class Transformacoes3DPanel extends JPanel {
 
         JButton btnResetVis = criarBotaoPrimario("Resetar Vis.");
         btnResetVis.addActionListener(e -> {
-            slRotX.setValue(0);
-            slRotY.setValue(0);
-            slRotZ.setValue(0);
-            slZoom.setValue(100);
+            slRotX.setValue(0); slRotY.setValue(0); slRotZ.setValue(0); slZoom.setValue(100);
         });
         pnlVis.add(new JLabel(""));
         pnlVis.add(btnResetVis);
@@ -288,10 +266,8 @@ public class Transformacoes3DPanel extends JPanel {
         panel.add(Box.createVerticalStrut(15));
 
         // --- Sequência ---
-        // Usando BorderLayout para deixar a lista no centro e os botões organizados
         JPanel pnlSeq = criarSecao("Sequência (Fila)", new BorderLayout(5, 5));
 
-        // Parte Superior: Seleção e Botão Adicionar
         JPanel pnlSeqTop = new JPanel(new GridLayout(2, 1, 5, 5));
         pnlSeqTop.setBackground(BG_PANEL);
         cbSeqType = new JComboBox<>(new String[]{"Translação", "Rotação", "Escala", "Cisalhamento", "Reflexão"});
@@ -301,19 +277,17 @@ public class Transformacoes3DPanel extends JPanel {
         pnlSeqTop.add(cbSeqType);
         pnlSeqTop.add(btnAddSeq);
 
-        // Parte Central: A Fila Visual
         listSequencia = new JList<>(listModelSeq);
         listSequencia.setFont(new Font("Monospaced", Font.PLAIN, 12));
         JScrollPane scrollSeq = new JScrollPane(listSequencia);
-        scrollSeq.setPreferredSize(new Dimension(0, 80)); // Altura fixa para caber na tela
+        scrollSeq.setPreferredSize(new Dimension(0, 80));
 
-        // Parte Inferior: Botões de Aplicar e Limpar
         JPanel pnlSeqBot = new JPanel(new GridLayout(1, 2, 5, 5));
         pnlSeqBot.setBackground(BG_PANEL);
         JButton btnApplySeq = criarBotaoPrimario("Aplicar Tudo");
         btnApplySeq.addActionListener(e -> aplicarSequencia());
         JButton btnClearSeq = criarBotaoPrimario("Limpar Fila");
-        btnClearSeq.setBackground(new Color(180, 50, 50)); // Vermelhinho
+        btnClearSeq.setBackground(new Color(180, 50, 50));
         btnClearSeq.addActionListener(e -> limparSequencia());
         pnlSeqBot.add(btnApplySeq);
         pnlSeqBot.add(btnClearSeq);
@@ -349,11 +323,17 @@ public class Transformacoes3DPanel extends JPanel {
 
         JButton btnLimpar = criarBotaoPrimario("Limpar Tudo");
         btnLimpar.setBackground(new Color(180, 50, 50));
-        btnLimpar.addActionListener(e -> limparTudo()); // <--- CHAMADA DO NOVO MÉTODO
+        btnLimpar.addActionListener(e -> limparTudo());
         panel.add(Box.createVerticalStrut(15));
         panel.add(btnLimpar);
 
-        return panel;
+        JScrollPane scrollEsquerdo = new JScrollPane(panel);
+        scrollEsquerdo.setPreferredSize(new Dimension(500, 0));
+        scrollEsquerdo.getVerticalScrollBar().setUnitIncrement(16);
+        scrollEsquerdo.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollEsquerdo.setBorder(BorderFactory.createEmptyBorder());
+
+        return scrollEsquerdo;
     }
 
     private Component criarPainelCentral() {
@@ -392,31 +372,27 @@ public class Transformacoes3DPanel extends JPanel {
     }
 
     private JPanel criarJanelaQuadrada(String titulo, JPanel canvas, int size) {
-        // Wrapper principal que agrupa o texto (em cima) e o quadrado (embaixo)
-        JPanel wrapperPrincipal = new JPanel(new BorderLayout(0, 5)); // O '5' é o espaçamento entre o texto e a caixa
-        wrapperPrincipal.setBackground(BG_PANEL); // Fundo igual ao do resto da tela
+        JPanel wrapperPrincipal = new JPanel(new BorderLayout(0, 5));
+        wrapperPrincipal.setBackground(BG_PANEL);
 
-        // Texto simples, sem fundo colorido
         JLabel lblHeader = new JLabel(titulo, SwingConstants.CENTER);
         lblHeader.setFont(new Font("Segoe UI", Font.BOLD, 16));
         lblHeader.setForeground(Color.BLACK);
 
-        // O box que vai realmente guardar o canvas e ter a borda cinza
         JPanel boxCanvas = new JPanel(new BorderLayout());
-        boxCanvas.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1)); // Borda apenas no quadrado
+        boxCanvas.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
         boxCanvas.setBackground(Color.WHITE);
 
         canvas.setPreferredSize(new Dimension(size, size));
         boxCanvas.add(canvas, BorderLayout.CENTER);
 
-        // Adiciona o texto em cima e a caixa embaixo
         wrapperPrincipal.add(lblHeader, BorderLayout.NORTH);
         wrapperPrincipal.add(boxCanvas, BorderLayout.CENTER);
 
         return wrapperPrincipal;
     }
 
-    private JPanel criarPainelDireito() {
+    private JScrollPane criarPainelDireito() {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBackground(BG_PANEL);
@@ -430,18 +406,29 @@ public class Transformacoes3DPanel extends JPanel {
         JPanel pnlInfo = criarSecao("Informações do Objeto", new BorderLayout());
         pnlInfo.add(new JScrollPane(txtInfoObject), BorderLayout.CENTER);
         panel.add(pnlInfo);
-        panel.add(Box.createVerticalStrut(15));
+
+        JScrollPane rightScroll = new JScrollPane(panel);
+        rightScroll.setPreferredSize(new Dimension(280, 0));
+        rightScroll.setBorder(BorderFactory.createEmptyBorder());
+
+        return rightScroll;
+    }
+
+    private JPanel setupPainelHistorico() {
+        JPanel pnlHist = new JPanel(new BorderLayout());
+        pnlHist.setBackground(BG_PANEL);
 
         txtHistory = new JTextArea(10, 20);
         txtHistory.setEditable(false);
-        txtHistory.setFont(new Font("Monospaced", Font.PLAIN, 12));
-        txtHistory.setMargin(new Insets(10, 10, 10, 10));
+        txtHistory.setFont(new Font("Monospaced", Font.PLAIN, 13));
 
-        JPanel pnlHist = criarSecao("Histórico de Transformações", new BorderLayout());
-        pnlHist.add(new JScrollPane(txtHistory), BorderLayout.CENTER);
-        panel.add(pnlHist);
+        JScrollPane scrollHist = new JScrollPane(txtHistory);
+        scrollHist.setBorder(BorderFactory.createTitledBorder("Histórico de Operações e Matrizes de Transformação"));
 
-        return panel;
+        pnlHist.add(scrollHist, BorderLayout.CENTER);
+        pnlHist.setPreferredSize(new Dimension(0, 220));
+
+        return pnlHist;
     }
 
     // --- Métodos de UI / Componentes Padronizados ---
@@ -500,74 +487,47 @@ public class Transformacoes3DPanel extends JPanel {
     // --- Lógica Principal ---
 
     private void gerarCubo(double tamanho) {
-        // Ponto de origem alterado de (0,0,0) para (15, 15, 15)
         double startX = 15.0;
         double startY = 15.0;
         double startZ = 15.0;
 
-        // O '1' no final de cada linha é a coordenada homogênea (w) necessária para multiplicar pelas matrizes 4x4
         vertices = new double[][]{
-                {startX, startY, startZ, 1},                                     // Vértice 0
-                {startX + tamanho, startY, startZ, 1},                           // Vértice 1
-                {startX + tamanho, startY + tamanho, startZ, 1},                 // Vértice 2
-                {startX, startY + tamanho, startZ, 1},                           // Vértice 3
-                {startX, startY, startZ + tamanho, 1},                           // Vértice 4
-                {startX + tamanho, startY, startZ + tamanho, 1},                 // Vértice 5
-                {startX + tamanho, startY + tamanho, startZ + tamanho, 1},       // Vértice 6
-                {startX, startY + tamanho, startZ + tamanho, 1}                  // Vértice 7
+                {startX, startY, startZ, 1},
+                {startX + tamanho, startY, startZ, 1},
+                {startX + tamanho, startY + tamanho, startZ, 1},
+                {startX, startY + tamanho, startZ, 1},
+                {startX, startY, startZ + tamanho, 1},
+                {startX + tamanho, startY, startZ + tamanho, 1},
+                {startX + tamanho, startY + tamanho, startZ + tamanho, 1},
+                {startX, startY + tamanho, startZ + tamanho, 1}
         };
 
-        // Limpa as listas de histórico e sequências (caso existam no seu método original)
-        if (sequence != null) sequence.clear();
-        if (historyLog != null) historyLog.clear();
-        if (txtHistory != null) txtHistory.setText("");
-
-        // Atualiza a tela com o novo cubo
-        repaint();
+        addLog("Objeto gerado (Tamanho: " + tamanho + ")", null);
+        atualizarTelas();
     }
 
-    // NOVO MÉTODO: Retorna absolutamente todos os campos visuais e lógicos para o estado padrão
     private void limparTudo() {
-        // Reseta os campos de input de texto
         if (txtTamanho != null) txtTamanho.setText("40");
 
-        txtTx.setText("0");
-        txtTy.setText("0");
-        txtTz.setText("0");
-        cbRotAxis.setSelectedIndex(0);
-        txtRotAngle.setText("0");
-        txtSx.setText("1.5");
-        txtSy.setText("1.5");
-        txtSz.setText("1.5");
-        txtShXY.setText("0");
-        txtShXZ.setText("0");
-        txtShYZ.setText("0");
-        cbRefAxis.setSelectedIndex(0);
-        cbSeqType.setSelectedIndex(0);
+        txtTx.setText("0"); txtTy.setText("0"); txtTz.setText("0");
+        cbRotAxis.setSelectedIndex(0); txtRotAngle.setText("0");
+        txtSx.setText("1.5"); txtSy.setText("1.5"); txtSz.setText("1.5");
+        txtShXY.setText("0"); txtShXZ.setText("0"); txtShYZ.setText("0");
+        cbRefAxis.setSelectedIndex(0); cbSeqType.setSelectedIndex(0);
 
-        // Reseta Viewport
         chkViewPort.setSelected(true);
-        txtVpXMin.setText("0");
-        txtVpYMin.setText("0");
-        txtVpXMax.setText("0");
-        txtVpYMax.setText("0");
+        txtVpXMin.setText("0"); txtVpYMin.setText("0");
+        txtVpXMax.setText("0"); txtVpYMax.setText("0");
 
-        // Reseta os sliders e os valores lógicos de rotação visual
-        slRotX.setValue(0);
-        slRotY.setValue(0);
-        slRotZ.setValue(0);
-        slZoom.setValue(100);
-        viewRotX = 0;
-        viewRotY = 0;
-        viewRotZ = 0;
-        zoom = 100;
+        slRotX.setValue(0); slRotY.setValue(0); slRotZ.setValue(0); slZoom.setValue(100);
+        viewRotX = 0; viewRotY = 0; viewRotZ = 0; zoom = 100;
 
-        // Limpa o histórico completamente ANTES de gerar o cubo
-        historyLog.clear();
+        historicoStr.setLength(0);
+        historicoCount = 1;
         sequence.clear();
+        if (listModelSeq != null) listModelSeq.clear();
         txtHistory.setText("");
 
-        // Gera o cubo inicial (a mensagem de cubo gerado será a primeira no histórico zerado)
         gerarCubo(40);
     }
 
@@ -578,38 +538,25 @@ public class Transformacoes3DPanel extends JPanel {
             vertices[i][1] = vTrans[1];
             vertices[i][2] = vTrans[2];
         }
-        logHistory(logMsg);
+        addLog(logMsg, matriz);
         atualizarTelas();
     }
 
     private void aplicarEmTornoDoVertice1(double[][] matrizBase, String descricaoBase) {
         if (vertices == null || vertices.length == 0) return;
 
-        // Pega as coordenadas atuais do Vértice 1 (que está no índice 0 do array)
         double cx = vertices[0][0];
         double cy = vertices[0][1];
         double cz = vertices[0][2];
 
-        // 1. Gera as matrizes que levam e trazem o Vértice 1 da origem
         double[][] tIda = Transformacoes3D.translation(-cx, -cy, -cz);
         double[][] tVolta = Transformacoes3D.translation(cx, cy, cz);
 
-        // 2. Multiplica as matrizes na ordem correta: Final = tVolta * matrizBase * tIda
         double[][] passo1 = Transformacoes3D.multiply(matrizBase, tIda);
         double[][] matrizFinal = Transformacoes3D.multiply(tVolta, passo1);
 
-        // 3. Monta o histórico detalhado mostrando todos os passos
-        StringBuilder sb = new StringBuilder();
-        sb.append(descricaoBase).append("\n");
-        sb.append("Passo 1: Translação para a Origem (T -p):\n").append(formatarMatriz(tIda));
-        sb.append("Passo 2: Matriz Base da Transformação:\n").append(formatarMatriz(matrizBase));
-        sb.append("Passo 3: Translação de Volta (T p):\n").append(formatarMatriz(tVolta));
-        sb.append("RESULTADO (Matriz Composta Final):\n").append(formatarMatriz(matrizFinal));
-        sb.append("------------------------------------"); // Sem \n porque o seu painel já formata
-
-        // 4. Delega TODO o trabalho de atualizar a tela, arrays e listas para o
-        // método que já funciona perfeitamente para as outras transformações!
-        aplicarTransformacaoDireta(matrizFinal, sb.toString());
+        String logFinal = descricaoBase + " (Em torno do Vértice 1)";
+        aplicarTransformacaoDireta(matrizFinal, logFinal);
     }
 
     private void adicionarASequencia() {
@@ -651,7 +598,6 @@ public class Transformacoes3DPanel extends JPanel {
                 detalheFila = String.format("Reflexão(Plano:%s)", plano);
             }
 
-            // Adiciona o texto bonitinho na fila visual
             listModelSeq.addElement((listModelSeq.getSize() + 1) + ". " + detalheFila);
 
         } catch (Exception ex) {
@@ -665,19 +611,16 @@ public class Transformacoes3DPanel extends JPanel {
             return;
         }
 
-        // 1. Multiplica todas as matrizes da fila
         double[][] matrizComposta = sequence.get(0);
         for (int i = 1; i < sequence.size(); i++) {
             matrizComposta = Transformacoes3D.multiply(matrizComposta, sequence.get(i));
         }
 
-        // 2. Aplica no cubo
         aplicarTransformacaoDireta(matrizComposta, "Sequência Aplicada (" + sequence.size() + " operações)");
 
-        // 3. LIMPA A FILA MATEMÁTICA E A FILA VISUAL (O segredo está aqui!)
         sequence.clear();
         if (listModelSeq != null) {
-            listModelSeq.clear(); // Isso aqui é o que apaga os textos da telinha!
+            listModelSeq.clear();
         }
     }
 
@@ -686,9 +629,40 @@ public class Transformacoes3DPanel extends JPanel {
         if (listModelSeq != null) listModelSeq.clear();
     }
 
-    private void logHistory(String msg) {
-        historyLog.add(msg);
-        txtHistory.setText(String.join("\n", historyLog));
+    // ===============================
+    // GERENCIAMENTO DE LOG E MATRIZES
+    // ===============================
+    private void addLog(String text, double[][] matriz) {
+        historicoStr.append("============================================================\n");
+        historicoStr.append(String.format("Operação %d: %s\n", historicoCount++, text));
+
+        // 1. Primeiro, imprime a matriz (se houver alguma)
+        if (matriz != null) {
+            historicoStr.append("\nMatriz de Transformação:\n");
+            for (double[] linha : matriz) {
+                historicoStr.append("   | ");
+                for (double valor : linha) {
+                    historicoStr.append(String.format(Locale.US, "%8.2f ", valor));
+                }
+                historicoStr.append("|\n");
+            }
+        }
+
+        // 2. Depois (sem o 'else'), SEMPRE imprime as coordenadas atuais do objeto em 3D
+        if (vertices != null && vertices.length > 0) {
+            historicoStr.append("\nCoordenadas Resultantes do Objeto:\n");
+            for (int i = 0; i < vertices.length; i++) {
+                // Formatação ajustada para (X, Y, Z)
+                historicoStr.append(String.format(Locale.US, "   V%d: (%.2f, %.2f, %.2f)\n",
+                        i + 1, vertices[i][0], vertices[i][1], vertices[i][2]));
+            }
+        }
+
+        historicoStr.append("============================================================\n\n");
+        txtHistory.setText(historicoStr.toString());
+
+        // Garante que o painel role automaticamente para o final
+        txtHistory.setCaretPosition(txtHistory.getDocument().getLength());
     }
 
     private void atualizarInfos() {
@@ -709,9 +683,7 @@ public class Transformacoes3DPanel extends JPanel {
             minZ = Math.min(minZ, vertices[i][2]);
             maxZ = Math.max(maxZ, vertices[i][2]);
         }
-        cx /= 8;
-        cy /= 8;
-        cz /= 8;
+        cx /= 8; cy /= 8; cz /= 8;
         html.append("</div>");
 
         html.append("<h4 style='color:#213555; margin-bottom:5px;'>Centro Geométrico:</h4>");
@@ -775,7 +747,6 @@ public class Transformacoes3DPanel extends JPanel {
 
         desenharEixos(g, cX, cY, true);
 
-        //g.setColor(Color.BLACK);
         for (int[] aresta : arestas) {
             double[] p1 = Transformacoes3D.projectIsometric(vertices[aresta[0]], viewRotX, viewRotY, viewRotZ, zoom);
             double[] p2 = Transformacoes3D.projectIsometric(vertices[aresta[1]], viewRotX, viewRotY, viewRotZ, zoom);
@@ -787,25 +758,19 @@ public class Transformacoes3DPanel extends JPanel {
         if(vertices == null || !chkViewPort.isSelected()) return;
         try {
             configurarGraficos(g);
-            int w = canvasViewport.getWidth();   // 300
-            int h = canvasViewport.getHeight();  // 300
+            int w = canvasViewport.getWidth();
+            int h = canvasViewport.getHeight();
 
-            // 1. A JANELA DO MUNDO (Window) fica fixa na matemática para garantir o centro perfeito.
-            // Como a sua tela do Mundo tem 500x500, criamos um espaço simétrico de -250 a +250.
-            // Isso garante que a origem (0,0) fique cravada no centro geométrico.
             double wXMin = -250;
             double wYMin = -250;
             double wXMax = 250;
             double wYMax = 250;
 
-            // 2. A VIEWPORT (Tela) agora lê os valores exatos que o usuário digita na interface!
-            // E como Viewport representa a tela física (pixels), o usuário SÓ PODE DIGITAR POSITIVOS (ex: 0 a 300)
             double vpXMin = Double.parseDouble(txtVpXMin.getText());
             double vpYMin = Double.parseDouble(txtVpYMin.getText());
             double vpXMax = Double.parseDouble(txtVpXMax.getText());
             double vpYMax = Double.parseDouble(txtVpYMax.getText());
 
-            // 3. BARREIRA CORRIGIDA: Se o usuário digitar negativo na Viewport, recusa!
             if (vpXMin < 0 || vpYMin < 0 || vpXMax < 0 || vpYMax < 0) {
                 chkViewPort.setSelected(false);
                 SwingUtilities.invokeLater(() -> {
@@ -817,17 +782,14 @@ public class Transformacoes3DPanel extends JPanel {
                 return;
             }
 
-            // Proteção contra inversão de tela na Viewport
             if (vpXMax <= vpXMin) vpXMax = vpXMin + 1;
             if (vpYMax <= vpYMin) vpYMax = vpYMin + 1;
 
             g.setColor(Color.BLACK);
             for (int[] aresta : arestas) {
-                // Projeta 3D para 2D usando a matriz isométrica
                 double[] p1Proj = Transformacoes3D.projectIsometric(vertices[aresta[0]], viewRotX, viewRotY, viewRotZ, zoom);
                 double[] p2Proj = Transformacoes3D.projectIsometric(vertices[aresta[1]], viewRotX, viewRotY, viewRotZ, zoom);
 
-                // PASSO 1: Mapeia do Mundo (que está centralizado) para a Viewport (que o usuário definiu)
                 double[] p1Vp = Transformacoes3D.mapToViewport(
                         p1Proj[0], p1Proj[1],
                         wXMin, wYMin, wXMax, wYMax,
@@ -839,42 +801,17 @@ public class Transformacoes3DPanel extends JPanel {
                         vpXMin, vpYMin, vpXMax, vpYMax
                 );
 
-                // PASSO 2: Recorta (Clipping) usando os limites da Viewport que o usuário digitou
                 double[] clipped = Transformacoes3D.cohenSutherlandClip(
                         p1Vp[0], p1Vp[1], p2Vp[0], p2Vp[1],
                         vpXMin, vpYMin, vpXMax, vpYMax
                 );
 
-                // PASSO 3: Desenha a linha se ela sobreviveu ao recorte
                 if (clipped != null) {
                     g.drawLine((int) clipped[0], (int) clipped[1], (int) clipped[2], (int) clipped[3]);
                 }
             }
         } catch(NumberFormatException e) {
-            // Se o campo estiver vazio ou com letras, ele também desmarca a viewport por segurança
             chkViewPort.setSelected(false);
         } catch(Exception ignored) {}
     }
-
-    // Método auxiliar para formatar a matriz em texto alinhado
-    private String formatarMatriz(double[][] matriz) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < matriz.length; i++) {
-            sb.append("  | ");
-            for (int j = 0; j < matriz[i].length; j++) {
-                // Formata com 2 casas decimais e espaçamento fixo para alinhar as colunas
-                sb.append(String.format("%6.2f ", matriz[i][j]));
-            }
-            sb.append("|\n");
-        }
-        return sb.toString();
-    }
-
-            /*
-            // Desenha a borda ao redor da Viewport para acabamento visual
-            g.setColor(new Color(33, 53, 85)); // Cor azul escura baseada no seu tema
-            g.setStroke(new BasicStroke(2));
-            g.drawRect(0, 0, w - 1, h - 1);
-            */
-
 }

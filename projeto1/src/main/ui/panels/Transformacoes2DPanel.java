@@ -27,7 +27,7 @@ public class Transformacoes2DPanel extends JPanel {
     private JCheckBox chkRefX, chkRefY;
     private JTextField txtCisX, txtCisY;
 
-    // Controles Dir
+    // Controles Dir e Histórico
     private JTextArea txtVertices, txtHistorico;
     private JTextField txtCentro, txtDimensoes;
 
@@ -57,12 +57,30 @@ public class Transformacoes2DPanel extends JPanel {
         setBackground(COR_FUNDO);
         setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        setupPainelEsquerdo();
-        setupPainelCentral();
-        setupPainelDireito();
+        // 1. Inicializa as seções independentes
+        JScrollPane painelEsquerdo = setupPainelEsquerdo();
+        JPanel painelCentral = setupPainelCentral();
+        JScrollPane painelDireito = setupPainelDireito();
+        JPanel painelHistorico = setupPainelHistorico();
+
+        // 2. Agrupa a área central superior (Mundo/Viewport + Informações Direitas)
+        JPanel painelSuperior = new JPanel(new BorderLayout(10, 10));
+        painelSuperior.setBackground(COR_FUNDO);
+        painelSuperior.add(painelCentral, BorderLayout.CENTER);
+        painelSuperior.add(painelDireito, BorderLayout.EAST);
+
+        // 3. Agrupa a área superior e o histórico embaixo
+        JPanel painelConteudo = new JPanel(new BorderLayout(10, 10));
+        painelConteudo.setBackground(COR_FUNDO);
+        painelConteudo.add(painelSuperior, BorderLayout.CENTER);
+        painelConteudo.add(painelHistorico, BorderLayout.SOUTH);
+
+        // 4. Adiciona tudo ao painel principal
+        add(painelEsquerdo, BorderLayout.WEST);
+        add(painelConteudo, BorderLayout.CENTER);
     }
 
-    private void setupPainelEsquerdo() {
+    private JScrollPane setupPainelEsquerdo() {
         JPanel containerEsq = new JPanel();
         containerEsq.setLayout(new BoxLayout(containerEsq, BoxLayout.Y_AXIS));
         containerEsq.setBackground(COR_FUNDO);
@@ -99,10 +117,10 @@ public class Transformacoes2DPanel extends JPanel {
         scroll.setPreferredSize(new Dimension(LARGURA_LATERAL_ESQ, 0));
         scroll.setBorder(null);
         scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        add(scroll, BorderLayout.WEST);
+        return scroll;
     }
 
-    private void setupPainelCentral() {
+    private JPanel setupPainelCentral() {
         JPanel containerCentro = new JPanel(new GridBagLayout());
         containerCentro.setBackground(COR_FUNDO);
 
@@ -110,19 +128,14 @@ public class Transformacoes2DPanel extends JPanel {
         gbc.gridy = 0;
         gbc.insets = new Insets(0, 20, 0, 20);
 
-        // ==========================================
         // --- Janela do Mundo ---
-        // ==========================================
-        // Wrapper agrupa o texto (em cima) e o quadrado (embaixo)
-        JPanel wrapperMundo = new JPanel(new BorderLayout(0, 5)); // 5 é o espaço entre o texto e o quadrado
+        JPanel wrapperMundo = new JPanel(new BorderLayout(0, 5));
         wrapperMundo.setBackground(COR_FUNDO);
-
         JLabel lblMundo = new JLabel("Mundo (500 x 500)", SwingConstants.CENTER);
-        lblMundo.setFont(new Font("Arial", Font.BOLD, 16)); // Texto simples, apenas em negrito
+        lblMundo.setFont(new Font("Arial", Font.BOLD, 16));
 
-        // O boxMundo agora guarda apenas o canvas e tem a borda
         JPanel boxMundo = new JPanel(new BorderLayout());
-        boxMundo.setBorder(BorderFactory.createLineBorder(Color.GRAY)); // Borda só no quadrado
+        boxMundo.setBorder(BorderFactory.createLineBorder(Color.GRAY));
         canvasMundo = new MundoCanvas();
         canvasMundo.setPreferredSize(new Dimension(500, 500));
         boxMundo.add(canvasMundo, BorderLayout.CENTER);
@@ -130,17 +143,14 @@ public class Transformacoes2DPanel extends JPanel {
         wrapperMundo.add(lblMundo, BorderLayout.NORTH);
         wrapperMundo.add(boxMundo, BorderLayout.CENTER);
 
-        // ==========================================
         // --- Janela da Viewport ---
-        // ==========================================
         JPanel wrapperViewport = new JPanel(new BorderLayout(0, 5));
         wrapperViewport.setBackground(COR_FUNDO);
-
         JLabel lblVp = new JLabel("Viewport (300 x 300)", SwingConstants.CENTER);
         lblVp.setFont(new Font("Arial", Font.BOLD, 16));
 
         JPanel boxViewport = new JPanel(new BorderLayout());
-        boxViewport.setBorder(BorderFactory.createLineBorder(Color.GRAY)); // Borda só no quadrado
+        boxViewport.setBorder(BorderFactory.createLineBorder(Color.GRAY));
         canvasViewport = new ViewportCanvas();
         canvasViewport.setPreferredSize(new Dimension(300, 300));
         boxViewport.add(canvasViewport, BorderLayout.CENTER);
@@ -148,13 +158,13 @@ public class Transformacoes2DPanel extends JPanel {
         wrapperViewport.add(lblVp, BorderLayout.NORTH);
         wrapperViewport.add(boxViewport, BorderLayout.CENTER);
 
-        // Adiciona as colunas ao centro da tela
         gbc.gridx = 0; containerCentro.add(wrapperMundo, gbc);
         gbc.gridx = 1; containerCentro.add(wrapperViewport, gbc);
-        add(containerCentro, BorderLayout.CENTER);
+
+        return containerCentro;
     }
 
-    private void setupPainelDireito() {
+    private JScrollPane setupPainelDireito() {
         JPanel containerDir = new JPanel();
         containerDir.setLayout(new BoxLayout(containerDir, BoxLayout.Y_AXIS));
         containerDir.setBackground(COR_FUNDO);
@@ -184,13 +194,6 @@ public class Transformacoes2DPanel extends JPanel {
         containerDir.add(pnlInfo);
         containerDir.add(Box.createVerticalStrut(10));
 
-        txtHistorico = new JTextArea(10, 20);
-        txtHistorico.setEditable(false);
-        JScrollPane scrollHist = new JScrollPane(txtHistorico);
-        scrollHist.setBorder(BorderFactory.createTitledBorder("Histórico de Transformações"));
-        containerDir.add(scrollHist);
-        containerDir.add(Box.createVerticalStrut(10));
-
         JButton btnLimpar = criarBotaoBase("Limpar Tudo", e -> limparTudo());
         btnLimpar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
         containerDir.add(btnLimpar);
@@ -198,19 +201,30 @@ public class Transformacoes2DPanel extends JPanel {
         JScrollPane scroll = new JScrollPane(containerDir);
         scroll.setPreferredSize(new Dimension(LARGURA_LATERAL_DIR, 0));
         scroll.setBorder(null);
-        add(scroll, BorderLayout.EAST);
+        return scroll;
     }
 
-    private void estilizarCabecalho(JLabel lbl) {
-        lbl.setOpaque(true);
-        lbl.setBackground(COR_BOTAO);
-        lbl.setForeground(Color.WHITE);
-        lbl.setFont(new Font("Arial", Font.BOLD, 14));
-        lbl.setBorder(new EmptyBorder(8, 0, 8, 0));
+    private JPanel setupPainelHistorico() {
+        JPanel pnlHist = new JPanel(new BorderLayout());
+        pnlHist.setBackground(COR_FUNDO);
+
+        txtHistorico = new JTextArea(10, 20);
+        txtHistorico.setEditable(false);
+        // Fonte Monospaced é essencial para as matrizes ficarem alinhadas perfeitamente
+        txtHistorico.setFont(new Font("Monospaced", Font.PLAIN, 13));
+
+        JScrollPane scrollHist = new JScrollPane(txtHistorico);
+        scrollHist.setBorder(BorderFactory.createTitledBorder("Histórico de Operações e Matrizes de Transformação"));
+
+        pnlHist.add(scrollHist, BorderLayout.CENTER);
+        pnlHist.setPreferredSize(new Dimension(0, 220));
+
+        return pnlHist;
     }
 
-    // ... [Os métodos criarPainelTranslacao() até criarPainelSequencia() permanecem iguais,
-    // mas substituímos os try/catch vazios na lógica] ...
+    // ==========================================
+    // CRIAÇÃO DE PAINÉIS SECUNDÁRIOS
+    // ==========================================
 
     private JPanel criarPainelTranslacao() {
         JPanel p = new JPanel(new GridBagLayout()); p.setBackground(COR_FUNDO);
@@ -310,9 +324,6 @@ public class Transformacoes2DPanel extends JPanel {
         return b;
     }
 
-    // ==========================================
-    // NOVO: Painel Unificado de Mapeamento 2D
-    // ==========================================
     private JPanel criarPainelMapeamento() {
         JPanel pnlMapeamento = new JPanel(new GridBagLayout());
         pnlMapeamento.setBorder(BorderFactory.createTitledBorder("Mapeamento 2D"));
@@ -321,11 +332,8 @@ public class Transformacoes2DPanel extends JPanel {
         chkAtivarMapeamento = new JCheckBox("Ativar Window ➜ Viewport");
         chkAtivarMapeamento.setBackground(COR_FUNDO);
 
-        // Campos Window (Mundo)
         txtWinMinX = new JTextField(""); txtWinMaxX = new JTextField("");
         txtWinMinY = new JTextField(""); txtWinMaxY = new JTextField("");
-
-        // Campos Viewport (Tela)
         txtViewMinX = new JTextField(""); txtViewMaxX = new JTextField("");
         txtViewMinY = new JTextField(""); txtViewMaxY = new JTextField("");
 
@@ -341,7 +349,6 @@ public class Transformacoes2DPanel extends JPanel {
         gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 4; gbc.anchor = GridBagConstraints.WEST; gbc.insets = new Insets(0, 5, 5, 5);
         pnlMapeamento.add(chkAtivarMapeamento, gbc);
 
-        // Sessão Window
         gbc.gridy++; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.gridwidth = 4;
         pnlMapeamento.add(new JLabel("Coordenadas da Window (Mundo)"), gbc);
         gbc.gridy++; gbc.gridwidth = 1; gbc.weightx = 0.2; pnlMapeamento.add(new JLabel("Xmin:"), gbc);
@@ -353,7 +360,6 @@ public class Transformacoes2DPanel extends JPanel {
         gbc.gridx = 2; pnlMapeamento.add(new JLabel("Ymax"), gbc);
         gbc.gridx = 3; pnlMapeamento.add(txtWinMaxY, gbc);
 
-        // Sessão Viewport
         gbc.gridy++; gbc.gridx = 0; gbc.gridwidth = 4; gbc.insets = new Insets(10, 5, 5, 5);
         pnlMapeamento.add(new JLabel("Coordenadas da Viewport"), gbc);
         gbc.gridy++; gbc.gridwidth = 1; gbc.insets = new Insets(0, 5, 5, 5); pnlMapeamento.add(new JLabel("Xmin:"), gbc);
@@ -399,7 +405,7 @@ public class Transformacoes2DPanel extends JPanel {
                 return;
             }
 
-            addLog("Mapeamento Window/Viewport atualizado.");
+            addLog("Mapeamento Window/Viewport atualizado.", null);
             canvasMundo.repaint(); canvasViewport.repaint();
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(this, "Valores numéricos inválidos nos campos de mapeamento.", "Erro de Validação", JOptionPane.ERROR_MESSAGE);
@@ -407,7 +413,7 @@ public class Transformacoes2DPanel extends JPanel {
     }
 
     // ===============================
-    // Lógica de Transformações Refatorada
+    // Lógica de Transformações
     // ===============================
     private void gerarQuadrado() {
         try {
@@ -421,7 +427,7 @@ public class Transformacoes2DPanel extends JPanel {
             Point2D.Double p4 = new Point2D.Double(x, y + size);
             quadradoAtual.add(p1); quadradoAtual.add(p2); quadradoAtual.add(p3); quadradoAtual.add(p4);
             atualizarInfoObjeto();
-            addLog("Objeto gerado (Tamanho: " + size + ")");
+            addLog("Objeto gerado (Tamanho: " + size + ")", null);
             canvasMundo.repaint(); canvasViewport.repaint();
         } catch (NumberFormatException ex) { JOptionPane.showMessageDialog(this, "Valores numéricos inválidos para geração do objeto.", "Erro", JOptionPane.ERROR_MESSAGE); }
     }
@@ -483,7 +489,8 @@ public class Transformacoes2DPanel extends JPanel {
         for (int i = 0; i < quadradoAtual.size(); i++) {
             quadradoAtual.set(i, Transformacoes2D.aplicarTransformacao(quadradoAtual.get(i), matriz));
         }
-        addLog(logText); atualizarInfoObjeto();
+        addLog(logText, matriz);
+        atualizarInfoObjeto();
         canvasMundo.repaint(); canvasViewport.repaint();
     }
 
@@ -498,21 +505,26 @@ public class Transformacoes2DPanel extends JPanel {
                 case "Cisalhamento": m = Transformacoes2D.criarMatrizCisalhamento(Double.parseDouble(seqCisX.getText()), Double.parseDouble(seqCisY.getText())); log = "Seq: Cisalhamento"; break;
                 case "Reflexão": m = Transformacoes2D.criarMatrizReflexao(seqRefX.isSelected(), seqRefY.isSelected()); log = "Seq: Reflexão"; break;
             }
-            if (m != null) { sequenciaAtual.add(new TransformacaoConfig(tipo, m, log)); addLog("Adicionado à sequência: " + tipo); }
+            if (m != null) {
+                sequenciaAtual.add(new TransformacaoConfig(tipo, m, log));
+                addLog("Adicionado à sequência: " + tipo, m);
+            }
         } catch (NumberFormatException e) { JOptionPane.showMessageDialog(this, "Erro numérico nos parâmetros da sequência.", "Erro", JOptionPane.ERROR_MESSAGE); }
     }
 
     private void aplicarSequencia() {
         if (quadradoAtual.isEmpty()) return;
+        addLog("--- INICIANDO APLICAÇÃO DA SEQUÊNCIA ---", null);
         for (TransformacaoConfig config : sequenciaAtual) {
             if (config.tipo.equals("Escala")) {
                 Point2D.Double o = quadradoAtual.get(0);
                 double[][] t1 = Transformacoes2D.criarMatrizTranslacao(-o.x, -o.y);
                 double[][] t2 = Transformacoes2D.criarMatrizTranslacao(o.x, o.y);
                 double[][] mFinal = Transformacoes2D.multiplicarMatrizes(t2, Transformacoes2D.multiplicarMatrizes(config.matriz, t1));
-                aplicarMatrizEmTodos(mFinal, config.log);
+                aplicarMatrizEmTodos(mFinal, config.log + " (Com relação à origem do objeto)");
             } else { aplicarMatrizEmTodos(config.matriz, config.log); }
         }
+        addLog("--- FIM DA SEQUÊNCIA ---", null);
         sequenciaAtual.clear();
     }
 
@@ -533,9 +545,39 @@ public class Transformacoes2DPanel extends JPanel {
         txtDimensoes.setText(String.format(Locale.US, "%.1f x %.1f", (maxX - minX), (maxY - minY)));
     }
 
-    private void addLog(String text) {
-        historicoStr.append(historicoCount++).append(". ").append(text).append("\n");
+    // ===============================
+    // GERENCIAMENTO DE LOG E MATRIZES
+    // ===============================
+    private void addLog(String text, double[][] matriz) {
+        historicoStr.append("============================================================\n");
+        historicoStr.append(String.format("Operação %d: %s\n", historicoCount++, text));
+
+        // 1. Primeiro, imprime a matriz (se houver alguma)
+        if (matriz != null) {
+            historicoStr.append("\nMatriz de Transformação:\n");
+            for (double[] linha : matriz) {
+                historicoStr.append("   | ");
+                for (double valor : linha) {
+                    historicoStr.append(String.format(Locale.US, "%8.2f ", valor));
+                }
+                historicoStr.append("|\n");
+            }
+        }
+
+        // 2. Depois (sem o 'else'), SEMPRE imprime as coordenadas atuais do objeto
+        if (quadradoAtual != null && !quadradoAtual.isEmpty()) {
+            historicoStr.append("\nCoordenadas Resultantes do Objeto:\n");
+            for (int i = 0; i < quadradoAtual.size(); i++) {
+                Point2D.Double p = quadradoAtual.get(i);
+                historicoStr.append(String.format(Locale.US, "   V%d: (%.2f, %.2f)\n", i + 1, p.x, p.y));
+            }
+        }
+
+        historicoStr.append("============================================================\n\n");
         txtHistorico.setText(historicoStr.toString());
+
+        // Garante que o painel role automaticamente para o final
+        txtHistorico.setCaretPosition(txtHistorico.getDocument().getLength());
     }
 
     private void limparTudo() {
@@ -625,22 +667,7 @@ public class Transformacoes2DPanel extends JPanel {
                 Retangulo2D win = getRetanguloWindow();
                 Retangulo2D vp = getRetanguloViewport();
 
-
-                System.out.println("\n============================================================");
-                System.out.println("TRANFORMAÇÃO JANELA MUNDO PARA A VIEWPORT");
-                System.out.println("\n============================================================");
-
-
-                System.out.println("COORDENADAS WINDOW (MUNDO)");
-                System.out.println("minX: " + win.minX + " maxX: " + win.maxX);
-                System.out.println("minY: " + win.minY + " maxY: " + win.maxY);
-
-                System.out.println("\n COORDENADAS VIEWPORT");
-                System.out.println("minX: " + vp.minX + " maxX: " + vp.maxX);
-                System.out.println("minY: " + vp.minY + " maxY: " + vp.maxY);
-
                 if (win.minX >= win.maxX || win.minY >= win.maxY || vp.minX >= vp.maxX || vp.minY >= vp.maxY) return;
-
                 if (quadradoAtual == null || quadradoAtual.isEmpty()) return;
 
                 g2.setColor(Color.BLACK);
@@ -657,35 +684,19 @@ public class Transformacoes2DPanel extends JPanel {
                     Point2D.Double p1 = quadradoAtual.get(i);
                     Point2D.Double p2 = quadradoAtual.get((i + 1) % quadradoAtual.size());
 
-                    System.out.println("\n---------------------------------------");
-                    System.out.println("PONTOS DA ARESTA " + (i + 1));
-                    System.out.println("P1 original: (" + p1.x + ", " + p1.y + ")");
-                    System.out.println("P2 original: (" + p2.x + ", " + p2.y + ")");
-
-                    // Clipping contra os limites da WINDOW
                     Point2D.Double[] pontosClipados = Transformacoes2D.cohenSutherlandClip(p1, p2, win.minX, win.maxX, win.minY, win.maxY);
 
                     if (pontosClipados != null) {
                         Point2D.Double c1 = pontosClipados[0];
                         Point2D.Double c2 = pontosClipados[1];
 
-                        Point2D.Double vp1 =
-                                Transformacoes2D.aplicarMatriz(matrizWV, c1.x, c1.y);
-
-                        Point2D.Double vp2 =
-                                Transformacoes2D.aplicarMatriz(matrizWV, c2.x, c2.y);
-
+                        Point2D.Double vp1 = Transformacoes2D.aplicarMatriz(matrizWV, c1.x, c1.y);
+                        Point2D.Double vp2 = Transformacoes2D.aplicarMatriz(matrizWV, c2.x, c2.y);
 
                         double telaY1 = canvasHeight - vp1.y;
                         double telaY2 = canvasHeight - vp2.y;
 
-                        System.out.println("PONTOS DA VIEWPORT (após inversão Y):");
-                        System.out.println("P1 Tela: (" + vp1.x + ", " + telaY1 + ")");
-                        System.out.println("P2 Tela: (" + vp2.x + ", " + telaY2 + ")");
-                        System.out.println("---------------------------------------");
-
-                        g2.drawLine((int)vp1.x, (int)telaY1,
-                                (int)vp2.x, (int)telaY2);
+                        g2.drawLine((int)vp1.x, (int)telaY1, (int)vp2.x, (int)telaY2);
                     }
                 }
             } catch (Exception ignored) {}
