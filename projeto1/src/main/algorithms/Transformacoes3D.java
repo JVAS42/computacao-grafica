@@ -119,8 +119,12 @@ public class Transformacoes3D {
     public static double[] mapToViewport(double xWorld, double yWorld,
                                          double wXMin, double wYMin, double wXMax, double wYMax,
                                          double vpXMin, double vpYMin, double vpXMax, double vpYMax) {
+
         double xVp = ((xWorld - wXMin) / (wXMax - wXMin)) * (vpXMax - vpXMin) + vpXMin;
-        double yVp = ((yWorld - wYMin) / (wYMax - wYMin)) * (vpYMax - vpYMin) + vpYMin;
+
+        // Inversão do eixo Y: subtraímos de vpYMax para que o Y do mundo suba e o da tela desça
+        double yVp = vpYMax - ((yWorld - wYMin) / (wYMax - wYMin)) * (vpYMax - vpYMin);
+
         return new double[]{xVp, yVp};
     }
 

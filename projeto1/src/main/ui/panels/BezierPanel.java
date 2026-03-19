@@ -36,7 +36,7 @@ public class BezierPanel extends JPanel {
         setBackground(Color.decode("#F0F0F0")); // Fundo padronizado
 
         // Inicializa pontos padrão
-        int[][] defaults = {{-200, -100}, {-100, 200}, {100, -200}, {200, 100}};
+        int[][] defaults = {{0, 0}, {0, 0}, {0, 0}, {0, 0}};
         for (int[] p : defaults) {
             controlPoints.add(new Point(p[0], p[1]));
         }
@@ -132,10 +132,17 @@ public class BezierPanel extends JPanel {
         btnDesenhar = estilizarBotao("DESENHAR CURVA");
         btnDesenhar.addActionListener(e -> atualizarCurvaViaInputs());
 
-        JPanel pnlBtn = new JPanel(new BorderLayout());
+        // --- NOVO BOTÃO DE LIMPEZA ---
+        JButton btnLimparTela = estilizarBotao("LIMPAR TELA");
+        btnLimparTela.setBackground(new Color(180, 50, 50)); // Vermelho padrão que usamos no 3D
+        btnLimparTela.addActionListener(e -> limparTela());
+
+        // Colocando os dois botões no rodapé com um espacinho entre eles
+        JPanel pnlBtn = new JPanel(new GridLayout(2, 1, 0, 10));
         pnlBtn.setOpaque(false);
         pnlBtn.setBorder(new EmptyBorder(15, 0, 0, 0));
-        pnlBtn.add(btnDesenhar, BorderLayout.CENTER);
+        pnlBtn.add(btnDesenhar);
+        pnlBtn.add(btnLimparTela);
 
         painelEsquerdo.add(pnlBtn, BorderLayout.SOUTH);
 
@@ -261,7 +268,7 @@ public class BezierPanel extends JPanel {
     // LÓGICA E EVENTOS
     // ==========================================
     private void restaurarPadroes() {
-        int[][] defaults = {{-200, -100}, {-100, 200}, {100, -200}, {200, 100}};
+        int[][] defaults = {{0, 0}, {0, 0}, {0, 0}, {0, 0}};
         controlPoints.clear();
         for (int i = 0; i < 4; i++) {
             controlPoints.add(new Point(defaults[i][0], defaults[i][1]));
@@ -271,6 +278,20 @@ public class BezierPanel extends JPanel {
         clickIndex = 0;
         atualizarPainelDireito();
         canvas.repaint();
+    }
+
+    private void limparTela() {
+        // Zera todos os inputs textuais
+        for (int i = 0; i < 4; i++) {
+            fieldsX[i].setText("0");
+            fieldsY[i].setText("0");
+        }
+
+        // Reinicia a contagem de cliques na tela para o Ponto 0
+        clickIndex = 0;
+
+        // Força a atualização (todos os pontos vão para o centro, ocultando a curva)
+        atualizarCurvaViaInputs();
     }
 
     private void atualizarCurvaViaInputs() {
