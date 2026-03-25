@@ -1,18 +1,15 @@
 import customtkinter as ctk
 
-
-
 class FilterFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master, fg_color="transparent")
 
-        self.label = ctk.CTkLabel(self, text="Painel de Filtros", font=("Arial", 20))
+        self.label = ctk.CTkLabel(self, text="Filtros", font=("Arial", 20, "bold"), text_color="#213555")
         self.label.pack(pady=20)
 
-        # Botão que chama a lógica
-        self.btn_executar = ctk.CTkButton(self, text="Aplicar Cinza", command=self.executar_filtro)
+        # Botão genérico para você adaptar depois
+        self.btn_executar = ctk.CTkButton(self, text="Executar Filtros", command=self.executar_acao)
         self.btn_executar.pack(pady=10)
 
-    def executar_filtro(self):
-        # Aqui você chamaria a função que está na pasta de algoritmos
-        print("Filtro solicitado!")
+    def executar_acao(self):
+        print("Ação de Fltro solicitada!")
