@@ -14,7 +14,7 @@ class MorfismoFrame(ctk.CTkFrame):
 
         self.grid_columnconfigure((0, 1, 2), weight=1)
         self.grid_rowconfigure(0, weight=1)
-        opcoes_imagens = ["kid.pgm", "adult.pgm", "pedrokid.pgm", "pedroadult.pgm", "kidnathan.pgm", "nathanadult.pgm"]
+        opcoes_imagens = ["kid.pgm", "adult.pgm"]
 
         # === COLUNA 0 ===
         self.frame_esq = ctk.CTkFrame(self, fg_color="transparent")

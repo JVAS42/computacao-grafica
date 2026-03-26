@@ -1,8 +1,10 @@
 import customtkinter as ctk
+
+# Adicione "src." antes de todas as importações da pasta ui
 from src.ui.home_frame import HomeFrame
 from src.ui.filter_frame import FilterFrame
 from src.ui.combinacao_frame import CombinacaoFrame
-from src.ui.transformacoes_frame import TransformacoesFrame  # <-- NOVO
+from src.ui.transformacoes_frame import TransformacoesFrame
 from src.ui.histograma_frame import HistogramaFrame
 from src.ui.morfologia_frame import MorfologiaFrame
 from src.ui.morfismo_frame import MorfismoFrame

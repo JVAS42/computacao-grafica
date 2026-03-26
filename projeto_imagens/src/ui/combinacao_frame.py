@@ -21,7 +21,7 @@ class CombinacaoFrame(ctk.CTkFrame):
                                       bg_color="gray")
         self.lbl_img_a.pack(pady=10)
 
-        opcoes_imagens = ["lena.pgm", "airplane.pgm", "pedrokid.pgm", "kidnathan.pgm"]
+        opcoes_imagens = ["lena.pgm", "airplane.pgm"]
         self.cmb_imagem_a = ctk.CTkComboBox(self.frame_esq, values=opcoes_imagens, command=self.carregar_imagem_a)
         self.cmb_imagem_a.pack(pady=5)
 

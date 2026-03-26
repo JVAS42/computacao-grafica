@@ -20,8 +20,7 @@ class MorfologiaFrame(ctk.CTkFrame):
         self.lbl_img_original = ctk.CTkLabel(self.frame_esq, text="[ Preview ]", width=256, height=256, bg_color="gray")
         self.lbl_img_original.pack(pady=10)
 
-        opcoes_imagens = ["fingerprint.pbm", "holes.pbm", "text.pbm", "map.pbm", "lena.pgm", "airplane.pgm",
-                          "cameraman.pgm", "supernova.pgm", "sea.pgm"]
+        opcoes_imagens = ["lena.pgm", "airplane.pgm",]
         self.cmb_imagem = ctk.CTkComboBox(self.frame_esq, values=opcoes_imagens, command=self.carregar_imagem)
         self.cmb_imagem.pack(pady=5)
 
