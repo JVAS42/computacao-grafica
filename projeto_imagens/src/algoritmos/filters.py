@@ -30,12 +30,14 @@ KERNELS = {
     "none": np.array([[0, 0, 0], [0, 1, 0], [0, 0, 0]]),
     "media": np.array([[NINTH, NINTH, NINTH], [NINTH, NINTH, NINTH], [NINTH, NINTH, NINTH]]),
     "passaAlto": np.array([[-1, -1, -1], [-1, 8, -1], [-1, -1, -1]]),
-    "robertsX": np.array([[1, 0, 0], [0, -1, 0], [0, 0, 0]]),
-    "robertsY": np.array([[0, 1, 0], [-1, 0, 0], [0, 0, 0]]),
-    "prewittX": np.array([[-1, 0, 1], [-1, 0, 1], [-1, 0, 1]]),
-    "prewittY": np.array([[-1, -1, -1], [0, 0, 0], [1, 1, 1]]),
-    "sobelX": np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]]),
-    "sobelY": np.array([[-1, -2, -1], [0, 0, 0], [1, 2, 1]]),
+    "robertsX": np.array([[0, 0, 0], [0, 1, 0], [0, -1, 0]]),
+    "robertsY": np.array([[0, 0, 0], [0, 1, -1], [0, 0, 0]]),
+    "robertsCruzadoX": np.array([[0, 0, 0], [0, 1, 0], [0, 0, -1]]),
+    "robertsCruzadoY": np.array([[0, 0, 0], [0, 0, 1], [0, -1, 0]]),
+    "prewittX": np.array([[-1, -1, -1], [0, 0, 0], [1, 1, 1]]),
+    "prewittY": np.array([[-1, 0, 1], [-1, 0, 1], [-1, 0, 1]]),
+    "sobelX": np.array([[-1, -2, -1], [0, 0, 0], [1, 2, 1]]),
+    "sobelY": np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]]),
     "laplace": np.array([[0, -1, 0], [-1, 4, -1], [0, -1, 0]]),
     "gaussianBlur": np.array([
         [SIXTEENTH, EIGHTH, SIXTEENTH],
@@ -102,14 +104,10 @@ def load_pgm(path):
 # Função de convolução aplicada no filtro da média, passa alto
 def aplicar_convolucao(imagem_matriz, kernel, normalizar=False):
     h, w = imagem_matriz.shape
-    # Criamos a imagem expandida (com a borda de zeros)
+    # A imagem expandida (com a borda de zeros)
     imagem_expandida = np.pad(imagem_matriz, ((1, 1), (1, 1)), mode='constant', constant_values=0)
 
-    # IMPORTANTE: O resultado agora terá o tamanho da expandida (h+2, w+2)
-    # para que os zeros da borda apareçam na tabela
     resultado = np.zeros(imagem_expandida.shape)
-
-    # Fazemos o cálculo apenas no "miolo" (interior), deixando as bordas como 0
     for i in range(1, h + 1):
         for j in range(1, w + 1):
             vizinhanca = imagem_expandida[i - 1:i + 2, j - 1:j + 2]
@@ -118,12 +116,27 @@ def aplicar_convolucao(imagem_matriz, kernel, normalizar=False):
 
     if normalizar:
         return normalizar_imagem(resultado)
+
     return np.clip(resultado, 0, 255).astype(np.uint8)
 
 
-# Aplicando o filtro da Media
+# Função de convolução aplicada no filtro da roberts simples, roberts cruzado, prewitt e sobel
+def aplicar_convolucao_roberts(imagem_matriz, kernel):
+    h, w = imagem_matriz.shape
+    imagem_expandida = np.pad(imagem_matriz, ((1, 1), (1, 1)), mode='constant', constant_values=0)
+    resultado = np.zeros((h, w), dtype=np.float64)
+
+    for i in range(1, h + 1):
+        for j in range(1, w + 1):
+            vizinhanca = imagem_expandida[i - 1:i + 2, j - 1:j + 2]
+            valor_calculado = np.sum(vizinhanca * kernel)
+            resultado[i - 1, j - 1] = valor_calculado
+
+    return resultado
+
+
+# Aplicando o filtro da Media (suavização)
 def aplicar_filtro_media(imagem_matriz, normalizar=False):
-    """Aplica o filtro de média (suavização) usando a matriz 3x3."""
     return aplicar_convolucao(imagem_matriz, KERNELS["media"], normalizar)
 
 
@@ -137,7 +150,7 @@ def aplicar_filtro_mediana(image_data):
         for j in range(w):
             # Extrai a vizinhança 3x3
             region = padded[i:i + 3, j:j + 3].flatten()
-            # Ordena os valores (conforme a lógica de mediana)
+            # Ordena os valores
             region_sorted = np.sort(region)
             # O valor central de 9 elementos é o de índice 4
             result[i, j] = region_sorted[4]
@@ -145,58 +158,87 @@ def aplicar_filtro_mediana(image_data):
     return result
 
 
-# Função para o Roberts Cruzado (Magnitude)
+# Implementa mag = |Z5 - Z8| + |Z5 - Z6|
+def aplicar_roberts_simples(image_data):
+    gx = aplicar_convolucao_roberts(image_data, KERNELS["robertsX"])
+    gy = aplicar_convolucao_roberts(image_data, KERNELS["robertsY"])
+
+    # Cálculo da magnitude
+    mag = np.abs(gx) + np.abs(gy)
+
+    # Print do cálculos dos primeiros 5 pixels
+    print("\n--- DEBUG ROBERTS SIMPLES (Slide) ---")
+    for k in range(5):
+        print(f"P{k}: |{gx[0, k]}| + |{gy[0, k]}| = {mag[0, k]}")
+
+    return normalizar_imagem(mag)
+
+
+# Implementa mag = |Z5 - Z9| + |Z6 - Z8|
 def aplicar_roberts_cruzado(image_data):
-    # Calcula a derivada na diagonal X
-    gx = aplicar_convolucao(image_data, KERNELS["robertsX"], normalizar=False)
-    # Calcula a derivada na diagonal Y
-    gy = aplicar_convolucao(image_data, KERNELS["robertsY"], normalizar=False)
+    gx = aplicar_convolucao_roberts(image_data, KERNELS["robertsCruzadoX"])
+    gy = aplicar_convolucao_roberts(image_data, KERNELS["robertsCruzadoY"])
 
-    # Retorna a Magnitude (raiz da soma dos quadrados)
-    return magnitude(gx.astype(float), gy.astype(float))
+    # Cálculo da magnitude
+    mag = np.abs(gx) + np.abs(gy)
 
+    # Print do cálculos dos primeiros 5 pixels
+    print("\n--- DEBUG ROBERTS CRUZADO (Slide) ---")
+    for k in range(5):
+        print(f"P{k}: |{gx[0, k]}| + |{gy[0, k]}| = {mag[0, k]}")
 
-# Função para calcular a magnitude (Prewitt Cruzado)
-def aplicar_prewitt_completo(image_data):
-    # Usamos normalizar=False na convolução porque a magnitude cuidará disso depois
-    gx = aplicar_convolucao(image_data, KERNELS["prewittX"], normalizar=False)
-    gy = aplicar_convolucao(image_data, KERNELS["prewittY"], normalizar=False)
-
-    # Se você corrigiu o nome para 'normalize', use normalize(mag)
-    # Se manteve 'normalizar_imagem', use normalizar_imagem(mag)
-    return magnitude(gx.astype(float), gy.astype(float))
+    return normalizar_imagem(mag)
 
 
-# Função para o Sobel Cruzado (Magnitude)
-def aplicar_sobel_cruzado(image_data):
-    # Calcula as duas direções (X e Y)
-    gx = aplicar_convolucao(image_data, KERNELS["sobelX"], normalizar=False)
-    gy = aplicar_convolucao(image_data, KERNELS["sobelY"], normalizar=False)
+# Implementa Prewitt |Gx| + |Gy| = |(Z7 + Z8 + Z9) - (Z1 + Z2 + Z3) | + |(Z3 + Z6 + Z9) - (Z1 + Z4 + Z7)|
+def aplicar_prewitt(image_data):
+    gx = aplicar_convolucao_roberts(image_data, KERNELS["prewittX"])
+    gy = aplicar_convolucao_roberts(image_data, KERNELS["prewittY"])
 
-    # Retorna a magnitude combinada usando a função que já corrigimos
-    return magnitude(gx.astype(float), gy.astype(float))
+    # Cálculo da magnitude absoluta
+    mag = np.abs(gx.astype(float)) + np.abs(gy.astype(float))
+
+    # Print do cálculos dos primeiros 5 pixels
+    print("\n--- DEBUG PREWITT (Slide) ---")
+    for k in range(5):
+        print(f"P{k}: |{gx[0, k]}| + |{gy[0, k]}| = {mag[0, k]}")
+
+    return normalizar_imagem(mag)
 
 
+# Implementa Sobel |Gx| + |Gy| =  |(Z7 + 2Z8 + Z9) - (Z1 + 2Z2 + Z3)| + |(Z3 + 2Z6 + Z9) - (Z1 + 2Z4 + Z7)|
+def aplicar_sobel_slide(image_data):
+    gx = aplicar_convolucao_roberts(image_data, KERNELS["sobelX"])
+    gy = aplicar_convolucao_roberts(image_data, KERNELS["sobelY"])
+
+    # Cálculo da magnitude absoluta (Slide)
+    mag = np.abs(gx) + np.abs(gy)
+
+    # LOG para você conferir a "explosão" de valores
+    print("\n--- DEBUG SOBEL (Slide) ---")
+    print(f"Maior valor encontrado (Max): {np.max(mag)}")
+    for k in range(5):
+        print(f"P{k}: |{gx[0, k]}| + |{gy[0, k]}| = {mag[0, k]}")
+
+    return normalizar_imagem(mag)
+
+
+# Implementa Alto Reforço - Fórmula: original + A * (original - suavizada)
 def high_boost_filter(image_data, A=1.5):
-    """
-    Aplica o filtro High-Boost conforme a lógica do JS:
-    Fórmula: original + A * (original - suavizada)
-    """
-    # Etapa 1: Obter versão suavizada (Passa-baixa)
+    # Obter versão suavizada (Passa-baixa) - KERNELS["gaussianBlur"], que é uma matriz 3x3 que calcula a média ponderada dos vizinhos para remover detalhes finos.
     blurred = aplicar_convolucao(image_data, KERNELS["gaussianBlur"], normalizar=False)
 
-    # CORREÇÃO CRÍTICA: Se blurred for (258, 258) e original for (256, 256)
+    # Este corte garante que a imagem borrada tenha o mesmo tamanho da original
     if blurred.shape != image_data.shape:
-        # Corta 1 pixel de cada lado para voltar ao tamanho original
+        # Corta 1 pixel de cada lado para voltar ao tamanho original para que possamos subtrair um pixel do outro perfeitamente.
         blurred = blurred[1:-1, 1:-1]
 
-    # Etapa 2: Calcular a máscara (High-pass)
-    # Convertemos para float para evitar overflow em cálculos intermediários
+    # Calcular a máscara
     original = image_data.astype(float)
     smooth = blurred.astype(float)
     mask = original - smooth
 
-    # Etapa 3: Boost
+    # FORMULA g = Original + (A * Detalhes)
     boosted = original + (A * mask)
 
     # Garante intervalo [0, 255]
@@ -207,9 +249,8 @@ def high_boost_filter(image_data, A=1.5):
 # Funções de Normalização
 # ===============================
 
-
+# Lógica de normalização: traz os valores para a escala 0-255
 def normalizar_imagem(matriz):
-    """Lógica de normalização: traz os valores para a escala 0-255."""
     min_v = np.min(matriz)
     max_v = np.max(matriz)
     if max_v == min_v:
@@ -217,13 +258,6 @@ def normalizar_imagem(matriz):
 
     res = (matriz - min_v) * (255.0 / (max_v - min_v))
     return res.astype(np.uint8)
-
-
-def magnitude(data_x, data_y):
-    """Calcula a magnitude de gradientes (usado em Sobel, Prewitt, Roberts)"""
-    # Raiz quadrada da soma dos quadrados (Pitágoras)
-    mag = np.sqrt(data_x ** 2 + data_y ** 2)
-    return normalizar_imagem(mag)
 
 
 # =================================
@@ -243,4 +277,3 @@ def carregar_pgm(caminho):
         else:
             data = np.array(f.read().decode().split(), dtype=np.uint8)
         return data.reshape((height, width))
-

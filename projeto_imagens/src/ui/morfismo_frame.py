@@ -46,7 +46,7 @@ class MorfismoFrame(ctk.CTkFrame):
                                              bg_color="lightgray")
         self.lbl_img_morfismo.pack(pady=10)
 
-        self.btn_iniciar = ctk.CTkButton(self.frame_dir, text="INICIAR MORFISMO\nTEMPORAL", fg_color="#4CAF50",
+        self.btn_iniciar = ctk.CTkButton(self.frame_dir, text="INICIAR MORFISMO\nTEMPORAL", fg_color="#213555",
                                          hover_color="#45a049", command=self.iniciar_animacao)
         self.btn_iniciar.pack(pady=10)
 

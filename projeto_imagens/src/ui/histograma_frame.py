@@ -25,7 +25,7 @@ class HistogramaFrame(ctk.CTkFrame):
         self.cmb_imagem = ctk.CTkComboBox(self.frame_esq, values=opcoes_imagens, command=self.carregar_imagem)
         self.cmb_imagem.pack(pady=5)
 
-        self.btn_equalizar = ctk.CTkButton(self.frame_esq, text="EQUALIZAR", fg_color="#4CAF50", hover_color="#45a049",
+        self.btn_equalizar = ctk.CTkButton(self.frame_esq, text="EQUALIZAR", fg_color="#213555", hover_color="#45a049",
                                            command=self.aplicar_equalizacao)
         self.btn_equalizar.pack(pady=10)
 

@@ -9,6 +9,8 @@ from src.ui.histograma_frame import HistogramaFrame
 from src.ui.morfologia_frame import MorfologiaFrame
 from src.ui.morfismo_frame import MorfismoFrame
 
+# NOVO GEOMETRICA (APAGAR EM CASO DE MERDE)
+from src.ui.geometria_frame import GeometriaFrame
 
 class MainWindow(ctk.CTk):
     def __init__(self):
@@ -59,6 +61,10 @@ class MainWindow(ctk.CTk):
                                           **btn_args)
         self.btn_morfismo.grid(row=7, column=0, padx=10, pady=5, sticky="ew")
 
+        self.btn_geometria = ctk.CTkButton(self.navigation_frame, text="Geometria", command=self.show_geometria,
+                                           **btn_args)
+        self.btn_geometria.grid(row=9, column=0, padx=10, pady=5, sticky="ew")
+
         # --- ÁREA DE CONTEÚDO PRINCIPAL ---
         self.container = ctk.CTkFrame(self, fg_color="transparent")
         self.container.grid(row=0, column=1, sticky="nsew", padx=20, pady=20)
@@ -80,6 +86,8 @@ class MainWindow(ctk.CTk):
     def show_morfologia(self): self._switch_frame(MorfologiaFrame)
 
     def show_morfismo(self): self._switch_frame(MorfismoFrame)
+
+    def show_geometria(self): self._switch_frame(GeometriaFrame)
 
     def _switch_frame(self, frame_class):
         if self.current_frame is not None:

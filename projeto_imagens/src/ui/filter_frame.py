@@ -45,8 +45,8 @@ class FilterFrame(ctk.CTkFrame):
         # Seletor de Filtro
         self.filter_selector = ctk.CTkOptionMenu(
             self.card_filters,
-            values=["Original", "Media", "Mediana", "Passa Alto", "Roberts em X", "Roberts em Y", "Roberts Cruzado",
-                    "Prewitt em X", "Prewitt em Y", "Prewitt Cruzado", "Sobel em X", "Sobel em Y", "Sobel Cruzado",
+            values=["Original", "Media", "Mediana", "Passa Alto", "Roberts Simples", "Roberts Cruzado",
+                    "Prewitt", "Sobel",
                     "Alto Reforço"],
             command=self.ao_selecionar_filtro
         )
@@ -126,17 +126,19 @@ class FilterFrame(ctk.CTkFrame):
             self.atualizar_visualizacao_kernel(filters.KERNELS["robertsY"])
         elif filtro_escolhido == "Roberts Cruzado":
             self.atualizar_visualizacao_kernel(np.zeros((3, 3)))
+        elif filtro_escolhido == "Roberts Simples":
+            self.atualizar_visualizacao_kernel(np.zeros((3, 3)))
         elif filtro_escolhido == "Prewitt em X":
             self.atualizar_visualizacao_kernel(filters.KERNELS["prewittX"])
         elif filtro_escolhido == "Prewitt em Y":
             self.atualizar_visualizacao_kernel(filters.KERNELS["prewittY"])
-        elif filtro_escolhido == "Prewitt Cruzado":
+        elif filtro_escolhido == "Prewitt":
             self.atualizar_visualizacao_kernel(np.zeros((3, 3)))
         elif filtro_escolhido == "Sobel em X":
             self.atualizar_visualizacao_kernel(filters.KERNELS["sobelX"])
         elif filtro_escolhido == "Sobel em Y":
             self.atualizar_visualizacao_kernel(filters.KERNELS["sobelY"])
-        elif filtro_escolhido == "Sobel Cruzado":
+        elif filtro_escolhido == "Sobel":
             self.atualizar_visualizacao_kernel(np.zeros((3, 3)))
         else:
             self.atualizar_visualizacao_kernel(filters.KERNELS["none"])
@@ -228,40 +230,44 @@ class FilterFrame(ctk.CTkFrame):
             kernel = filters.KERNELS["passaAlto"]
             self.matriz_processada = filters.aplicar_convolucao(self.matriz_original, kernel, normalizar=False)
 
-        elif filtro_escolhido == "Roberts em X":
-            kernel = filters.KERNELS["robertsX"]
-            self.matriz_processada = filters.aplicar_convolucao(self.matriz_original, kernel, normalizar=False)
+        #elif filtro_escolhido == "Roberts em X":
+           # kernel = filters.KERNELS["robertsX"]
+           # self.matriz_processada = filters.aplicar_convolucao(self.matriz_original, kernel, normalizar=False)
 
-        elif filtro_escolhido == "Roberts em Y":
-            kernel = filters.KERNELS["robertsY"]
-            self.matriz_processada = filters.aplicar_convolucao(self.matriz_original, kernel, normalizar=False)
+       # elif filtro_escolhido == "Roberts em Y":
+            #kernel = filters.KERNELS["robertsY"]
+           #self.matriz_processada = filters.aplicar_convolucao(self.matriz_original, kernel, normalizar=False)
 
-        elif filtro_escolhido == "Prewitt em X":
-            kernel = filters.KERNELS["prewittX"]
+        #elif filtro_escolhido == "Prewitt em X":
+           # kernel = filters.KERNELS["prewittX"]
             # Gradientes não são normalizados na convolução (soma = 0)
-            self.matriz_processada = filters.aplicar_convolucao(self.matriz_original, kernel, normalizar=False)
+            # self.matriz_processada = filters.aplicar_convolucao(self.matriz_original, kernel, normalizar=False)
 
-        elif filtro_escolhido == "Prewitt em Y":
-            kernel = filters.KERNELS["prewittY"]
-            self.matriz_processada = filters.aplicar_convolucao(self.matriz_original, kernel, normalizar=False)
+        #elif filtro_escolhido == "Prewitt em Y":
+           # kernel = filters.KERNELS["prewittY"]
+            #self.matriz_processada = filters.aplicar_convolucao(self.matriz_original, kernel, normalizar=False)
 
-        elif filtro_escolhido == "Prewitt Cruzado":
-            self.matriz_processada = filters.aplicar_prewitt_completo(self.matriz_original)
+        elif filtro_escolhido == "Prewitt":
+            self.matriz_processada = filters. aplicar_prewitt(self.matriz_original)
 
-        # Roberts Cruzado (Magnitude de X e Y combinados)
+        # Roberts Simples Completo (|X| + |Y| do slide 1)
+        elif filtro_escolhido == "Roberts Simples":
+            self.matriz_processada = filters.aplicar_roberts_simples(self.matriz_original)
+
+        # Roberts Cruzado Completo (|Z5-Z9| + |Z6-Z8| do slide 2)
         elif filtro_escolhido == "Roberts Cruzado":
             self.matriz_processada = filters.aplicar_roberts_cruzado(self.matriz_original)
 
-        elif filtro_escolhido == "Sobel em X":
-            kernel = filters.KERNELS["sobelX"]
-            self.matriz_processada = filters.aplicar_convolucao(self.matriz_original, kernel, normalizar=False)
+       # elif filtro_escolhido == "Sobel em X":
+         #   kernel = filters.KERNELS["sobelX"]
+           # self.matriz_processada = filters.aplicar_convolucao(self.matriz_original, kernel, normalizar=False)
 
-        elif filtro_escolhido == "Sobel em Y":
-            kernel = filters.KERNELS["sobelY"]
-            self.matriz_processada = filters.aplicar_convolucao(self.matriz_original, kernel, normalizar=False)
+       # elif filtro_escolhido == "Sobel em Y":
+           # kernel = filters.KERNELS["sobelY"]
+          #  self.matriz_processada = filters.aplicar_convolucao(self.matriz_original, kernel, normalizar=False)
 
-        elif filtro_escolhido == "Sobel Cruzado":
-            self.matriz_processada = filters.aplicar_sobel_cruzado(self.matriz_original)
+        elif filtro_escolhido == "Sobel":
+            self.matriz_processada = filters.aplicar_sobel_slide(self.matriz_original)
 
         elif filtro_escolhido == "Alto Reforço":
             try:

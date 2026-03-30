@@ -6,26 +6,32 @@ def combinar_imagens(img_a, img_b, operacao, normalizar=False):
     """Realiza operações aritméticas e lógicas entre duas matrizes de imagem."""
 
     # Garante que as imagens tenham o mesmo tamanho cortando as sobras
-    # (Evita erro caso o usuário selecione imagens de tamanhos diferentes)
     h = min(img_a.shape[0], img_b.shape[0])
     w = min(img_a.shape[1], img_b.shape[1])
 
     a = img_a[:h, :w]
     b = img_b[:h, :w]
 
+    # Converte para float32 ANTES das operações matemáticas para evitar overflow/underflow
+    a_calc = a.astype(np.float32)
+    b_calc = b.astype(np.float32)
+
     if operacao == "+":
-        res = a + b
+        res = a_calc + b_calc
+
     elif operacao == "-":
-        res = a - b
+        res = a_calc - b_calc
+
     elif operacao == "*":
-        res = a * b
+        res = a_calc * b_calc
+
     elif operacao == "/":
-        # Evita a temida divisão por zero substituindo os zeros de 'b' por 1 temporariamente
-        b_safe = np.where(b == 0, 1, b)
-        res = np.where(b == 0, 0, a / b_safe)
+        # Evita a divisão por zero
+        b_safe = np.where(b_calc == 0, 1, b_calc)
+        res = np.where(b_calc == 0, 0, a_calc / b_safe)
 
     elif operacao in ["OR", "AND", "XOR"]:
-        # Operadores bit a bit exigem números inteiros
+        # Operadores bit a bit exigem números inteiros (0 a 255)
         a_int = a.astype(np.uint8)
         b_int = b.astype(np.uint8)
 
@@ -36,12 +42,14 @@ def combinar_imagens(img_a, img_b, operacao, normalizar=False):
         elif operacao == "XOR":
             res = np.bitwise_xor(a_int, b_int)
 
+        # Retorna para float32 para manter a compatibilidade com o clipping/normalização abaixo
         res = res.astype(np.float32)
     else:
-        res = np.copy(a)
+        res = np.copy(a_calc)
 
+    # Se a normalização estiver ativa, passa a matriz com os valores reais (ex: negativos ou >255)
     if normalizar:
         return normalizar_matriz(res)
 
-    # Limita os valores entre 0 e 255 para não quebrar a imagem final
+    # Se não for normalizar, corta os valores excedentes para caber em uma imagem válida
     return np.clip(res, 0, 255)

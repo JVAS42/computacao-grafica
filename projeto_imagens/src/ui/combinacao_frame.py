@@ -90,6 +90,18 @@ class CombinacaoFrame(ctk.CTkFrame):
 
         try:
             matriz_res = combinar_imagens(self.matriz_a, self.matriz_b, operacao, normalizar=normalizar_ativado)
+
+            # --- SEU PRINT AQUI ---
+            print(f"\n--- Operação: {operacao} ---")
+            print("Pedaço da Imagem A (5x5):")
+            print(self.matriz_a[:5, :5])
+            print("Pedaço da Imagem B (5x5):")
+            print(self.matriz_b[:5, :5])
+            print("Pedaço do Resultado (5x5):")
+            print(matriz_res[:5, :5])
+            print("------------------------")
+            # ----------------------
+
             img_ctk = matriz_para_imagem(matriz_res)
             self.lbl_img_processada.configure(image=img_ctk, text="")
         except Exception as e:
