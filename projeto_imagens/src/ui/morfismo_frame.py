@@ -14,7 +14,7 @@ class MorfismoFrame(ctk.CTkFrame):
 
         self.grid_columnconfigure((0, 1, 2), weight=1)
         self.grid_rowconfigure(0, weight=1)
-        opcoes_imagens = ["kid.pgm", "adult.pgm"]
+        opcoes_imagens = ["kid.pgm", "adult.pgm", "flaviakid.pgm", "flaviadulta.pgm", "raquelkid.pgm"]
 
         # === COLUNA 0 ===
         self.frame_esq = ctk.CTkFrame(self, fg_color="transparent")
@@ -84,7 +84,7 @@ class MorfismoFrame(ctk.CTkFrame):
             self.lbl_img_morfismo.configure(image=matriz_para_imagem(matriz_morf), text="")
 
             # Incrementa o T (quanto menor o valor, mais demorada a transição)
-            self.tempo_animacao += 0.04
+            self.tempo_animacao += 0.1
 
             # Agenda o próprio método para rodar novamente daqui a 50 milissegundos
             self.after(50, self._loop_animacao)
