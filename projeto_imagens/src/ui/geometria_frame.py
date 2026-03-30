@@ -33,7 +33,7 @@ class GeometriaFrame(ctk.CTkFrame):
                      text_color="#213555").pack(pady=20)
 
         # Seleção de Imagem
-        opcoes_imagens = ["lena.pgm", "airplane.pgm", "kid.pgm", "nathanadult.pgm"]
+        opcoes_imagens = ["lena.pgm", "airplane.pgm"]
         self.cmb_imagem = ctk.CTkComboBox(self.frame_controles, values=opcoes_imagens, command=self.carregar_imagem)
         self.cmb_imagem.pack(pady=5, padx=20, fill="x")
 
