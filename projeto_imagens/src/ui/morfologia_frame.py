@@ -20,7 +20,7 @@ class MorfologiaFrame(ctk.CTkFrame):
         self.lbl_img_original = ctk.CTkLabel(self.frame_esq, text="[ Preview ]", width=256, height=256, bg_color="gray")
         self.lbl_img_original.pack(pady=10)
 
-        opcoes_imagens = ["lena.pgm", "airplane.pgm",]
+        opcoes_imagens = ["lena.pgm", "lena.pbm", "airplane.pgm", "airplane.pbm"]
         self.cmb_imagem = ctk.CTkComboBox(self.frame_esq, values=opcoes_imagens, command=self.carregar_imagem)
         self.cmb_imagem.pack(pady=5)
 
@@ -32,11 +32,13 @@ class MorfologiaFrame(ctk.CTkFrame):
 
         opcoes_operacao = [
             "Original", "Complemento", "Erosão", "Dilatação", "Abertura", "Fechamento",
-            "Contorno Externo", "Contorno Interno", "Gradiente", "Afinamento",
+            "Contorno Externo", "Contorno Interno", "Gradiente",
             "Erosão (Cinza)", "Dilatação (Cinza)", "Abertura (Cinza)", "Fechamento (Cinza)",
             "Top Hat", "Bottom Hat"
         ]
-        self.cmb_operacao = ctk.CTkComboBox(self.frame_centro, values=opcoes_operacao, command=self.aplicar_morfologia)
+
+        # REMOVIDO: command=self.aplicar_morfologia (não processa mais ao trocar a opção)
+        self.cmb_operacao = ctk.CTkComboBox(self.frame_centro, values=opcoes_operacao)
         self.cmb_operacao.pack(pady=10)
 
         self.frame_matriz = ctk.CTkFrame(self.frame_centro, fg_color="transparent")
@@ -50,10 +52,21 @@ class MorfologiaFrame(ctk.CTkFrame):
                 entry = ctk.CTkEntry(self.frame_matriz, width=40, justify="center")
                 entry.grid(row=i, column=j, padx=2, pady=2)
                 entry.insert(0, str(padrao[k]))
-                entry.bind("<Return>", self.aplicar_morfologia)  # Processa ao dar Enter
+                # REMOVIDO: entry.bind("<Return>", ...) (força o usuário a usar o botão)
                 linha.append(entry)
                 k += 1
             self.entradas_matriz.append(linha)
+
+        # --- NOVO: BOTÃO DE APLICAÇÃO ---
+        self.btn_aplicar = ctk.CTkButton(
+            self.frame_centro,
+            text="Aplicar Morfologia",
+            command=self.aplicar_morfologia,
+            font=("Arial", 14, "bold"),
+            fg_color="#213555",
+            hover_color="#3B5998"
+        )
+        self.btn_aplicar.pack(pady=15)
 
         # === COLUNA 2 ===
         self.frame_dir = ctk.CTkFrame(self, fg_color="transparent")
@@ -72,14 +85,15 @@ class MorfologiaFrame(ctk.CTkFrame):
             self.matriz_original = carregar_imagem_pgm(caminho)
             img_ctk = matriz_para_imagem(self.matriz_original)
             self.lbl_img_original.configure(image=img_ctk, text="")
-            self.aplicar_morfologia()
+
+            # Ajuste: Ao invés de processar a imagem, avisa o usuário que está aguardando o clique
+            self.lbl_img_processada.configure(image="", text="[ Aguardando Processamento ]")
         except Exception as e:
-            print(e)
+            print(f"Erro ao carregar a imagem: {e}")
 
     def aplicar_morfologia(self, *args):
         if self.matriz_original is None: return
 
-        # Puxa os valores dos 9 inputs do Kernel e converte pra lista
         kernel_flat = []
         for i in range(3):
             for j in range(3):

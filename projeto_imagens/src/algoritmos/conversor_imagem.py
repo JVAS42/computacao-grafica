@@ -32,7 +32,7 @@ if __name__ == "__main__":
     pasta_assets = os.path.join(diretorio_atual, "..", "..", "assets")
 
     # Lista das imagens que você quer converter
-    imagens_para_converter = ["flaviadulta.jpg", "flaviakid.jpg", "raquelkid.jpg"]
+    imagens_para_converter = []
 
     print("Iniciando conversão...")
 

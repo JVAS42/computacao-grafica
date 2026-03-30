@@ -14,7 +14,8 @@ class MorfismoFrame(ctk.CTkFrame):
 
         self.grid_columnconfigure((0, 1, 2), weight=1)
         self.grid_rowconfigure(0, weight=1)
-        opcoes_imagens = ["kid.pgm", "adult.pgm", "flaviakid.pgm", "flaviadulta.pgm", "raquelkid.pgm"]
+        opcoes_imagens = ["kid.pgm", "adult.pgm", "deniskid.pgm", "denisadult.pgm", "flaviakid.pgm", "flaviadulta.pgm",
+                          "joaokid.pgm", "joaoadult.pgm", "raquelkid.pgm", "raqueladult.pgm"]
 
         # === COLUNA 0 ===
         self.frame_esq = ctk.CTkFrame(self, fg_color="transparent")
@@ -74,6 +75,8 @@ class MorfismoFrame(ctk.CTkFrame):
         if self.matriz_a is None or self.matriz_b is None: return
         self.btn_iniciar.configure(state="disabled", text="ANIMANDO...")
         self.tempo_animacao = 0.0
+        self.contador_frame = 0
+
         self._loop_animacao()
 
     def _loop_animacao(self):
@@ -84,10 +87,13 @@ class MorfismoFrame(ctk.CTkFrame):
             self.lbl_img_morfismo.configure(image=matriz_para_imagem(matriz_morf), text="")
 
             # Incrementa o T (quanto menor o valor, mais demorada a transição)
-            self.tempo_animacao += 0.1
+            self.tempo_animacao += 0.01
+
+            self.contador_frame += 1
 
             # Agenda o próprio método para rodar novamente daqui a 50 milissegundos
             self.after(50, self._loop_animacao)
         else:
             # Terminou! Libera o botão.
+            print(f"Morfismo concluído\nTOTAL DE INTERAÇÕES: {self.contador_frame}")
             self.btn_iniciar.configure(state="normal", text="INICIAR MORFISMO\nTEMPORAL")

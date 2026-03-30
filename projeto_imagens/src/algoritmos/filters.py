@@ -10,9 +10,7 @@ IMAGES_PATH = {
     0: os.path.join(ASSETS_DIR, "lena.pgm"),
     1: os.path.join(ASSETS_DIR, "lenasalp.pgm"),
     2: os.path.join(ASSETS_DIR, "lenag.pgm"),
-    3: os.path.join(ASSETS_DIR, "airplane.pgm"),
-    4: os.path.join(ASSETS_DIR, "Criança.pgm"),
-    5: os.path.join(ASSETS_DIR, "Criança.pgm"),
+    3: os.path.join(ASSETS_DIR, "airplane.pgm")
 }
 
 # ===============================
@@ -58,7 +56,9 @@ FILTER_MAP = {
     17: "laplace",
     7: "sobelX",
     8: "sobelY",
-    10: "gaussianBlur"
+    10: "gaussianBlur",
+    12: "robertsCruzadoX",
+    13: "robertsCruzadoY"
 }
 
 
@@ -131,6 +131,11 @@ def aplicar_convolucao_roberts(imagem_matriz, kernel):
             vizinhanca = imagem_expandida[i - 1:i + 2, j - 1:j + 2]
             valor_calculado = np.sum(vizinhanca * kernel)
             resultado[i - 1, j - 1] = valor_calculado
+
+            # TESTE 1: Ver o Gx ou Gy bruto antes de qualquer coisa
+            if i == 1 and j <= 5:  # Pega os 5 primeiros da primeira linha
+                print(f"--- CONVOLUÇÃO BRUTA ---")
+                print(f"Pixel ({i - 1},{j - 1}) calculou: {valor_calculado}")
 
     return resultado
 
@@ -250,11 +255,22 @@ def high_boost_filter(image_data, A=1.5):
 # ===============================
 
 # Lógica de normalização: traz os valores para a escala 0-255
+# Normalizado = (bruto - min) X 255/ Max - Min
 def normalizar_imagem(matriz):
     min_v = np.min(matriz)
     max_v = np.max(matriz)
+
+    # ADICIONE ESTE PRINT:
+    print(f"DEBUG NORM: Min={min_v}, Max={max_v}")
+
     if max_v == min_v:
         return matriz.astype(np.uint8)
+
+    print("Conversão dos 5 primeiros pixels:")
+    for i in range(5):
+        bruto = matriz[0, i]
+        normalizado = (bruto - min_v) * (255.0 / (max_v - min_v))
+        print(f"P{i}: Bruto {bruto:.2f} -> Normalizado: {int(normalizado)}")
 
     res = (matriz - min_v) * (255.0 / (max_v - min_v))
     return res.astype(np.uint8)

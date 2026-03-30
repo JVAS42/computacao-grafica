@@ -1,30 +1,27 @@
 import numpy as np
 
-
 def dilatacao(matriz, kernel_flat):
-    """Expande os pixels brancos baseando-se no kernel (Max Filter)."""
+    """Expande os pixels brancos. Reflete o kernel para manter o rigor matemático."""
     h, w = matriz.shape
-    # Adiciona borda de zeros para a janela não quebrar nos cantos
     pad_mat = np.pad(matriz, pad_width=1, mode='constant', constant_values=0)
     shifts = []
+
+    # Reflexão do elemento estruturante (obrigatório na definição de Dilatação)
+    kernel_refletido = kernel_flat[::-1]
 
     k = 0
     for i in range(3):
         for j in range(3):
-            # Se a posição do kernel for 1, consideramos aquele "deslizamento" da imagem
-            if kernel_flat[k] > 0:
+            if kernel_refletido[k] > 0:
                 shifts.append(pad_mat[i:i + h, j:j + w])
             k += 1
 
-    # Empilha todos os deslocamentos válidos e pega o maior pixel em cada posição de uma vez só
     if not shifts: return matriz
     return np.max(shifts, axis=0)
-
 
 def erosao(matriz, kernel_flat):
     """Encolhe os pixels brancos baseando-se no kernel (Min Filter)."""
     h, w = matriz.shape
-    # Para a erosão, a borda deve ser 255 para não "comer" as bordas da imagem original
     pad_mat = np.pad(matriz, pad_width=1, mode='constant', constant_values=255)
     shifts = []
 
@@ -38,18 +35,18 @@ def erosao(matriz, kernel_flat):
     if not shifts: return matriz
     return np.min(shifts, axis=0)
 
-
 def processar_morfologia(matriz, operacao, kernel_flat):
-    """Delega a operação selecionada para as funções base."""
+    """Delega a operação selecionada protegendo contra underflow de uint8."""
     if operacao == "Original":
         return np.copy(matriz)
     elif operacao == "Complemento":
-        return 255.0 - matriz
+        # uint8 lida bem com a subtração de 255
+        return 255 - matriz
 
-    # Atalhos para não repetir código
     dil = lambda m: dilatacao(m, kernel_flat)
     ero = lambda m: erosao(m, kernel_flat)
 
+    # Operações Base
     if operacao in ["Erosão", "Erosão (Cinza)"]:
         return ero(matriz)
     elif operacao in ["Dilatação", "Dilatação (Cinza)"]:
@@ -59,20 +56,24 @@ def processar_morfologia(matriz, operacao, kernel_flat):
     elif operacao in ["Fechamento", "Fechamento (Cinza)"]:
         return ero(dil(matriz))
 
-    # Contornos e Gradientes (Combinações matemáticas das operações base)
-    elif operacao == "Contorno Externo":
-        return np.clip(dil(matriz) - matriz, 0, 255)
+    # --- Prevenção de Underflow em Subtrações ---
+    # Convertendo para int16 evitamos que resultados negativos virem números gigantes (ex: -5 vira 251)
+    m_calc = matriz.astype(np.int16)
+
+    if operacao == "Contorno Externo":
+        res = dil(matriz).astype(np.int16) - m_calc
     elif operacao == "Contorno Interno":
-        return np.clip(matriz - ero(matriz), 0, 255)
+        res = m_calc - ero(matriz).astype(np.int16)
     elif operacao == "Gradiente":
-        return np.clip(dil(matriz) - ero(matriz), 0, 255)
-    elif operacao == "Afinamento":
-        return np.clip(matriz - (dil(matriz) - ero(matriz)), 0, 255)
-
-    # Chapéus
+        res = dil(matriz).astype(np.int16) - ero(matriz).astype(np.int16)
     elif operacao == "Top Hat":
-        return np.clip(matriz - dil(ero(matriz)), 0, 255)
+        abertura = dil(ero(matriz)).astype(np.int16)
+        res = m_calc - abertura
     elif operacao == "Bottom Hat":
-        return np.clip(ero(dil(matriz)) - matriz, 0, 255)
+        fechamento = ero(dil(matriz)).astype(np.int16)
+        res = fechamento - m_calc
+    else:
+        return np.copy(matriz)
 
-    return np.copy(matriz)
+    # Retorna ao formato padrão de imagem cortando o que passou de 0 a 255
+    return np.clip(res, 0, 255).astype(np.uint8)
