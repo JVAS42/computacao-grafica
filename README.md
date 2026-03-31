@@ -4,7 +4,7 @@
     <img src="https://cdn-icons-png.flaticon.com/512/763/763206.png">
   </p>
   <p align="center">
-    <img loading="lazy" src="http://img.shields.io/static/v1?label=STATUS&message=EM%20DESENVOLVIMENTO&color=GREEN&style=for-the-badge"/>
+    <img loading="lazy" src="http://img.shields.io/static/v1?label=STATUS&message=FINALIZADO&color=GREEN&style=for-the-badge"/>
   </p>
 </div>
 
@@ -14,7 +14,11 @@ Para armazenar os laboratórios e projetos da cadeira de computação gráfica.
 
 - [x] Laboratório 1
 - [x] Laboratório 2
-- [ ] Laboratório 3
+
+### 📋 Checklist dos projetos
+
+- [x] Projeto Transformações
+- [x] Projeto de Imagens
 
 ##
 
