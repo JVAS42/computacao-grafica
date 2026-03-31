@@ -225,6 +225,8 @@ class FilterFrame(ctk.CTkFrame):
         print(f"Filtro selecionado: '{filtro_escolhido}'")
         if not hasattr(self, "matriz_original"): return
 
+
+        # NORMALIZAÇÃO 
         if filtro_escolhido == "Media":
             self.matriz_processada = filters.aplicar_filtro_media(self.matriz_original)
 
@@ -235,42 +237,52 @@ class FilterFrame(ctk.CTkFrame):
             kernel = filters.KERNELS["passaAlto"]
             self.matriz_processada = filters.aplicar_convolucao(self.matriz_original, kernel, normalizar=False)
 
+
+        # TRUNCAMENTO 
         elif filtro_escolhido == "Roberts em X":
             kernel = filters.KERNELS["robertsX"]
-            res_cru = self.matriz_processada = filters.aplicar_convolucao_roberts(self.matriz_original, kernel)
-            self.matriz_processada = filters.normalizar_imagem(res_cru)
+            res_cru = filters.aplicar_convolucao_roberts(self.matriz_original, kernel)
+            self.matriz_processada = np.clip(np.abs(res_cru), 0, 255).astype(np.uint8)
+
 
         elif filtro_escolhido == "Roberts em Y":
             kernel = filters.KERNELS["robertsY"]
-            res_cru = self.matriz_processada = filters.aplicar_convolucao_roberts(self.matriz_original, kernel)
-            self.matriz_processada = filters.normalizar_imagem(res_cru)
+            res_cru = filters.aplicar_convolucao_roberts(self.matriz_original, kernel)
+            self.matriz_processada = np.clip(np.abs(res_cru), 0, 255).astype(np.uint8)
+
 
         elif filtro_escolhido == "Roberts Simples":
-            self.matriz_processada = filters.aplicar_roberts_simples(self.matriz_original)
+            res_cru = self.matriz_processada = filters.aplicar_roberts_simples(self.matriz_original)
+            self.matriz_processada = np.clip(np.abs(res_cru), 0, 255).astype(np.uint8)
+
 
         elif filtro_escolhido == "Roberts Cruzado em X":
             res_cru = filters.aplicar_convolucao_roberts(self.matriz_original, filters.KERNELS["robertsCruzadoX"])
-            self.matriz_processada = filters.normalizar_imagem(res_cru)
+            self.matriz_processada = np.clip(np.abs(res_cru), 0, 255).astype(np.uint8)
+
 
         elif filtro_escolhido == "Roberts Cruzado em Y":
             res_cru = filters.aplicar_convolucao_roberts(self.matriz_original, filters.KERNELS["robertsCruzadoY"])
-            self.matriz_processada = filters.normalizar_imagem(res_cru)
+            self.matriz_processada = np.clip(np.abs(res_cru), 0, 255).astype(np.uint8)
+
 
         elif filtro_escolhido == "Roberts Cruzado":
-            self.matriz_processada = filters.aplicar_roberts_cruzado(self.matriz_original)
+            res_cru = self.matriz_processada = filters.aplicar_roberts_cruzado(self.matriz_original)
+            self.matriz_processada = np.clip(np.abs(res_cru), 0, 255).astype(np.uint8)
+
 
         elif filtro_escolhido == "Prewitt em X":
             res_cru = filters.aplicar_convolucao_roberts(self.matriz_original, filters.KERNELS["prewittX"])
-            # self.matriz_processada = filters.normalizar_imagem(res_cru)
-            self.matriz_processada = np.abs(res_cru).astype(np.uint8)
+            self.matriz_processada = np.clip(np.abs(res_cru), 0, 255).astype(np.uint8)
 
         elif filtro_escolhido == "Prewitt em Y":
             res_cru = filters.aplicar_convolucao_roberts(self.matriz_original, filters.KERNELS["prewittY"])
-            # self.matriz_processada = filters.normalizar_imagem(res_cru)
-            self.matriz_processada = np.abs(res_cru).astype(np.uint8)
+            self.matriz_processada = np.clip(np.abs(res_cru), 0, 255).astype(np.uint8)
 
         elif filtro_escolhido == "Prewitt":
-            self.matriz_processada = filters.aplicar_prewitt(self.matriz_original)
+            res_mag = filters.aplicar_prewitt(self.matriz_original)
+            self.matriz_processada = np.clip(res_mag, 0, 255).astype(np.uint8)
+
 
         elif filtro_escolhido == "Sobel em X":
             res_cru = filters.aplicar_convolucao_roberts(self.matriz_original, filters.KERNELS["sobelX"])
@@ -282,8 +294,9 @@ class FilterFrame(ctk.CTkFrame):
             self.matriz_processada = np.clip(np.abs(res_cru), 0, 255).astype(np.uint8)
 
         elif filtro_escolhido == "Sobel":
-            self.matriz_processada = filters.aplicar_sobel_slide(self.matriz_original)
-
+            res_mag = filters.aplicar_sobel_slide(self.matriz_original)
+            self.matriz_processada = np.clip(res_mag, 0, 255).astype(np.uint8)
+            
         elif filtro_escolhido == "Alto Reforço":
             try:
                 valor_a = float(self.entry_ahb.get())

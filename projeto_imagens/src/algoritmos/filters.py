@@ -176,7 +176,7 @@ def aplicar_roberts_simples(image_data):
     for k in range(5):
         print(f"P{k}: |{gx[0, k]}| + |{gy[0, k]}| = {mag[0, k]}")
 
-    return normalizar_imagem(mag)
+    return mag
 
 
 # Implementa mag = |Z5 - Z9| + |Z6 - Z8|
@@ -192,7 +192,7 @@ def aplicar_roberts_cruzado(image_data):
     for k in range(5):
         print(f"P{k}: |{gx[0, k]}| + |{gy[0, k]}| = {mag[0, k]}")
 
-    return normalizar_imagem(mag)
+    return mag
 
 
 # Implementa Prewitt |Gx| + |Gy| = |(Z7 + Z8 + Z9) - (Z1 + Z2 + Z3) | + |(Z3 + Z6 + Z9) - (Z1 + Z4 + Z7)|
@@ -208,7 +208,7 @@ def aplicar_prewitt(image_data):
     for k in range(5):
         print(f"P{k}: |{gx[0, k]}| + |{gy[0, k]}| = {mag[0, k]}")
 
-    return normalizar_imagem(mag)
+    return mag
 
 
 # Implementa Sobel |Gx| + |Gy| =  |(Z7 + 2Z8 + Z9) - (Z1 + 2Z2 + Z3)| + |(Z3 + 2Z6 + Z9) - (Z1 + 2Z4 + Z7)|
@@ -225,7 +225,7 @@ def aplicar_sobel_slide(image_data):
     for k in range(5):
         print(f"P{k}: |{gx[0, k]}| + |{gy[0, k]}| = {mag[0, k]}")
 
-    return normalizar_imagem(mag)
+    return mag
 
 
 # Implementa Alto Reforço - Fórmula: original + A * (original - suavizada)
