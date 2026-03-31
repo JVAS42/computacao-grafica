@@ -32,6 +32,14 @@ def normalizar_matriz(matriz):
 
     range_val = 255.0 / (max_val - min_val)
     matriz_norm = np.round(range_val * (matriz - min_val))
+
+    # --- NOVO PRINT PARA VERIFICAÇÃO ---
+    print("\n--- Processo de Normalização ---")
+    print(f"Min: {min_val} | Max: {max_val} | Fator (Range): {range_val:.4f}")
+    print("Bruto (5px):", matriz[0, :5])
+    print("Normalizado (5px):", matriz_norm[0, :5])
+    print("--------------------------------")
+
     return matriz_norm
 
 

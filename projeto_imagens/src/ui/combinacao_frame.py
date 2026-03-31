@@ -49,13 +49,10 @@ class CombinacaoFrame(ctk.CTkFrame):
         self.cmb_operacao = ctk.CTkComboBox(self.frame_dir, values=opcoes_operacao, command=self.aplicar_combinacao)
         self.cmb_operacao.pack(pady=5)
 
-        # Adicionando o botão de Normalizar que faltava!
         self.check_normalizar = ctk.CTkCheckBox(self.frame_dir, text="Normalizar", text_color="#213555",
                                                 command=self.aplicar_combinacao)
         self.check_normalizar.pack(pady=10)
-        self.check_normalizar.select()  # Mantém igual ao JS (True por padrão)
-
-        # Inicializar a interface
+        self.check_normalizar.select()
         self.carregar_imagem_a(opcoes_imagens[0])
         self.carregar_imagem_b(opcoes_imagens[1])
 
@@ -91,7 +88,7 @@ class CombinacaoFrame(ctk.CTkFrame):
         try:
             matriz_res = combinar_imagens(self.matriz_a, self.matriz_b, operacao, normalizar=normalizar_ativado)
 
-            # --- SEU PRINT AQUI ---
+            # ---  PRINT PARA VERIFICAÇÃO ---
             print(f"\n--- Operação: {operacao} ---")
             print("Pedaço da Imagem A (5x5):")
             print(self.matriz_a[:5, :5])

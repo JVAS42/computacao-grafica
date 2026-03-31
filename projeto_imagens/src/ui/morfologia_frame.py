@@ -44,7 +44,7 @@ class MorfologiaFrame(ctk.CTkFrame):
         self.frame_matriz = ctk.CTkFrame(self.frame_centro, fg_color="transparent")
         self.frame_matriz.pack(pady=10)
         self.entradas_matriz = []
-        padrao = [0, 1, 0, 1, 1, 1, 0, 1, 0]  # Elemento estruturante em cruz
+        padrao = [0, 1, 0, 1, 1, 1, 0, 1, 0]
         k = 0
         for i in range(3):
             linha = []
@@ -52,12 +52,11 @@ class MorfologiaFrame(ctk.CTkFrame):
                 entry = ctk.CTkEntry(self.frame_matriz, width=40, justify="center")
                 entry.grid(row=i, column=j, padx=2, pady=2)
                 entry.insert(0, str(padrao[k]))
-                # REMOVIDO: entry.bind("<Return>", ...) (força o usuário a usar o botão)
                 linha.append(entry)
                 k += 1
             self.entradas_matriz.append(linha)
 
-        # --- NOVO: BOTÃO DE APLICAÇÃO ---
+        # ---  BOTÃO DE APLICAÇÃO ---
         self.btn_aplicar = ctk.CTkButton(
             self.frame_centro,
             text="Aplicar Morfologia",
@@ -85,8 +84,6 @@ class MorfologiaFrame(ctk.CTkFrame):
             self.matriz_original = carregar_imagem_pgm(caminho)
             img_ctk = matriz_para_imagem(self.matriz_original)
             self.lbl_img_original.configure(image=img_ctk, text="")
-
-            # Ajuste: Ao invés de processar a imagem, avisa o usuário que está aguardando o clique
             self.lbl_img_processada.configure(image="", text="[ Aguardando Processamento ]")
         except Exception as e:
             print(f"Erro ao carregar a imagem: {e}")
